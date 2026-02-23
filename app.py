@@ -16,11 +16,12 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# --- 2. CSS MINIMALIS ---
+# --- 2. CSS CUSTOM (TEMA DINAMIS) ---
 st.markdown("""
     <style>
     .block-container { padding-top: 2rem; padding-bottom: 2rem; }
     
+    /* Banner Shopee (Biru) */
     .banner-shopee {
         background: linear-gradient(90deg, #022a5e 0%, #0056b3 100%);
         padding: 25px 35px; border-radius: 12px; margin-bottom: 25px;
@@ -29,6 +30,7 @@ st.markdown("""
     .banner-shopee h1 { color: white !important; font-weight: 700; margin-bottom: 5px; font-size: 2.2rem; }
     .banner-shopee p { color: #dbeafe !important; font-size: 1.05rem; margin: 0; }
     
+    /* Banner Tokopedia (Hijau) */
     .banner-tokped {
         background: linear-gradient(90deg, #064e3b 0%, #059669 100%);
         padding: 25px 35px; border-radius: 12px; margin-bottom: 25px;
@@ -36,6 +38,14 @@ st.markdown("""
     }
     .banner-tokped h1 { color: white !important; font-weight: 700; margin-bottom: 5px; font-size: 2.2rem; }
     .banner-tokped p { color: #d1fae5 !important; font-size: 1.05rem; margin: 0; }
+
+    /* Fix tampilan metric */
+    div[data-testid="stMetric"] {
+        background-color: white;
+        padding: 15px;
+        border-radius: 10px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
     </style>
 """, unsafe_allow_html=True)
 
@@ -63,7 +73,7 @@ if halaman == "🟠 Shopee":
     <div class="banner-shopee">
         <div style="font-size: 0.85rem; font-weight: bold; letter-spacing: 1px; color: #93c5fd; margin-bottom: 5px;">🏛️ BADAN PUSAT STATISTIK</div>
         <h1>Dashboard UMKM - Shopee</h1>
-        <p>Pengolahan Data E-Commerce Multi-File Berbasis Lokasi Shopee</p>
+        <p>Sistem Pengolahan Data Multi-File Berbasis Lokasi Shopee</p>
     </div>
     """, unsafe_allow_html=True)
 
@@ -149,9 +159,7 @@ if halaman == "🟠 Shopee":
                 st.download_button("⬇️ Download Excel Shopee", data=buf.getvalue(), file_name=f"UMKM_Shopee_{datetime.date.today()}.xlsx", type="primary")
         with tab3:
             audit = st.session_state.audit_shopee
-            st.info(f"**📂 Jumlah File Diproses:** {audit.get('file_count',0)} File CSV")
-            st.success(f"**📥 Total Baris Data Ditarik:** {audit.get('valid',0)} Baris")
-            st.warning(f"**🛠️ Perbaikan Format Harga:** {audit.get('error_harga',0)} Baris")
+            st.info(f"📂 File diproses: {audit.get('file_count',0)} | 📥 Baris ditarik: {audit.get('valid',0)} | 🛠️ Fix Harga: {audit.get('error_harga',0)}")
 
 # ==============================================================================
 #                             HALAMAN TOKOPEDIA
@@ -161,7 +169,7 @@ elif halaman == "🟢 Tokopedia":
     <div class="banner-tokped">
         <div style="font-size: 0.85rem; font-weight: bold; letter-spacing: 1px; color: #a7f3d0; margin-bottom: 5px;">🏛️ BADAN PUSAT STATISTIK</div>
         <h1>Dashboard UMKM - Tokopedia</h1>
-        <p>Pengolahan Data E-Commerce Multi-File Berbasis Lokasi Tokopedia</p>
+        <p>Deep Scanning Data Multi-File Berbasis Lokasi Tokopedia</p>
     </div>
     """, unsafe_allow_html=True)
 
@@ -173,7 +181,7 @@ elif halaman == "🟢 Tokopedia":
             if not files_tokped:
                 st.error("⚠️ Unggah file CSV Tokopedia dulu!")
             else:
-                with st.spinner("Memindai radar Tokopedia..."):
+                with st.spinner("Menjalankan Deep Scanner Tokopedia..."):
                     try:
                         hasil, total_baris, err_h = [], 0, 0
                         bar = st.progress(0)
@@ -182,55 +190,64 @@ elif halaman == "🟢 Tokopedia":
                             df_raw = pd.read_csv(file, dtype=str, on_bad_lines="skip")
                             total_baris += len(df_raw)
                             
-                            # RADAR KHUSUS KODE ALIEN TOKOPEDIA 
-                            col_links = [c for c in df_raw.columns if 'Ui5' in c]
-                            col_namas = [c for c in df_raw.columns if '+tnoqZhn' in c]
-                            col_hargas = [c for c in df_raw.columns if 'urMOIDHH' in c]
-                            col_lokasis = [c for c in df_raw.columns if 'gxi+fs' in c]
-                            col_tokos = [c for c in df_raw.columns if 'si3CN' in c]
-                            
-                            # Mencari berapa maksimal produk dalam 1 baris
-                            max_items = min(len(col_links), len(col_namas), len(col_hargas), len(col_lokasis), len(col_tokos))
-                            if max_items == 0: max_items = 1
+                            # LOGIKA DEEP SCANNER (Memindai per baris untuk mencari pola data)
+                            for _, row in df_raw.iterrows():
+                                links, names, prices, locs, shops = [], [], [], [], []
+                                
+                                for col in df_raw.columns:
+                                    val = str(row[col])
+                                    if val == 'nan' or val == '': continue
+                                    
+                                    # Deteksi Link
+                                    if 'tokopedia.com/' in val and 'extParam' in val: links.append(val)
+                                    # Deteksi Harga
+                                    elif 'Rp' in val: prices.append(val)
+                                    # Deteksi Wilayah (Kota-kota besar dan keyword regional)
+                                    elif any(k in val for k in ['Pangkal', 'Bangka', 'Belitung', 'Jakarta', 'Bogor', 'Mojokerto', 'Tangerang', 'Bandung', 'Bekasi', 'Medan', 'Surabaya']):
+                                        if 'terjual' not in val.lower() and 'http' not in val: locs.append(val)
+                                    # Deteksi Nama Produk (Teks panjang non-link)
+                                    elif len(val) > 15 and ' ' in val and 'http' not in val and 'Rp' not in val: names.append(val)
+                                    # Deteksi Nama Toko (Teks pendek non-angka)
+                                    elif len(val) <= 15 and not any(char.isdigit() for char in val): shops.append(val)
 
-                            for i in range(len(df_raw)):
-                                for j in range(max_items):
+                                # Menyatukan hasil scanning ke arah bawah (unrolling)
+                                for k in range(len(links)):
                                     try:
-                                        link = str(df_raw.iloc[i][col_links[j]]) if len(col_links) > j else "nan"
-                                        nama = str(df_raw.iloc[i][col_namas[j]]) if len(col_namas) > j else "nan"
-                                        harga_str = str(df_raw.iloc[i][col_hargas[j]]) if len(col_hargas) > j else "0"
-                                        lokasi_tokped = str(df_raw.iloc[i][col_lokasis[j]]).title() if len(col_lokasis) > j else "-"
-                                        toko = str(df_raw.iloc[i][col_tokos[j]]) if len(col_tokos) > j else "Toko CSV"
+                                        h_raw = prices[k] if k < len(prices) else "0"
+                                        h_fix = int(re.sub(r"[^\d]", "", h_raw))
                                         
-                                        # Jika kosong/nan, skip produk ini
-                                        if link == 'nan' or nama == 'nan':
-                                            continue
-                                            
-                                        try: val_h = int(re.sub(r"[^\d]", "", harga_str))
-                                        except: val_h, err_h = 0, err_h + 1
+                                        # Buang jika harga 0 (Data sampah)
+                                        if h_fix == 0: continue
                                         
-                                        hasil.append({"Nama Toko": toko, "Nama Produk": nama, "Harga": val_h, "Wilayah": lokasi_tokped, "Link": link})
-                                    except:
-                                        continue
+                                        hasil.append({
+                                            "Nama Toko": shops[k] if k < len(shops) else "Toko Tokopedia",
+                                            "Nama Produk": names[k] if k < len(names) else "Produk Tokopedia",
+                                            "Harga": h_fix,
+                                            "Wilayah": locs[k].title() if k < len(locs) else "Tidak Terdeteksi",
+                                            "Link": links[k]
+                                        })
+                                    except: continue
                             bar.progress((idx + 1) / len(files_tokped))
                         
                         bar.empty()
-                        st.session_state.data_tokped = pd.DataFrame(hasil)
-                        st.session_state.audit_tokped = {"total": total_baris, "valid": len(hasil), "file_count": len(files_tokped), "error_harga": err_h}
-                        st.success(f"✅ {len(hasil)} data berhasil diekstrak dari {len(files_tokped)} file Tokopedia!")
+                        # Hapus duplikat dan simpan
+                        df_final = pd.DataFrame(hasil).drop_duplicates()
+                        st.session_state.data_tokped = df_final
+                        st.session_state.audit_tokped = {"total": total_baris, "valid": len(df_final), "file_count": len(files_tokped), "error_harga": err_h}
+                        st.success(f"✅ {len(df_final)} produk berhasil ditarik!")
                     except Exception as e:
                         st.error(f"Error Sistem Tokopedia: {e}")
 
     df_tkp = st.session_state.data_tokped
     if df_tkp is not None and not df_tkp.empty:
-        f_wil = st.multiselect("Pilih Wilayah (Lokasi Asli):", options=sorted(df_tkp["Wilayah"].unique()), default=sorted(df_tkp["Wilayah"].unique()), key="f_wil_tkp")
+        f_wil = st.multiselect("Pilih Wilayah Tokopedia:", options=sorted(df_tkp["Wilayah"].unique()), default=sorted(df_tkp["Wilayah"].unique()), key="f_wil_tkp")
         df_f = df_tkp[df_tkp["Wilayah"].isin(f_wil)]
         st.write("---")
         
-        tab1, tab2, tab3 = st.tabs(["📊 Executive Dashboard", "🗄️ Database Siap Ekspor", "📑 Log Penggabungan"])
+        tab1, tab2, tab3 = st.tabs(["📊 Executive Dashboard", "🗄️ Database Siap Ekspor", "📑 Log Deep Scan"])
         with tab1:
             c1, c2, c3 = st.columns(3)
-            c1.metric("Total Data Tampil", f"{len(df_f):,}".replace(",", "."))
+            c1.metric("Total Produk", f"{len(df_f):,}".replace(",", "."))
             c2.metric("Rata-rata Harga", f"Rp {df_f['Harga'].mean():,.0f}".replace(",", ".") if not df_f.empty else "Rp 0")
             c3.metric("Titik Lokasi", f"{df_f['Wilayah'].nunique()}")
             if not df_f.empty:
@@ -252,7 +269,6 @@ elif halaman == "🟢 Tokopedia":
                 st.download_button("⬇️ Download Excel Tokopedia", data=buf.getvalue(), file_name=f"UMKM_Tokopedia_{datetime.date.today()}.xlsx")
         with tab3:
             audit = st.session_state.audit_tokped
-            st.info(f"**📂 Jumlah File Diproses:** {audit.get('file_count',0)} File CSV")
-            st.success(f"**📥 Total Data Berhasil Diekstrak:** {audit.get('valid',0)} Produk")
-            st.warning(f"**🛠️ Perbaikan Format Harga:** {audit.get('error_harga',0)} Baris")
-
+            st.info(f"**📂 File diproses:** {audit.get('file_count',0)} File CSV")
+            st.success(f"**📥 Total Produk Ditemukan (Setelah Scan):** {audit.get('valid',0)} Item")
+            st.warning(f"**⚠️ Keterangan:** Mesin memindai kolom secara dinamis karena format file Tokopedia menyamping.")
