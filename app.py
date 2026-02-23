@@ -182,53 +182,42 @@ elif halaman == "🟢 Tokopedia":
                             df_raw = pd.read_csv(file, dtype=str, on_bad_lines="skip")
                             total_baris += len(df_raw)
                             
-                            for _, row in df_raw.iterrows():
-                                links, names, prices, locs, shops = [], [], [], [], []
-                                
-                                for col in df_raw.columns:
-                                    val = str(row[col]).strip()
-                                    if val == 'nan' or val == '': continue
-                                    
-                                    val_lower = val.lower()
-                                    
-                                    # Deteksi Link
-                                    if 'tokopedia.com/' in val_lower and 'extparam' in val_lower: links.append(val)
-                                    # Deteksi Harga
-                                    elif 'rp' in val_lower and any(c.isdigit() for c in val): prices.append(val)
-                                    # Mencegah Babi Panggang dkk masuk ke Wilayah
-                                    elif len(val) <= 20 and 'terjual' not in val_lower and 'rp' not in val_lower and 'http' not in val_lower:
-                                        if any(k in val_lower for k in ['pangkal', 'bangka', 'belitung', 'jakarta', 'bogor', 'mojokerto', 'tangerang', 'bandung', 'bekasi', 'medan', 'surabaya', 'semarang', 'palembang']):
-                                            locs.append(val)
-                                        else:
-                                            if not any(c.isdigit() for c in val): shops.append(val)
-                                    # Deteksi Nama Produk (Teks panjang pasti masuk sini)
-                                    elif len(val) > 20 and 'http' not in val_lower:
-                                        names.append(val)
+                            # RADAR KHUSUS KODE ALIEN TOKOPEDIA 
+                            col_links = [c for c in df_raw.columns if 'Ui5' in c]
+                            col_namas = [c for c in df_raw.columns if '+tnoqZhn' in c]
+                            col_hargas = [c for c in df_raw.columns if 'urMOIDHH' in c]
+                            col_lokasis = [c for c in df_raw.columns if 'gxi+fs' in c]
+                            col_tokos = [c for c in df_raw.columns if 'si3CN' in c]
+                            
+                            # Mencari berapa maksimal produk dalam 1 baris
+                            max_items = min(len(col_links), len(col_namas), len(col_hargas), len(col_lokasis), len(col_tokos))
+                            if max_items == 0: max_items = 1
 
-                                for k in range(len(links)):
+                            for i in range(len(df_raw)):
+                                for j in range(max_items):
                                     try:
-                                        h_raw = prices[k] if k < len(prices) else "0"
-                                        h_fix = int(re.sub(r"[^\d]", "", h_raw))
+                                        link = str(df_raw.iloc[i][col_links[j]]) if len(col_links) > j else "nan"
+                                        nama = str(df_raw.iloc[i][col_namas[j]]) if len(col_namas) > j else "nan"
+                                        harga_str = str(df_raw.iloc[i][col_hargas[j]]) if len(col_hargas) > j else "0"
+                                        lokasi_tokped = str(df_raw.iloc[i][col_lokasis[j]]).title() if len(col_lokasis) > j else "-"
+                                        toko = str(df_raw.iloc[i][col_tokos[j]]) if len(col_tokos) > j else "Toko CSV"
                                         
-                                        # HANYA PROSES JIKA HARGA BUKAN 0
-                                        if h_fix == 0: continue
+                                        # Jika kosong/nan, skip produk ini
+                                        if link == 'nan' or nama == 'nan':
+                                            continue
+                                            
+                                        try: val_h = int(re.sub(r"[^\d]", "", harga_str))
+                                        except: val_h, err_h = 0, err_h + 1
                                         
-                                        hasil.append({
-                                            "Nama Toko": shops[k] if k < len(shops) else "Toko Tokopedia",
-                                            "Nama Produk": names[k] if k < len(names) else "Produk Tokopedia",
-                                            "Harga": h_fix,
-                                            "Wilayah": locs[k].title() if k < len(locs) else "Tidak Terdeteksi",
-                                            "Link": links[k]
-                                        })
-                                    except: continue
+                                        hasil.append({"Nama Toko": toko, "Nama Produk": nama, "Harga": val_h, "Wilayah": lokasi_tokped, "Link": link})
+                                    except:
+                                        continue
                             bar.progress((idx + 1) / len(files_tokped))
                         
                         bar.empty()
-                        # HAPUS DATA GANDA
-                        df_final = pd.DataFrame(hasil).drop_duplicates()
-                        st.session_state.data_tokped = df_final
-                        st.session_state.audit_tokped = {"total": total_baris, "valid": len(df_final), "file_count": len(files_tokped), "error_harga": err_h}
-                        st.success(f"✅ {len(df_final)} data berhasil diekstrak dari {len(files_tokped)} file Tokopedia!")
+                        st.session_state.data_tokped = pd.DataFrame(hasil)
+                        st.session_state.audit_tokped = {"total": total_baris, "valid": len(hasil), "file_count": len(files_tokped), "error_harga": err_h}
+                        st.success(f"✅ {len(hasil)} data berhasil diekstrak dari {len(files_tokped)} file Tokopedia!")
                     except Exception as e:
                         st.error(f"Error Sistem Tokopedia: {e}")
 
