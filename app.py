@@ -36,7 +36,7 @@ st.markdown("""
     }
     .banner-tokped h1 { color: white !important; font-weight: 700; margin-bottom: 5px; font-size: 2.2rem; }
     .banner-tokped p { color: #d1fae5 !important; font-size: 1.05rem; margin: 0; }
-    
+
     .banner-gabungan {
         background: linear-gradient(90deg, #1e293b 0%, #0f172a 100%);
         padding: 25px 35px; border-radius: 12px; margin-bottom: 25px;
@@ -71,7 +71,7 @@ if halaman == "🟠 Shopee":
     <div class="banner-shopee">
         <div style="font-size: 0.85rem; font-weight: bold; letter-spacing: 1px; color: #93c5fd; margin-bottom: 5px;">🏛️ BADAN PUSAT STATISTIK</div>
         <h1>Dashboard UMKM - Shopee</h1>
-        <p>Pengolahan Data E-Commerce Multi-File Berbasis Lokasi Shopee</p>
+        <p>Pengolahan Data E-Commerce Multi-File (Filter Khusus Babel)</p>
     </div>
     """, unsafe_allow_html=True)
 
@@ -84,10 +84,13 @@ if halaman == "🟠 Shopee":
             if not files_shopee:
                 st.error("⚠️ Unggah file CSV Shopee dulu!")
             else:
-                with st.spinner("Memproses seluruh data Shopee..."):
+                with st.spinner("Memproses data & memfilter wilayah Bangka Belitung..."):
                     try:
-                        hasil, total_baris, err_h = [], 0, 0
+                        hasil, total_baris, err_h, luar_wilayah = [], 0, 0, 0
                         bar = st.progress(0)
+                        
+                        # KATA KUNCI WILAYAH BANGKA BELITUNG
+                        babel_keys = ["pangkal", "bangka", "belitung", "sungailiat", "mentok", "muntok", "koba", "toboali", "manggar", "tanjung pandan", "tanjungpandan"]
                         
                         for idx, file in enumerate(files_shopee):
                             df_raw = pd.read_csv(file, dtype=str, on_bad_lines="skip")
@@ -104,6 +107,11 @@ if halaman == "🟠 Shopee":
                                 nama = str(row[col_nama])
                                 harga_str = str(row[col_harga])
                                 lokasi_shopee = str(row[col_wilayah]).title()
+                                
+                                # FILTER WILAYAH: Buang kalau bukan di Babel
+                                if not any(k in lokasi_shopee.lower() for k in babel_keys):
+                                    luar_wilayah += 1
+                                    continue
                                 
                                 try: val_h = int(re.sub(r"[^\d]", "", harga_str))
                                 except: val_h, err_h = 0, err_h + 1
@@ -122,18 +130,18 @@ if halaman == "🟠 Shopee":
                         
                         bar.empty()
                         st.session_state.data_shopee = pd.DataFrame(hasil)
-                        st.session_state.audit_shopee = {"total": total_baris, "valid": len(hasil), "file_count": len(files_shopee), "error_harga": err_h}
-                        st.success(f"✅ {len(hasil)} data Shopee berhasil diekstrak!")
+                        st.session_state.audit_shopee = {"total": total_baris, "valid": len(hasil), "file_count": len(files_shopee), "error_harga": err_h, "luar": luar_wilayah}
+                        st.success(f"✅ {len(hasil)} data Shopee berhasil diekstrak (Luar Babel otomatis dibuang)!")
                     except Exception as e:
                         st.error(f"Error Sistem: {e}")
 
     df_shp = st.session_state.data_shopee
     if df_shp is not None and not df_shp.empty:
-        f_wil = st.multiselect("Pilih Wilayah (Lokasi Asli):", options=sorted(df_shp["Wilayah"].unique()), default=sorted(df_shp["Wilayah"].unique()), key="f_wil_shp")
+        f_wil = st.multiselect("Pilih Wilayah (Sudah difilter Babel):", options=sorted(df_shp["Wilayah"].unique()), default=sorted(df_shp["Wilayah"].unique()), key="f_wil_shp")
         df_f = df_shp[df_shp["Wilayah"].isin(f_wil)]
         st.write("---")
         
-        tab1, tab2, tab3 = st.tabs(["📊 Executive Dashboard", "🗄️ Database Siap Ekspor", "📑 Log Penggabungan"])
+        tab1, tab2, tab3 = st.tabs(["📊 Executive Dashboard", "🗄️ Database Siap Ekspor", "📑 Log Audit"])
         with tab1:
             c1, c2, c3 = st.columns(3)
             c1.metric("Total Data Tampil", f"{len(df_f):,}".replace(",", "."))
@@ -158,7 +166,8 @@ if halaman == "🟠 Shopee":
         with tab3:
             audit = st.session_state.audit_shopee
             st.info(f"**📂 Jumlah File Diproses:** {audit.get('file_count',0)} File CSV")
-            st.success(f"**📥 Total Baris Data Ditarik:** {audit.get('valid',0)} Baris")
+            st.success(f"**📥 Total Data (Babel Saja):** {audit.get('valid',0)} Baris")
+            st.error(f"**🚫 Dibuang (Luar Babel / Jakarta dll):** {audit.get('luar',0)} Baris")
             st.warning(f"**🛠️ Perbaikan Format Harga:** {audit.get('error_harga',0)} Baris")
 
 # ==============================================================================
@@ -169,7 +178,7 @@ elif halaman == "🟢 Tokopedia":
     <div class="banner-tokped">
         <div style="font-size: 0.85rem; font-weight: bold; letter-spacing: 1px; color: #a7f3d0; margin-bottom: 5px;">🏛️ BADAN PUSAT STATISTIK</div>
         <h1>Dashboard UMKM - Tokopedia</h1>
-        <p>Pengolahan Data E-Commerce Multi-File Berbasis Lokasi Tokopedia</p>
+        <p>Pengolahan Data E-Commerce Multi-File (Filter Khusus Babel)</p>
     </div>
     """, unsafe_allow_html=True)
 
@@ -181,10 +190,13 @@ elif halaman == "🟢 Tokopedia":
             if not files_tokped:
                 st.error("⚠️ Unggah file CSV Tokopedia dulu!")
             else:
-                with st.spinner("Memindai radar Tokopedia..."):
+                with st.spinner("Memproses data & memfilter wilayah Bangka Belitung..."):
                     try:
-                        hasil, total_baris, err_h = [], 0, 0
+                        hasil, total_baris, err_h, luar_wilayah = [], 0, 0, 0
                         bar = st.progress(0)
+                        
+                        # KATA KUNCI WILAYAH BANGKA BELITUNG
+                        babel_keys = ["pangkal", "bangka", "belitung", "sungailiat", "mentok", "muntok", "koba", "toboali", "manggar", "tanjung pandan", "tanjungpandan"]
                         
                         for idx, file in enumerate(files_tokped):
                             df_raw = pd.read_csv(file, dtype=str, on_bad_lines="skip")
@@ -208,7 +220,13 @@ elif halaman == "🟢 Tokopedia":
                                         lokasi_tokped = str(df_raw.iloc[i][col_lokasis[j]]).title() if j < len(col_lokasis) else "-"
                                         toko = str(df_raw.iloc[i][col_tokos[j]]) if j < len(col_tokos) else "Toko CSV"
                                         
-                                        if link == 'nan' or nama == 'nan': continue
+                                        if link == 'nan' or nama == 'nan':
+                                            continue
+                                        
+                                        # FILTER WILAYAH: Buang kalau bukan di Babel
+                                        if not any(k in lokasi_tokped.lower() for k in babel_keys):
+                                            luar_wilayah += 1
+                                            continue
                                             
                                         try: val_h = int(re.sub(r"[^\d]", "", harga_str))
                                         except: val_h, err_h = 0, err_h + 1
@@ -223,18 +241,18 @@ elif halaman == "🟢 Tokopedia":
                         bar.empty()
                         df_final = pd.DataFrame(hasil).drop_duplicates()
                         st.session_state.data_tokped = df_final
-                        st.session_state.audit_tokped = {"total": total_baris, "valid": len(df_final), "file_count": len(files_tokped), "error_harga": err_h}
-                        st.success(f"✅ {len(df_final)} data berhasil diekstrak dari {len(files_tokped)} file Tokopedia!")
+                        st.session_state.audit_tokped = {"total": total_baris, "valid": len(df_final), "file_count": len(files_tokped), "error_harga": err_h, "luar": luar_wilayah}
+                        st.success(f"✅ {len(df_final)} data Tokopedia berhasil diekstrak (Luar Babel otomatis dibuang)!")
                     except Exception as e:
                         st.error(f"Error Sistem Tokopedia: {e}")
 
     df_tkp = st.session_state.data_tokped
     if df_tkp is not None and not df_tkp.empty:
-        f_wil = st.multiselect("Pilih Wilayah (Lokasi Asli):", options=sorted(df_tkp["Wilayah"].unique()), default=sorted(df_tkp["Wilayah"].unique()), key="f_wil_tkp")
+        f_wil = st.multiselect("Pilih Wilayah (Sudah difilter Babel):", options=sorted(df_tkp["Wilayah"].unique()), default=sorted(df_tkp["Wilayah"].unique()), key="f_wil_tkp")
         df_f = df_tkp[df_tkp["Wilayah"].isin(f_wil)]
         st.write("---")
         
-        tab1, tab2, tab3 = st.tabs(["📊 Executive Dashboard", "🗄️ Database Siap Ekspor", "📑 Log Penggabungan"])
+        tab1, tab2, tab3 = st.tabs(["📊 Executive Dashboard", "🗄️ Database Siap Ekspor", "📑 Log Audit"])
         with tab1:
             c1, c2, c3 = st.columns(3)
             c1.metric("Total Data Tampil", f"{len(df_f):,}".replace(",", "."))
@@ -260,7 +278,8 @@ elif halaman == "🟢 Tokopedia":
         with tab3:
             audit = st.session_state.audit_tokped
             st.info(f"**📂 Jumlah File Diproses:** {audit.get('file_count',0)} File CSV")
-            st.success(f"**📥 Total Data Berhasil Diekstrak:** {audit.get('valid',0)} Produk")
+            st.success(f"**📥 Total Data (Babel Saja):** {audit.get('valid',0)} Produk")
+            st.error(f"**🚫 Dibuang (Luar Babel / Jakarta dll):** {audit.get('luar',0)} Produk")
             st.warning(f"**🛠️ Perbaikan Format Harga:** {audit.get('error_harga',0)} Baris")
 
 # ==============================================================================
@@ -275,7 +294,6 @@ elif halaman == "📊 Export Gabungan":
     </div>
     """, unsafe_allow_html=True)
     
-    # Cek apakah sudah ada data dari Shopee atau Tokopedia
     df_shp_ready = st.session_state.data_shopee is not None and not st.session_state.data_shopee.empty
     df_tkp_ready = st.session_state.data_tokped is not None and not st.session_state.data_tokped.empty
     
@@ -284,7 +302,6 @@ elif halaman == "📊 Export Gabungan":
     else:
         st.success("✅ Data siap untuk digabungkan menjadi file Master Excel!")
         
-        # Menampilkan indikator angka
         c1, c2 = st.columns(2)
         if df_shp_ready:
             c1.metric("📦 Total Produk Shopee", f"{len(st.session_state.data_shopee):,}".replace(",", "."))
@@ -294,13 +311,11 @@ elif halaman == "📊 Export Gabungan":
         st.write("---")
         st.markdown("Klik tombol di bawah ini untuk mengunduh Excel dengan **Format Tab/Sheet Terpisah** dan sudah terpasang **Fitur Filter otomatis**.")
         
-        # Logika Gabung Excel dengan XlsxWriter
         buf = io.BytesIO()
         with pd.ExcelWriter(buf, engine="xlsxwriter") as writer:
             wb = writer.book
             currency_fmt = wb.add_format({'num_format': '#,##0'})
             
-            # --- SHEET SHOPEE ---
             if df_shp_ready:
                 df_shp = st.session_state.data_shopee
                 df_shp.to_excel(writer, index=False, sheet_name="Data Shopee")
@@ -315,10 +330,8 @@ elif halaman == "📊 Export Gabungan":
                 ws_shp.set_column('C:C', 18, currency_fmt)
                 ws_shp.set_column('D:D', 30)
                 ws_shp.set_column('E:E', 50)
-                # Menambahkan Auto Filter di dalam Excel
                 ws_shp.autofilter(0, 0, len(df_shp), len(df_shp.columns) - 1)
                 
-            # --- SHEET TOKOPEDIA ---
             if df_tkp_ready:
                 df_tkp = st.session_state.data_tokped
                 df_tkp.to_excel(writer, index=False, sheet_name="Data Tokopedia")
@@ -333,10 +346,8 @@ elif halaman == "📊 Export Gabungan":
                 ws_tkp.set_column('C:C', 18, currency_fmt)
                 ws_tkp.set_column('D:D', 30)
                 ws_tkp.set_column('E:E', 50)
-                # Menambahkan Auto Filter di dalam Excel
                 ws_tkp.autofilter(0, 0, len(df_tkp), len(df_tkp.columns) - 1)
                 
-        # Tombol Download Gabungan
         st.markdown('<style>div[data-testid="stDownloadButton"] button {background-color: #0f172a; color: white; border:none; height: 3.5rem; font-size: 1.1rem;}</style>', unsafe_allow_html=True)
         st.download_button(
             label="⬇️ DOWNLOAD EXCEL MASTER (GABUNGAN)",
