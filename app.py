@@ -80,23 +80,32 @@ with st.sidebar:
         if uploaded_file is None:
             st.error("⚠️ Silakan upload file CSV terlebih dahulu!")
         else:
-            with st.spinner("Menjalankan algoritma standarisasi BPS..."):
+            with st.spinner("Menjalankan radar standarisasi BPS..."):
                 try:
-                    # MESIN PEMBACA CSV ANTI ERROR (Otomatis deteksi Koma atau Titik Koma)
+                    # Membaca CSV dengan pendeteksi pemisah koma/titik koma otomatis
                     try:
                         df_raw = pd.read_csv(uploaded_file, sep=',', dtype=str, on_bad_lines='skip')
-                        if len(df_raw.columns) < 5:  # Kalau kolomnya menyatu, berarti dia butuh titik koma
+                        if len(df_raw.columns) < 5: 
                             uploaded_file.seek(0)
                             df_raw = pd.read_csv(uploaded_file, sep=';', dtype=str, on_bad_lines='skip')
                     except Exception:
                         uploaded_file.seek(0)
                         df_raw = pd.read_csv(uploaded_file, sep=';', dtype=str, on_bad_lines='skip')
                     
-                    # Cek apakah kolomnya cukup
-                    if len(df_raw.columns) < 12:
-                        st.error("❌ Format file CSV tidak dikenali! Pastikan ini adalah file hasil scraping Shopee yang asli.")
-                        st.stop()
-                    
+                    # --- RADAR DETEKSI KOLOM OTOMATIS ---
+                    col_link = df_raw.columns[0]
+                    col_nama = df_raw.columns[3] if len(df_raw.columns) > 3 else df_raw.columns[0]
+                    col_harga = df_raw.columns[5] if len(df_raw.columns) > 5 else df_raw.columns[0]
+                    col_wilayah = df_raw.columns[11] if len(df_raw.columns) > 11 else df_raw.columns[-1]
+
+                    for col in df_raw.columns:
+                        c_low = str(col).lower()
+                        if any(x in c_low for x in ['url', 'link', 'tautan']): col_link = col
+                        elif any(x in c_low for x in ['nama', 'produk', 'name', 'item']): col_nama = col
+                        elif any(x in c_low for x in ['harga', 'price']): col_harga = col
+                        elif any(x in c_low for x in ['lokasi', 'kota', 'wilayah', 'location', 'tempat', 'shop']): col_wilayah = col
+                    # ------------------------------------
+
                     hasil = []
                     kota_bangka = ["Bangka", "Pangkal Pinang", "Pangkalpinang", "Sungailiat", "Toboali", "Mentok", "Koba"]
                     
@@ -107,11 +116,14 @@ with st.sidebar:
                     bar = st.progress(0)
                     
                     for i in range(total_baris):
-                        # Ekstraksi aman pakai indeks
-                        link        = str(df_raw.iloc[i, 0])
-                        nama_produk = str(df_raw.iloc[i, 3])
-                        harga_raw   = str(df_raw.iloc[i, 5])
-                        wilayah_raw = str(df_raw.iloc[i, 11])
+                        # Ekstraksi menggunakan nama kolom (Anti-Geser)
+                        link        = str(df_raw.iloc[i][col_link])
+                        nama_produk = str(df_raw.iloc[i][col_nama])
+                        harga_raw   = str(df_raw.iloc[i][col_harga])
+                        wilayah_raw = str(df_raw.iloc[i][col_wilayah])
+                        
+                        # SAPU JAGAT: Satukan semua teks di baris ini untuk berjaga-jaga
+                        semua_teks = " ".join(df_raw.iloc[i, :].fillna("").astype(str).values).lower()
                         
                         # Fix Harga
                         try:
@@ -123,10 +135,11 @@ with st.sidebar:
                             harga = 0
                             error_harga += 1
                             
-                        # Filter Wilayah
+                        # Filter Wilayah SUPER AMAN
                         wilayah_final = "Luar Wilayah"
                         for k in kota_bangka:
-                            if k.lower() in wilayah_raw.lower():
+                            # Mengecek di kolom spesifik ATAU di seluruh baris data tersebut
+                            if k.lower() in wilayah_raw.lower() or k.lower() in semua_teks:
                                 wilayah_final = "Kota Pangkalpinang" if "pangkal" in k.lower() else f"Kab. {k.title()}"
                                 break
                                 
@@ -158,7 +171,6 @@ with st.sidebar:
                     
                     bar.empty()
                     
-                    # Simpan data dengan aman
                     if len(hasil) > 0:
                         st.session_state.data_bersih = pd.DataFrame(hasil)
                     else:
@@ -186,19 +198,12 @@ if st.session_state.data_bersih is None:
 # --- 7. DASHBOARD UTAMA (JIKA ADA DATA) ---
 df = st.session_state.data_bersih
 
-# PENGAMANAN EXTRA JIKA DATA KOSONG
 if df.empty:
-    st.warning("⚠️ Proses selesai, tetapi **0 data yang valid** ditemukan. Seluruh data terbuang karena bukan dari wilayah Bangka Belitung.")
-    
-    # Tampilkan hanya log audit
+    st.warning("⚠️ Proses selesai, tetapi **0 data yang valid** ditemukan. Seluruh data terbuang karena tidak ada kota Bangka Belitung yang terdeteksi.")
     audit = st.session_state.audit_data
-    total = int(audit.get('total', 0))
-    luar = int(audit.get('luar', 0))
-    
-    st.info(f"**Total Data Dibaca:** {total} baris | **Dibuang (Luar Wilayah):** {luar} baris")
+    st.info(f"**Total Data Dibaca:** {audit.get('total', 0)} baris | **Dibuang (Luar Wilayah):** {audit.get('luar', 0)} baris")
     st.stop()
 
-# Jika data aman, tampilkan filter
 st.markdown("### 🔎 Filter Data")
 col_f1, col_f2 = st.columns(2)
 with col_f1:
@@ -247,7 +252,6 @@ with tab2:
         buf = io.BytesIO()
         with pd.ExcelWriter(buf, engine="xlsxwriter") as writer:
             df_f.to_excel(writer, index=False, sheet_name="Data UMKM")
-            
             workbook = writer.book
             worksheet = writer.sheets["Data UMKM"]
             
