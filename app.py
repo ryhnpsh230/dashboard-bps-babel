@@ -10,41 +10,34 @@ import os
 
 # --- 1. KONFIGURASI HALAMAN ---
 st.set_page_config(
-    page_title="BPS · Portal UMKM Babel",
+    page_title="Dashboard UMKM BPS",
     page_icon="🏛️",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# --- 2. CUSTOM CSS PREMIUM ---
+# --- 2. CSS MINIMALIS ---
 st.markdown("""
     <style>
-    .stApp { background-color: #f4f7fb !important; }
+    .block-container { padding-top: 2rem; padding-bottom: 2rem; }
     
-    .header-shopee {
-        background: linear-gradient(135deg, #061e45 0%, #0d3b7a 60%, #1565c0 100%);
-        padding: 30px 40px; border-radius: 12px; margin-bottom: 25px;
-        box-shadow: 0 8px 20px rgba(6,30,69,0.15); color: white !important;
+    .banner-shopee {
+        background: linear-gradient(90deg, #022a5e 0%, #0056b3 100%);
+        padding: 25px 35px; border-radius: 12px; margin-bottom: 25px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1); color: white;
     }
-    .header-shopee h1 { color: white !important; font-weight: 800; margin-bottom: 5px; }
+    .banner-shopee h1 { color: white !important; font-weight: 700; margin-bottom: 5px; font-size: 2.2rem; }
+    .banner-shopee p { color: #dbeafe !important; font-size: 1.05rem; margin: 0; }
     
-    .header-tokped {
-        background: linear-gradient(135deg, #064e3b 0%, #047857 60%, #10b981 100%);
-        padding: 30px 40px; border-radius: 12px; margin-bottom: 25px;
-        box-shadow: 0 8px 20px rgba(6,78,59,0.15); color: white !important;
+    .banner-tokped {
+        background: linear-gradient(90deg, #064e3b 0%, #059669 100%);
+        padding: 25px 35px; border-radius: 12px; margin-bottom: 25px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1); color: white;
     }
-    .header-tokped h1 { color: white !important; font-weight: 800; margin-bottom: 5px; }
-    
-    div[data-testid="metric-container"] {
-        background-color: #ffffff !important; border-left: 5px solid #1565c0 !important;
-        padding: 20px !important; border-radius: 10px !important; box-shadow: 0 4px 10px rgba(0,0,0,0.05) !important;
-    }
-    .stButton > button {
-        background: linear-gradient(135deg, #1565c0 0%, #00b4d8 100%) !important;
-        color: white !important; border-radius: 8px !important; font-weight: bold !important;
-    }
+    .banner-tokped h1 { color: white !important; font-weight: 700; margin-bottom: 5px; font-size: 2.2rem; }
+    .banner-tokped p { color: #d1fae5 !important; font-size: 1.05rem; margin: 0; }
     </style>
-    """, unsafe_allow_html=True)
+""", unsafe_allow_html=True)
 
 # --- 3. SESSION STATE ---
 if "data_shopee" not in st.session_state: st.session_state.data_shopee = None
@@ -67,10 +60,10 @@ with st.sidebar:
 # ==============================================================================
 if halaman == "🟠 Shopee":
     st.markdown("""
-    <div class="header-shopee">
-        <span style="background: rgba(255,255,255,0.2); padding: 5px 15px; border-radius: 20px; font-size: 0.8rem; font-weight: bold;">🏛️ BADAN PUSAT STATISTIK</span>
-        <h1>Portal Integrasi Data E-Commerce - Shopee</h1>
-        <p>Sistem ekstraksi, pembersihan, dan penggabungan multi-file otomatis</p>
+    <div class="banner-shopee">
+        <div style="font-size: 0.85rem; font-weight: bold; letter-spacing: 1px; color: #93c5fd; margin-bottom: 5px;">🏛️ BADAN PUSAT STATISTIK</div>
+        <h1>Dashboard UMKM - Shopee</h1>
+        <p>Pengolahan Data E-Commerce Multi-File Berbasis Lokasi Shopee</p>
     </div>
     """, unsafe_allow_html=True)
 
@@ -79,11 +72,11 @@ if halaman == "🟠 Shopee":
         files_shopee = st.file_uploader("Unggah CSV Shopee", type=["csv"], accept_multiple_files=True, key="file_shp")
         mode_api_shp = st.checkbox("🔍 Deteksi Nama Toko via API", key="api_shp")
         
-        if st.button("🚀 Mulai Pemrosesan Shopee", use_container_width=True):
+        if st.button("🚀 Proses Shopee", type="primary", use_container_width=True):
             if not files_shopee:
-                st.error("⚠️ Unggah file CSV Shopee terlebih dahulu!")
+                st.error("⚠️ Unggah file CSV Shopee dulu!")
             else:
-                with st.spinner("Menjalankan algoritma standarisasi BPS..."):
+                with st.spinner("Memproses seluruh data Shopee..."):
                     try:
                         hasil, total_baris, err_h = [], 0, 0
                         bar = st.progress(0)
@@ -122,67 +115,53 @@ if halaman == "🟠 Shopee":
                         bar.empty()
                         st.session_state.data_shopee = pd.DataFrame(hasil)
                         st.session_state.audit_shopee = {"total": total_baris, "valid": len(hasil), "file_count": len(files_shopee), "error_harga": err_h}
-                        st.success(f"✅ Selesai! {len(hasil):,} data Shopee tervalidasi.".replace(",", "."))
+                        st.success(f"✅ {len(hasil)} data Shopee berhasil diekstrak!")
                     except Exception as e:
-                        st.error(f"❌ Terjadi kesalahan! Detail: {e}")
+                        st.error(f"Error Sistem: {e}")
 
     df_shp = st.session_state.data_shopee
     if df_shp is not None and not df_shp.empty:
-        st.markdown("### 🔎 Filter Data Shopee")
-        col_f1, col_f2 = st.columns(2)
-        with col_f1: f_wil = st.multiselect("Pilih Wilayah:", options=sorted(df_shp["Wilayah"].unique()), default=sorted(df_shp["Wilayah"].unique()), key="f_wil_shp")
-        with col_f2: 
-            max_h = int(df_shp["Harga"].max()) if df_shp["Harga"].max() > 0 else 1000000
-            f_hrg = st.slider("Rentang Harga (Rp)", 0, max_h, (0, max_h), key="f_hrg_shp")
-
-        df_f = df_shp[df_shp["Wilayah"].isin(f_wil) & (df_shp["Harga"] >= f_hrg[0]) & (df_shp["Harga"] <= f_hrg[1])]
+        f_wil = st.multiselect("Pilih Wilayah (Lokasi Asli):", options=sorted(df_shp["Wilayah"].unique()), default=sorted(df_shp["Wilayah"].unique()), key="f_wil_shp")
+        df_f = df_shp[df_shp["Wilayah"].isin(f_wil)]
+        st.write("---")
         
-        tab1, tab2, tab3 = st.tabs(["📊 Dashboard", "🗄️ Database & Export Excel", "📑 Audit Data"])
-        
+        tab1, tab2, tab3 = st.tabs(["📊 Executive Dashboard", "🗄️ Database Siap Ekspor", "📑 Log Penggabungan"])
         with tab1:
-            st.markdown("<br>", unsafe_allow_html=True)
-            k1, k2, k3, k4 = st.columns(4)
-            k1.metric("🏪 Total UMKM", f"{len(df_f):,}".replace(",", "."))
-            k2.metric("💰 Rata-rata Harga", f"Rp {df_f['Harga'].mean():,.0f}".replace(",", ".") if not df_f.empty else "Rp 0")
-            k3.metric("📈 Harga Tertinggi", f"Rp {df_f['Harga'].max():,.0f}".replace(",", ".") if not df_f.empty else "Rp 0")
-            k4.metric("🗺️ Cakupan Wilayah", f"{df_f['Wilayah'].nunique()} Lokasi")
-            
+            c1, c2, c3 = st.columns(3)
+            c1.metric("Total Data Tampil", f"{len(df_f):,}".replace(",", "."))
+            c2.metric("Rata-rata Harga", f"Rp {df_f['Harga'].mean():,.0f}".replace(",", ".") if not df_f.empty else "Rp 0")
+            c3.metric("Titik Lokasi", f"{df_f['Wilayah'].nunique()}")
             if not df_f.empty:
                 g1, g2 = st.columns(2)
-                with g1: st.plotly_chart(px.pie(df_f, names="Wilayah", title="Distribusi UMKM per Lokasi", hole=0.4, color_discrete_sequence=px.colors.sequential.Blues_r), use_container_width=True)
+                with g1: st.plotly_chart(px.pie(df_f, names="Wilayah", title="Sebaran UMKM per Lokasi", hole=0.4, color_discrete_sequence=px.colors.sequential.Blues_r), use_container_width=True)
                 with g2: st.plotly_chart(px.bar(df_f.groupby("Wilayah").size().reset_index(name='Jumlah'), x="Wilayah", y="Jumlah", title="Total Usaha per Wilayah", color="Wilayah", color_discrete_sequence=px.colors.sequential.Blues_r), use_container_width=True)
-        
         with tab2:
-            st.markdown("#### 📋 Tabel Data Tervalidasi")
             df_view = df_f.copy()
             df_view["Harga"] = df_view["Harga"].apply(lambda x: f"Rp {x:,.0f}".replace(",", "."))
             st.dataframe(df_view, use_container_width=True, hide_index=True, height=350)
-            
             if not df_f.empty:
                 buf = io.BytesIO()
-                with pd.ExcelWriter(buf, engine="xlsxwriter") as writer: df_f.to_excel(writer, index=False, sheet_name="Data Shopee")
-                st.download_button("⬇️ Download Excel Shopee", data=buf.getvalue(), file_name=f"Laporan_BPS_Shopee.xlsx")
-        
+                with pd.ExcelWriter(buf, engine="xlsxwriter") as writer:
+                    df_f.to_excel(writer, index=False, sheet_name="Data Shopee")
+                    wb, ws = writer.book, writer.sheets["Data Shopee"]
+                    for col_num, value in enumerate(df_f.columns.values): ws.write(0, col_num, value, wb.add_format({'bold': True, 'bg_color': '#022a5e', 'font_color': 'white'}))
+                    ws.set_column('A:A', 25); ws.set_column('B:B', 50); ws.set_column('C:C', 18, wb.add_format({'num_format': '#,##0'})); ws.set_column('D:D', 30); ws.set_column('E:E', 50)
+                st.download_button("⬇️ Download Excel Shopee", data=buf.getvalue(), file_name=f"UMKM_Shopee_{datetime.date.today()}.xlsx", type="primary")
         with tab3:
             audit = st.session_state.audit_shopee
-            st.success(f"File Diproses: {audit.get('file_count')} | Data Mentah: {audit.get('total')} | Valid: {audit.get('valid')}")
+            st.info(f"**📂 Jumlah File Diproses:** {audit.get('file_count',0)} File CSV")
+            st.success(f"**📥 Total Baris Data Ditarik:** {audit.get('valid',0)} Baris")
+            st.warning(f"**🛠️ Perbaikan Format Harga:** {audit.get('error_harga',0)} Baris")
 
 # ==============================================================================
 #                             HALAMAN TOKOPEDIA
 # ==============================================================================
 elif halaman == "🟢 Tokopedia":
     st.markdown("""
-    <style>
-    .stTabs [aria-selected="true"] { color: #059669 !important; border-bottom-color: #059669 !important; }
-    div[data-testid="metric-container"] { border-left-color: #059669 !important; }
-    </style>
-    """, unsafe_allow_html=True)
-
-    st.markdown("""
-    <div class="header-tokped">
-        <span style="background: rgba(255,255,255,0.2); padding: 5px 15px; border-radius: 20px; font-size: 0.8rem; font-weight: bold;">🏛️ BADAN PUSAT STATISTIK</span>
-        <h1>Portal Integrasi Data E-Commerce - Tokopedia</h1>
-        <p>Sistem Deep Scanner dengan perbaikan filter Lokasi vs Judul</p>
+    <div class="banner-tokped">
+        <div style="font-size: 0.85rem; font-weight: bold; letter-spacing: 1px; color: #a7f3d0; margin-bottom: 5px;">🏛️ BADAN PUSAT STATISTIK</div>
+        <h1>Dashboard UMKM - Tokopedia</h1>
+        <p>Pengolahan Data E-Commerce Multi-File Berbasis Lokasi Tokopedia</p>
     </div>
     """, unsafe_allow_html=True)
 
@@ -190,12 +169,11 @@ elif halaman == "🟢 Tokopedia":
         st.header("📥 Input Data Tokopedia")
         files_tokped = st.file_uploader("Unggah CSV Tokopedia", type=["csv"], accept_multiple_files=True, key="file_tkp")
         
-        st.markdown('<style>div[data-testid="stButton"] button {background: linear-gradient(135deg, #064e3b 0%, #10b981 100%) !important;}</style>', unsafe_allow_html=True)
-        if st.button("🚀 Mulai Pemrosesan Tokopedia", use_container_width=True):
+        if st.button("🚀 Proses Tokopedia", type="primary", use_container_width=True):
             if not files_tokped:
-                st.error("⚠️ Unggah file CSV Tokopedia terlebih dahulu!")
+                st.error("⚠️ Unggah file CSV Tokopedia dulu!")
             else:
-                with st.spinner("Memisahkan Babi Panggang dari Nama Kota..."):
+                with st.spinner("Memindai radar Tokopedia..."):
                     try:
                         hasil, total_baris, err_h = [], 0, 0
                         bar = st.progress(0)
@@ -204,95 +182,76 @@ elif halaman == "🟢 Tokopedia":
                             df_raw = pd.read_csv(file, dtype=str, on_bad_lines="skip")
                             total_baris += len(df_raw)
                             
-                            for _, row in df_raw.iterrows():
-                                links, names, prices, locs, shops = [], [], [], [], []
-                                
-                                for col in df_raw.columns:
-                                    val = str(row[col]).strip()
-                                    if val == 'nan' or val == '': continue
-                                    
-                                    # LOGIKA BARU: MEMBEDAKAN LOKASI DAN NAMA PRODUK DARI PANJANG TEKS
-                                    val_lower = val.lower()
-                                    
-                                    # Deteksi Link
-                                    if 'tokopedia.com/' in val_lower and 'extparam' in val_lower: links.append(val)
-                                    # Deteksi Harga
-                                    elif 'rp' in val_lower and any(c.isdigit() for c in val): prices.append(val)
-                                    # Deteksi Nama Toko (Tidak mengandung spasi banyak atau nama pendek)
-                                    elif len(val) <= 20 and 'terjual' not in val_lower and 'rp' not in val_lower and 'http' not in val_lower:
-                                        # Kemungkinan Nama Toko atau Lokasi
-                                        if any(k in val_lower for k in ['pangkal', 'bangka', 'belitung', 'jakarta', 'bogor', 'mojokerto', 'tangerang', 'bandung', 'bekasi', 'medan', 'surabaya', 'semarang', 'palembang']):
-                                            locs.append(val)
-                                        else:
-                                            if not any(c.isdigit() for c in val): shops.append(val)
-                                    # Deteksi Nama Produk (Pasti teksnya panjang > 20 huruf)
-                                    elif len(val) > 20 and 'http' not in val_lower:
-                                        names.append(val)
+                            # RADAR KHUSUS KODE ALIEN TOKOPEDIA 
+                            col_links = [c for c in df_raw.columns if 'Ui5' in c]
+                            col_namas = [c for c in df_raw.columns if '+tnoqZhn' in c]
+                            col_hargas = [c for c in df_raw.columns if 'urMOIDHH' in c]
+                            col_lokasis = [c for c in df_raw.columns if 'gxi+fs' in c]
+                            col_tokos = [c for c in df_raw.columns if 'si3CN' in c]
+                            
+                            # Mencari berapa maksimal produk dalam 1 baris
+                            max_items = min(len(col_links), len(col_namas), len(col_hargas), len(col_lokasis), len(col_tokos))
+                            if max_items == 0: max_items = 1
 
-                                # Menyatukan (Unrolling) baris menyamping
-                                for k in range(len(links)):
+                            for i in range(len(df_raw)):
+                                for j in range(max_items):
                                     try:
-                                        h_raw = prices[k] if k < len(prices) else "0"
-                                        h_fix = int(re.sub(r"[^\d]", "", h_raw))
-                                        if h_fix == 0: continue
+                                        link = str(df_raw.iloc[i][col_links[j]]) if len(col_links) > j else "nan"
+                                        nama = str(df_raw.iloc[i][col_namas[j]]) if len(col_namas) > j else "nan"
+                                        harga_str = str(df_raw.iloc[i][col_hargas[j]]) if len(col_hargas) > j else "0"
+                                        lokasi_tokped = str(df_raw.iloc[i][col_lokasis[j]]).title() if len(col_lokasis) > j else "-"
+                                        toko = str(df_raw.iloc[i][col_tokos[j]]) if len(col_tokos) > j else "Toko CSV"
                                         
-                                        hasil.append({
-                                            "Nama Toko": shops[k] if k < len(shops) else "Toko Tokopedia",
-                                            "Nama Produk": names[k] if k < len(names) else "Produk Tokopedia",
-                                            "Harga": h_fix,
-                                            "Wilayah": locs[k].title() if k < len(locs) else "Tidak Terdeteksi",
-                                            "Link": links[k]
-                                        })
-                                    except: continue
+                                        # Jika kosong/nan, skip produk ini
+                                        if link == 'nan' or nama == 'nan':
+                                            continue
+                                            
+                                        try: val_h = int(re.sub(r"[^\d]", "", harga_str))
+                                        except: val_h, err_h = 0, err_h + 1
+                                        
+                                        hasil.append({"Nama Toko": toko, "Nama Produk": nama, "Harga": val_h, "Wilayah": lokasi_tokped, "Link": link})
+                                    except:
+                                        continue
                             bar.progress((idx + 1) / len(files_tokped))
                         
                         bar.empty()
-                        df_final = pd.DataFrame(hasil).drop_duplicates()
-                        st.session_state.data_tokped = df_final
-                        st.session_state.audit_tokped = {"total": total_baris, "valid": len(df_final), "file_count": len(files_tokped), "error_harga": err_h}
-                        st.success(f"✅ Berhasil memisahkan data! {len(df_final):,} produk ditarik.")
+                        st.session_state.data_tokped = pd.DataFrame(hasil)
+                        st.session_state.audit_tokped = {"total": total_baris, "valid": len(hasil), "file_count": len(files_tokped), "error_harga": err_h}
+                        st.success(f"✅ {len(hasil)} data berhasil diekstrak dari {len(files_tokped)} file Tokopedia!")
                     except Exception as e:
-                        st.error(f"❌ Terjadi kesalahan Tokopedia! Detail: {e}")
+                        st.error(f"Error Sistem Tokopedia: {e}")
 
     df_tkp = st.session_state.data_tokped
     if df_tkp is not None and not df_tkp.empty:
-        st.markdown("### 🔎 Filter Data Tokopedia")
-        col_f1, col_f2 = st.columns(2)
-        with col_f1: f_wil = st.multiselect("Pilih Wilayah:", options=sorted(df_tkp["Wilayah"].unique()), default=sorted(df_tkp["Wilayah"].unique()), key="f_wil_tkp")
-        with col_f2: 
-            max_h = int(df_tkp["Harga"].max()) if df_tkp["Harga"].max() > 0 else 1000000
-            f_hrg = st.slider("Rentang Harga (Rp)", 0, max_h, (0, max_h), key="f_hrg_tkp")
-
-        df_f = df_tkp[df_tkp["Wilayah"].isin(f_wil) & (df_tkp["Harga"] >= f_hrg[0]) & (df_tkp["Harga"] <= f_hrg[1])]
+        f_wil = st.multiselect("Pilih Wilayah (Lokasi Asli):", options=sorted(df_tkp["Wilayah"].unique()), default=sorted(df_tkp["Wilayah"].unique()), key="f_wil_tkp")
+        df_f = df_tkp[df_tkp["Wilayah"].isin(f_wil)]
+        st.write("---")
         
-        tab1, tab2, tab3 = st.tabs(["📊 Executive Dashboard", "🗄️ Database Siap Ekspor", "📑 Audit Scan"])
-        
+        tab1, tab2, tab3 = st.tabs(["📊 Executive Dashboard", "🗄️ Database Siap Ekspor", "📑 Log Penggabungan"])
         with tab1:
-            st.markdown("<br>", unsafe_allow_html=True)
-            k1, k2, k3, k4 = st.columns(4)
-            k1.metric("🛒 Total Produk", f"{len(df_f):,}".replace(",", "."))
-            k2.metric("💰 Rata-rata Harga", f"Rp {df_f['Harga'].mean():,.0f}".replace(",", ".") if not df_f.empty else "Rp 0")
-            k3.metric("📈 Harga Tertinggi", f"Rp {df_f['Harga'].max():,.0f}".replace(",", ".") if not df_f.empty else "Rp 0")
-            k4.metric("🗺️ Cakupan Wilayah", f"{df_f['Wilayah'].nunique()} Lokasi")
-            
+            c1, c2, c3 = st.columns(3)
+            c1.metric("Total Data Tampil", f"{len(df_f):,}".replace(",", "."))
+            c2.metric("Rata-rata Harga", f"Rp {df_f['Harga'].mean():,.0f}".replace(",", ".") if not df_f.empty else "Rp 0")
+            c3.metric("Titik Lokasi", f"{df_f['Wilayah'].nunique()}")
             if not df_f.empty:
-                st.markdown("<hr style='border:1px solid #e2e8f0;'>", unsafe_allow_html=True)
                 g1, g2 = st.columns(2)
-                with g1: st.plotly_chart(px.pie(df_f, names="Wilayah", title="Distribusi Produk per Lokasi", hole=0.4, color_discrete_sequence=px.colors.sequential.Greens_r), use_container_width=True)
-                with g2: st.plotly_chart(px.bar(df_f.groupby("Wilayah").size().reset_index(name='Jumlah'), x="Wilayah", y="Jumlah", title="Total Produk per Wilayah", color="Wilayah", color_discrete_sequence=px.colors.sequential.Greens_r), use_container_width=True)
-        
+                with g1: st.plotly_chart(px.pie(df_f, names="Wilayah", title="Sebaran UMKM per Lokasi", hole=0.4, color_discrete_sequence=px.colors.sequential.Greens_r), use_container_width=True)
+                with g2: st.plotly_chart(px.bar(df_f.groupby("Wilayah").size().reset_index(name='Jumlah'), x="Wilayah", y="Jumlah", title="Total Usaha per Wilayah", color="Wilayah", color_discrete_sequence=px.colors.sequential.Greens_r), use_container_width=True)
         with tab2:
-            st.markdown("#### 📋 Tabel Database (Babi Panggang di Kolom yang Benar!)")
             df_view = df_f.copy()
             df_view["Harga"] = df_view["Harga"].apply(lambda x: f"Rp {x:,.0f}".replace(",", "."))
             st.dataframe(df_view, use_container_width=True, hide_index=True, height=350)
-            
             if not df_f.empty:
                 buf = io.BytesIO()
-                with pd.ExcelWriter(buf, engine="xlsxwriter") as writer: df_f.to_excel(writer, index=False, sheet_name="Data Tokopedia")
-                st.markdown('<style>div[data-testid="stDownloadButton"] button {background: linear-gradient(135deg, #064e3b 0%, #10b981 100%) !important;}</style>', unsafe_allow_html=True)
-                st.download_button("⬇️ Download Excel Resmi (.xlsx)", data=buf.getvalue(), file_name=f"Laporan_BPS_Tokopedia.xlsx")
-        
+                with pd.ExcelWriter(buf, engine="xlsxwriter") as writer:
+                    df_f.to_excel(writer, index=False, sheet_name="Data Tokopedia")
+                    wb, ws = writer.book, writer.sheets["Data Tokopedia"]
+                    for col_num, value in enumerate(df_f.columns.values): ws.write(0, col_num, value, wb.add_format({'bold': True, 'bg_color': '#064e3b', 'font_color': 'white'}))
+                    ws.set_column('A:A', 25); ws.set_column('B:B', 50); ws.set_column('C:C', 18, wb.add_format({'num_format': '#,##0'})); ws.set_column('D:D', 30); ws.set_column('E:E', 50)
+                st.markdown('<style>div[data-testid="stDownloadButton"] button {background-color: #059669; color: white; border:none;}</style>', unsafe_allow_html=True)
+                st.download_button("⬇️ Download Excel Tokopedia", data=buf.getvalue(), file_name=f"UMKM_Tokopedia_{datetime.date.today()}.xlsx")
         with tab3:
             audit = st.session_state.audit_tokped
-            st.success(f"File Diproses: {audit.get('file_count')} | Baris Diekstrak: {audit.get('valid')}")
+            st.info(f"**📂 Jumlah File Diproses:** {audit.get('file_count',0)} File CSV")
+            st.success(f"**📥 Total Data Berhasil Diekstrak:** {audit.get('valid',0)} Produk")
+            st.warning(f"**🛠️ Perbaikan Format Harga:** {audit.get('error_harga',0)} Baris")
