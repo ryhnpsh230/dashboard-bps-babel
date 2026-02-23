@@ -16,7 +16,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# --- 2. CUSTOM CSS ---
+# --- 2. CUSTOM CSS PREMIUM ---
 st.markdown("""
     <style>
     .stApp { background-color: #f4f7fb !important; }
@@ -25,22 +25,21 @@ st.markdown("""
         padding: 30px 40px; border-radius: 12px; margin-bottom: 25px;
         box-shadow: 0 8px 20px rgba(6,30,69,0.15); color: white !important;
     }
-    .premium-header h1 { color: white !important; font-weight: 800; margin-bottom: 5px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-    .premium-header p { color: #e0f2fe !important; font-size: 1.1rem; margin: 0; }
+    .premium-header h1 { color: white !important; font-weight: 800; margin-bottom: 5px; }
+    .premium-header p { color: #e0f2fe !important; margin: 0; }
     div[data-testid="metric-container"] {
         background-color: #ffffff !important; border-left: 5px solid #1565c0 !important;
-        padding: 20px !important; border-radius: 10px !important; box-shadow: 0 4px 10px rgba(0,0,0,0.05) !important;
+        padding: 20px !important; border-radius: 10px !important;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.05) !important;
     }
-    div[data-testid="stMetricLabel"] p { color: #475569 !important; font-weight: 700 !important; text-transform: uppercase; font-size: 0.85rem !important; }
-    div[data-testid="stMetricValue"] { color: #0f172a !important; font-weight: 800 !important; }
     .stButton > button {
-        background: linear-gradient(135deg, #1565c0 0%, #00b4d8 100%) !important; color: white !important;
-        border: none !important; border-radius: 8px !important; height: 3.2em !important; font-weight: bold !important;
+        background: linear-gradient(135deg, #1565c0 0%, #00b4d8 100%) !important;
+        color: white !important; border-radius: 8px !important; font-weight: bold !important;
     }
-    .stDownloadButton > button { background: linear-gradient(135deg, #166534 0%, #22c55e 100%) !important; color: white !important; font-weight: bold !important; border-radius: 8px !important; }
-    .stTabs [data-baseweb="tab-list"] { background-color: #ffffff !important; border-radius: 10px 10px 0 0; padding: 5px 10px 0 10px; }
-    .stTabs [data-baseweb="tab"] { color: #64748b !important; font-weight: 600 !important; }
-    .stTabs [aria-selected="true"] { color: #1565c0 !important; border-bottom-color: #1565c0 !important; }
+    .stDownloadButton > button {
+        background: linear-gradient(135deg, #166534 0%, #22c55e 100%) !important;
+        color: white !important; border-radius: 8px !important;
+    }
     </style>
     """, unsafe_allow_html=True)
 
@@ -50,296 +49,160 @@ if "data_bersih" not in st.session_state:
 if "audit_data" not in st.session_state:
     st.session_state.audit_data = {}
 
-# --- 4. HEADER MEWAH ---
+# --- 4. HEADER ---
 st.markdown("""
 <div class="premium-header">
     <span style="background: rgba(255,255,255,0.2); padding: 5px 15px; border-radius: 20px; font-size: 0.8rem; font-weight: bold;">🏛️ BADAN PUSAT STATISTIK</span>
     <h1>Portal Integrasi Data E-Commerce UMKM</h1>
-    <p>Sistem ekstraksi, pembersihan, dan standarisasi pelaporan statistik Prov. Kep. Bangka Belitung</p>
+    <p>Sistem ekstraksi dan pembersihan data UMKM Provinsi Kepulauan Bangka Belitung</p>
 </div>
 """, unsafe_allow_html=True)
 
-# --- 5. SIDEBAR (PANEL KIRI) ---
+# --- 5. SIDEBAR ---
 with st.sidebar:
     if os.path.exists("logo.png"):
         st.image("logo.png", use_container_width=True)
-    elif os.path.exists("logo.jpg"):
-        st.image("logo.jpg", use_container_width=True)
     else:
-        st.info("💡 Taruh gambar 'logo.png' di folder aplikasi untuk menampilkan logo BPS.")
+        st.info("💡 Taruh 'logo.png' di folder aplikasi.")
     
     st.markdown("---")
     st.markdown("### 📥 Input Data")
     uploaded_file = st.file_uploader("Upload CSV Shopee", type=["csv"])
     
-    st.markdown("### ⚙️ Konfigurasi")
-    mode_api = st.checkbox("🔍 Deteksi Nama Toko via API", help="Mengambil nama asli toko dari database Shopee. Butuh internet lancar.")
+    mode_api = st.checkbox("🔍 Deteksi Nama Toko via API")
     
-    st.write("---")
     if st.button("🚀 Mulai Pemrosesan Data", use_container_width=True):
         if uploaded_file is None:
-            st.error("⚠️ Silakan upload file CSV terlebih dahulu!")
+            st.error("⚠️ Upload file CSV dulu!")
         else:
-            with st.spinner("Menjalankan radar standarisasi BPS..."):
+            with st.spinner("Menjalankan Radar BPS..."):
                 try:
-                    # Membaca CSV dengan pendeteksi pemisah koma/titik koma otomatis
-                    try:
-                        df_raw = pd.read_csv(uploaded_file, sep=',', dtype=str, on_bad_lines='skip')
-                        if len(df_raw.columns) < 5: 
-                            uploaded_file.seek(0)
-                            df_raw = pd.read_csv(uploaded_file, sep=';', dtype=str, on_bad_lines='skip')
-                    except Exception:
-                        uploaded_file.seek(0)
-                        df_raw = pd.read_csv(uploaded_file, sep=';', dtype=str, on_bad_lines='skip')
+                    df_raw = pd.read_csv(uploaded_file, dtype=str, on_bad_lines="skip")
                     
-                    # --- RADAR DETEKSI KOLOM OTOMATIS ---
-                    col_link = df_raw.columns[0]
-                    col_nama = df_raw.columns[3] if len(df_raw.columns) > 3 else df_raw.columns[0]
-                    col_harga = df_raw.columns[5] if len(df_raw.columns) > 5 else df_raw.columns[0]
-                    col_wilayah = df_raw.columns[11] if len(df_raw.columns) > 11 else df_raw.columns[-1]
-
-                    for col in df_raw.columns:
-                        c_low = str(col).lower()
-                        if any(x in c_low for x in ['url', 'link', 'tautan']): col_link = col
-                        elif any(x in c_low for x in ['nama', 'produk', 'name', 'item']): col_nama = col
-                        elif any(x in c_low for x in ['harga', 'price']): col_harga = col
-                        elif any(x in c_low for x in ['lokasi', 'kota', 'wilayah', 'location', 'tempat', 'shop']): col_wilayah = col
-                    # ------------------------------------
+                    # --- RADAR DETEKSI KOLOM (Mendukung Format shopee (5).csv) ---
+                    col_link, col_nama, col_harga, col_wilayah = None, None, None, None
+                    for c in df_raw.columns:
+                        low = c.lower()
+                        if 'href' in low and 'contents' in low: col_link = c
+                        if 'whitespace-normal' in low: col_nama = c
+                        if 'font-medium 2' in low: col_harga = c
+                        if 'ml-[3px]' in low: col_wilayah = c
+                    
+                    # Fallback jika nama kolom standar
+                    if not col_link: col_link = df_raw.columns[0]
+                    if not col_nama: col_nama = df_raw.columns[3] if len(df_raw.columns) > 3 else df_raw.columns[0]
+                    if not col_harga: col_harga = df_raw.columns[4] if len(df_raw.columns) > 4 else df_raw.columns[0]
+                    if not col_wilayah: col_wilayah = df_raw.columns[7] if len(df_raw.columns) > 7 else df_raw.columns[-1]
 
                     hasil = []
-                    kota_bangka = ["Bangka", "Pangkal Pinang", "Pangkalpinang", "Sungailiat", "Toboali", "Mentok", "Koba"]
+                    target_babel = ["bangka", "pangkal pinang", "pangkalpinang", "sungailiat", "toboali", "mentok", "koba", "belitung"]
                     
-                    total_baris = len(df_raw)
-                    luar_wilayah = 0
-                    error_harga = 0
-                    
+                    t_rows = len(df_raw)
+                    luar, err_h = 0, 0
                     bar = st.progress(0)
                     
-                    for i in range(total_baris):
-                        # Ekstraksi menggunakan nama kolom (Anti-Geser)
-                        link        = str(df_raw.iloc[i][col_link])
-                        nama_produk = str(df_raw.iloc[i][col_nama])
-                        harga_raw   = str(df_raw.iloc[i][col_harga])
-                        wilayah_raw = str(df_raw.iloc[i][col_wilayah])
+                    for i in range(t_rows):
+                        link = str(df_raw.iloc[i][col_link])
+                        nama = str(df_raw.iloc[i][col_nama])
+                        harga_str = str(df_raw.iloc[i][col_harga])
+                        wilayah_str = str(df_raw.iloc[i][col_wilayah])
                         
-                        # SAPU JAGAT: Satukan semua teks di baris ini untuk berjaga-jaga
-                        semua_teks = " ".join(df_raw.iloc[i, :].fillna("").astype(str).values).lower()
-                        
-                        # Fix Harga
+                        # Fix Harga (Hapus titik/Rp)
                         try:
-                            angka = re.sub(r"[^\d]", "", harga_raw)
-                            harga = int(angka) if angka else 0
-                            if 0 < harga < 1000:
-                                harga *= 1000
+                            val_h = int(re.sub(r"[^\d]", "", harga_str))
+                            if 0 < val_h < 1000: val_h *= 1000
                         except:
-                            harga = 0
-                            error_harga += 1
-                            
-                        # Filter Wilayah SUPER AMAN
-                        wilayah_final = "Luar Wilayah"
-                        for k in kota_bangka:
-                            # Mengecek di kolom spesifik ATAU di seluruh baris data tersebut
-                            if k.lower() in wilayah_raw.lower() or k.lower() in semua_teks:
-                                wilayah_final = "Kota Pangkalpinang" if "pangkal" in k.lower() else f"Kab. {k.title()}"
-                                break
-                                
-                        if wilayah_final == "Luar Wilayah":
-                            luar_wilayah += 1
-                            continue
-                            
-                        # API Nama Toko
-                        nama_toko = "Tidak Dilacak"
-                        if mode_api:
-                            m = re.search(r"i\.(\d+)\.", link)
-                            if m:
-                                try:
-                                    r = requests.get(f"https://shopee.co.id/api/v4/shop/get_shop_base?shopid={m.group(1)}", headers={"User-Agent": "Mozilla/5.0"}, timeout=2)
-                                    if r.status_code == 200:
-                                        nama_toko = r.json().get("data", {}).get("name", "Nama Disembunyikan")
-                                except:
-                                    pass
-                                    
-                        hasil.append({
-                            "Nama Toko": nama_toko, 
-                            "Nama Produk": nama_produk, 
-                            "Harga": harga, 
-                            "Wilayah": wilayah_final, 
-                            "Link": link
-                        })
+                            val_h = 0
+                            err_h += 1
                         
-                        bar.progress((i + 1) / total_baris)
+                        # Filter Wilayah
+                        v_final = "Luar Wilayah"
+                        for k in target_babel:
+                            if k in wilayah_str.lower() or k in nama.lower():
+                                v_final = "Kota Pangkalpinang" if "pangkal" in k else f"Kab. {k.title()}"
+                                break
+                        
+                        if v_final == "Luar Wilayah":
+                            luar += 1
+                            continue
+                        
+                        # API Nama Toko (Opsional)
+                        toko = "Tidak Dilacak"
+                        if mode_api:
+                            match = re.search(r"i\.(\d+)\.", link)
+                            if match:
+                                try:
+                                    res = requests.get(f"https://shopee.co.id/api/v4/shop/get_shop_base?shopid={match.group(1)}", headers={"User-Agent":"Mozilla/5.0"}, timeout=2)
+                                    if res.status_code == 200: toko = res.json().get("data",{}).get("name", "Anonim")
+                                except: pass
+
+                        hasil.append({"Nama Toko": toko, "Nama Produk": nama, "Harga": val_h, "Wilayah": v_final, "Link": link})
+                        bar.progress((i + 1) / t_rows)
                     
                     bar.empty()
-                    
-                    if len(hasil) > 0:
-                        st.session_state.data_bersih = pd.DataFrame(hasil)
-                    else:
-                        st.session_state.data_bersih = pd.DataFrame(columns=["Nama Toko", "Nama Produk", "Harga", "Wilayah", "Link"])
-                        
-                    st.session_state.audit_data = {"total": total_baris, "valid": len(hasil), "luar": luar_wilayah, "error_harga": error_harga}
-                    st.success(f"✅ Selesai! {len(hasil):,} data tervalidasi.".replace(",", "."))
-                    
+                    st.session_state.data_bersih = pd.DataFrame(hasil)
+                    st.session_state.audit_data = {"total": t_rows, "valid": len(hasil), "luar": luar, "error_harga": err_h}
+                    st.success(f"Berhasil memproses {len(hasil)} data.")
                 except Exception as e:
-                    st.error(f"❌ Terjadi kesalahan sistem: {str(e)}")
+                    st.error(f"Error: {e}")
 
-    st.caption(f"🗓️ Update: {datetime.datetime.now().strftime('%d %b %Y %H:%M')}")
-
-# --- 6. JIKA BELUM ADA DATA ---
-if st.session_state.data_bersih is None:
-    st.markdown("""
-    <div style="background: white; border: 2px dashed #cbd5e1; border-radius: 15px; padding: 60px 20px; text-align: center; margin-top: 20px;">
-        <h1 style="font-size: 3rem; margin: 0;">📊</h1>
-        <h3 style="color: #0f172a; font-family: sans-serif;">Workspace Kosong</h3>
-        <p style="color: #64748b;">Silakan unggah file CSV Shopee di panel sebelah kiri untuk memulai.</p>
-    </div>
-    """, unsafe_allow_html=True)
-    st.stop()
-
-# --- 7. DASHBOARD UTAMA (JIKA ADA DATA) ---
-df = st.session_state.data_bersih
-
-if df.empty:
-    st.warning("⚠️ Proses selesai, tetapi **0 data yang valid** ditemukan. Seluruh data terbuang karena tidak ada kota Bangka Belitung yang terdeteksi.")
-    audit = st.session_state.audit_data
-    st.info(f"**Total Data Dibaca:** {audit.get('total', 0)} baris | **Dibuang (Luar Wilayah):** {audit.get('luar', 0)} baris")
-    st.stop()
-
-st.markdown("### 🔎 Filter Data")
-col_f1, col_f2 = st.columns(2)
-with col_f1:
-    filter_wilayah = st.multiselect("Pilih Wilayah (Kab/Kota)", options=sorted(df["Wilayah"].unique()), default=sorted(df["Wilayah"].unique()))
-with col_f2:
-    max_h = int(df["Harga"].max()) if not df.empty and df["Harga"].max() > 0 else 1000000
-    filter_harga = st.slider("Rentang Harga (Rp)", 0, max_h, (0, max_h))
-
-df_f = df[df["Wilayah"].isin(filter_wilayah) & (df["Harga"] >= filter_harga[0]) & (df["Harga"] <= filter_harga[1])]
-
-tab1, tab2, tab3 = st.tabs(["📊 Executive Dashboard", "🗄️ Database & Export Excel", "📑 Audit Data"])
-
-# ============ TAB 1: GRAFIK ============
-with tab1:
-    st.markdown("<br>", unsafe_allow_html=True)
-    k1, k2, k3, k4 = st.columns(4)
-    rata = df_f["Harga"].mean() if not df_f.empty else 0
-    maks = df_f["Harga"].max()  if not df_f.empty else 0
-    
-    k1.metric("🏪 Total UMKM", f"{len(df_f):,}".replace(",", "."))
-    k2.metric("💰 Rata-rata Harga", f"Rp {rata:,.0f}".replace(",", "."))
-    k3.metric("📈 Harga Tertinggi", f"Rp {maks:,.0f}".replace(",", "."))
-    k4.metric("🗺️ Cakupan Wilayah", f"{df_f['Wilayah'].nunique()} Kab/Kota")
-    
-    if not df_f.empty:
-        st.markdown("<hr style='border:1px solid #e2e8f0;'>", unsafe_allow_html=True)
-        g1, g2 = st.columns(2)
-        with g1:
-            fig_d = px.pie(df_f, names="Wilayah", title="Distribusi UMKM per Wilayah", hole=0.4, color_discrete_sequence=px.colors.sequential.Blues_r)
-            st.plotly_chart(fig_d, use_container_width=True)
-        with g2:
-            fig_b = px.box(df_f, x="Wilayah", y="Harga", title="Statistik Sebaran Harga", color="Wilayah", color_discrete_sequence=px.colors.sequential.Blues_r)
-            st.plotly_chart(fig_b, use_container_width=True)
-
-# ============ TAB 2: EXPORT EXCEL ============
-with tab2:
-    st.markdown("#### 📋 Tabel Data Tervalidasi")
-    
-    if df_f.empty:
-        st.warning("Data kosong berdasarkan filter saat ini.")
+# --- 6. DISPLAY ---
+if st.session_state.data_bersih is not None:
+    df = st.session_state.data_bersih
+    if df.empty:
+        st.warning("⚠️ Data valid tidak ditemukan.")
     else:
-        df_show = df_f.copy()
-        df_show["Harga"] = df_show["Harga"].apply(lambda x: f"Rp {x:,.0f}".replace(",", "."))
-        st.dataframe(df_show, use_container_width=True, height=350, hide_index=True)
+        st.markdown("### 🔎 Filter Data")
+        c_f1, c_f2 = st.columns(2)
+        with c_f1:
+            f_wil = st.multiselect("Wilayah", options=sorted(df["Wilayah"].unique()), default=sorted(df["Wilayah"].unique()))
+        with c_f2:
+            f_hrg = st.slider("Harga (Rp)", 0, int(df["Harga"].max()), (0, int(df["Harga"].max())))
 
-        buf = io.BytesIO()
-        with pd.ExcelWriter(buf, engine="xlsxwriter") as writer:
-            df_f.to_excel(writer, index=False, sheet_name="Data UMKM")
-            workbook = writer.book
-            worksheet = writer.sheets["Data UMKM"]
+        df_f = df[df["Wilayah"].isin(f_wil) & (df["Harga"] >= f_hrg[0]) & (df["Harga"] <= f_hrg[1])]
+        
+        t1, t2, t3 = st.tabs(["📊 Dashboard", "🗄️ Database", "📑 Audit"])
+        
+        with t1:
+            c1, c2, c3 = st.columns(3)
+            c1.metric("Total UMKM", len(df_f))
+            c2.metric("Rata-rata Harga", f"Rp {df_f['Harga'].mean():,.0f}".replace(",","."))
+            c3.metric("Cakupan", f"{df_f['Wilayah'].nunique()} Area")
             
-            header_format = workbook.add_format({'bold': True, 'bg_color': '#061E45', 'font_color': 'white', 'border': 1, 'align': 'center'})
-            cell_format = workbook.add_format({'border': 1})
-            currency_format = workbook.add_format({'border': 1, 'num_format': '#,##0'})
-            
-            for col_num, value in enumerate(df_f.columns.values):
-                worksheet.write(0, col_num, value, header_format)
-                
-            worksheet.set_column("A:A", 25, cell_format)
-            worksheet.set_column("B:B", 50, cell_format)
-            worksheet.set_column("C:C", 15, currency_format) 
-            worksheet.set_column("D:D", 25, cell_format)
-            worksheet.set_column("E:E", 50, cell_format)
-            worksheet.autofilter(0, 0, len(df_f), len(df_f.columns) - 1)
-            
-        st.download_button(
-            label="⬇️ Download Excel Resmi (.xlsx)", 
-            data=buf.getvalue(), 
-            file_name=f"Laporan_BPS_UMKM_{datetime.datetime.now().strftime('%Y%m%d')}.xlsx", 
-            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            use_container_width=True
-        )
+            g1, g2 = st.columns(2)
+            with g1:
+                st.plotly_chart(px.pie(df_f, names="Wilayah", title="Sebaran UMKM", hole=0.4), use_container_width=True)
+            with g2:
+                st.plotly_chart(px.box(df_f, x="Wilayah", y="Harga", title="Statistik Harga"), use_container_width=True)
 
-# ============ TAB 3: AUDIT DATA ============
-with tab3:
-    st.markdown("<br>", unsafe_allow_html=True)
-    audit = st.session_state.audit_data
-    
-    total = int(audit.get('total', 0))
-    valid = int(audit.get('valid', 0))
-    luar = int(audit.get('luar', 0))
-    err_h = int(audit.get('error_harga', 0))
-    
-    valid_pct = (valid / total * 100) if total > 0 else 0
-    
-    total_str = f"{total:,}".replace(",", ".")
-    valid_str = f"{valid:,}".replace(",", ".")
-    luar_str = f"{luar:,}".replace(",", ".")
-    err_str = f"{err_h:,}".replace(",", ".")
-    
-    st.markdown("#### 📑 Laporan Kualitas Data (Data Quality Audit)")
-    st.info("Laporan ini menunjukkan tingkat integritas dan kebersihan data setelah melewati algoritma standarisasi BPS.")
-    
-    a1, a2, a3, a4 = st.columns(4)
-    a1.metric("📥 Total Data Mentah", f"{total_str}")
-    a2.metric("🚫 Luar Wilayah (Dibuang)", f"{luar_str}")
-    a3.metric("⚠️ Error Harga (Fix ke 0)", f"{err_str}")
-    a4.metric("✅ Data Valid (Siap Ekspor)", f"{valid_str}")
-    
-    st.write("---")
-    
-    col_g1, col_g2 = st.columns([1, 1], gap="large")
-    
-    with col_g1:
-        st.markdown("<h5 style='text-align: center; color: #475569;'>📈 Tingkat Validitas Data (Yield Rate)</h5>", unsafe_allow_html=True)
-        
-        fig_gauge = go.Figure(go.Indicator(
-            mode = "gauge+number",
-            value = valid_pct,
-            number = {'suffix': "%", 'valueformat': '.1f', 'font': {'size': 45, 'color': '#0f172a'}},
-            gauge = {
-                'axis': {'range': [0, 100], 'tickwidth': 1, 'tickcolor': "darkblue"},
-                'bar': {'color': "#16a34a"}, 
-                'bgcolor': "white",
-                'borderwidth': 2,
-                'bordercolor': "#e2e8f0",
-                'steps': [
-                    {'range': [0, 50], 'color': '#fee2e2'},   
-                    {'range': [50, 80], 'color': '#fef08a'},  
-                    {'range': [80, 100], 'color': '#dcfce3'}  
-                ],
-                'threshold': {
-                    'line': {'color': "#1565c0", 'width': 4},
-                    'thickness': 0.75,
-                    'value': 80 
-                }
-            }
-        ))
-        fig_gauge.update_layout(height=280, margin=dict(t=30, b=10, l=30, r=30), paper_bgcolor="rgba(0,0,0,0)")
-        st.plotly_chart(fig_gauge, use_container_width=True)
-        
-    with col_g2:
-        st.markdown("<h5 style='color: #475569;'>📋 Detail Log Pembersihan Otomatis</h5>", unsafe_allow_html=True)
-        st.write("") 
-        
-        st.info(f"**📥 Data Awal Masuk:** Menerima **{total_str}** baris data mentah dari hasil ekstraksi file CSV Shopee.")
-        st.error(f"**📍 Filter Geospasial:** Sistem menghapus **{luar_str}** baris data karena terdeteksi berada di luar cakupan Provinsi Kepulauan Bangka Belitung.")
-        st.warning(f"**💰 Standarisasi Harga:** Mendeteksi **{err_str}** baris dengan anomali format harga teks. Sistem telah membersihkan dan merapikannya ke format numerik.")
-        st.success(f"**✅ Status Akhir Data:** **{valid_str}** baris berhasil lolos uji validasi dan 100% siap untuk diekspor ke Excel resmi BPS.")
+        with t2:
+            df_view = df_f.copy()
+            df_view["Harga"] = df_view["Harga"].apply(lambda x: f"Rp {x:,.0f}".replace(",","."))
+            st.dataframe(df_view, use_container_width=True, hide_index=True)
+            
+            buf = io.BytesIO()
+            with pd.ExcelWriter(buf, engine="xlsxwriter") as writer:
+                df_f.to_excel(writer, index=False, sheet_name="Data UMKM")
+                wb = writer.book
+                ws = writer.sheets["Data UMKM"]
+                fmt = wb.add_format({'num_format': '#,##0'})
+                ws.set_column('C:C', 15, fmt)
+            
+            st.download_button("⬇️ Download Excel", data=buf.getvalue(), file_name="BPS_Data.xlsx")
+
+        with t3:
+            audit = st.session_state.audit_data
+            a1, a2, a3 = st.columns(3)
+            a1.metric("Total Mentah", audit['total'])
+            a2.metric("Dibuang (Luar Babel)", audit['luar'])
+            a3.metric("Valid", audit['valid'])
+            
+            # Gauge Chart
+            pct = (audit['valid']/audit['total']*100) if audit['total']>0 else 0
+            fig = go.Figure(go.Indicator(mode="gauge+number", value=pct, title={'text': "Tingkat Validitas (%)"}, gauge={'axis': {'range': [0, 100]}, 'bar': {'color': "#16a34a"}}))
+            st.plotly_chart(fig, use_container_width=True)
+            
+            st.info(f"📥 **Log:** Masuk {audit['total']} baris. Terdeteksi {audit['luar']} di luar Babel. {audit['error_harga']} error harga difix.")
+
+else:
+    st.info("👈 Silakan upload file CSV di samping.")
