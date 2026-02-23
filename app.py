@@ -10,641 +10,369 @@ import os
 
 # --- 1. KONFIGURASI HALAMAN ---
 st.set_page_config(
-    page_title="Dashboard UMKM BPS",
+    page_title="BPS · Data UMKM Babel",
     page_icon="🏛️",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# --- 2. CSS CUSTOM (TEMA DINAMIS) ---
+# --- 2. CUSTOM CSS (ANTI BLANK / ANTI BENTROK TEMA) ---
 st.markdown("""
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap');
-    
-    html, body, [class*="css"] {
-        font-family: 'Plus Jakarta Sans', sans-serif;
-    }
-
-    /* Sidebar redesign */
-    section[data-testid="stSidebar"] {
-        background: #0a0f1e;
-        border-right: 1px solid rgba(255,255,255,0.07);
-    }
-    section[data-testid="stSidebar"] * {
-        color: #e2e8f0 !important;
-    }
-    section[data-testid="stSidebar"] .stRadio label {
-        background: rgba(255,255,255,0.05);
-        border-radius: 10px;
-        padding: 10px 14px;
-        margin-bottom: 6px;
-        display: block;
-        transition: all 0.2s ease;
-        border: 1px solid rgba(255,255,255,0.08);
-        font-size: 0.9rem;
-        font-weight: 500;
-    }
-    section[data-testid="stSidebar"] .stRadio label:hover {
-        background: rgba(255,255,255,0.1);
-        border-color: rgba(255,255,255,0.2);
-    }
-
-    .block-container {
-        padding-top: 1.5rem;
-        padding-bottom: 2rem;
-        max-width: 1400px;
+    /* Kunci warna dasar aplikasi agar mengabaikan Dark Mode bawaan laptop */
+    .stApp {
+        background-color: #f4f7fb !important;
     }
     
-    /* ===================== BANNER SHOPEE ===================== */
-    .banner-shopee {
-        position: relative;
-        overflow: hidden;
-        background: linear-gradient(135deg, #011e45 0%, #013d8a 50%, #0056b3 100%);
-        padding: 32px 40px;
-        border-radius: 20px;
-        margin-bottom: 28px;
-        box-shadow: 0 8px 32px rgba(0, 86, 179, 0.35);
-        color: white;
-        border: 1px solid rgba(255,255,255,0.1);
-    }
-    .banner-shopee::before {
-        content: '';
-        position: absolute;
-        top: -60px; right: -60px;
-        width: 280px; height: 280px;
-        background: radial-gradient(circle, rgba(59,130,246,0.25) 0%, transparent 70%);
-        border-radius: 50%;
-    }
-    .banner-shopee::after {
-        content: '';
-        position: absolute;
-        bottom: -80px; left: 30%;
-        width: 220px; height: 220px;
-        background: radial-gradient(circle, rgba(96,165,250,0.15) 0%, transparent 70%);
-        border-radius: 50%;
-    }
-    .banner-shopee .badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        background: rgba(255,255,255,0.12);
-        border: 1px solid rgba(255,255,255,0.2);
-        backdrop-filter: blur(10px);
-        border-radius: 100px;
-        padding: 4px 14px;
-        font-size: 0.72rem;
-        font-weight: 700;
-        letter-spacing: 1.5px;
-        text-transform: uppercase;
-        color: #93c5fd !important;
-        margin-bottom: 14px;
-    }
-    .banner-shopee h1 {
-        color: white !important;
-        font-weight: 800;
-        margin: 0 0 8px 0;
-        font-size: 2.0rem;
-        line-height: 1.2;
-        letter-spacing: -0.5px;
-    }
-    .banner-shopee p {
-        color: rgba(219,234,254,0.8) !important;
-        font-size: 0.95rem;
-        margin: 0;
-        font-weight: 400;
-    }
-
-    /* ===================== BANNER TOKOPEDIA ===================== */
-    .banner-tokped {
-        position: relative;
-        overflow: hidden;
-        background: linear-gradient(135deg, #022c22 0%, #065f46 50%, #059669 100%);
-        padding: 32px 40px;
-        border-radius: 20px;
-        margin-bottom: 28px;
-        box-shadow: 0 8px 32px rgba(5, 150, 105, 0.35);
-        color: white;
-        border: 1px solid rgba(255,255,255,0.1);
-    }
-    .banner-tokped::before {
-        content: '';
-        position: absolute;
-        top: -60px; right: -60px;
-        width: 280px; height: 280px;
-        background: radial-gradient(circle, rgba(52,211,153,0.2) 0%, transparent 70%);
-        border-radius: 50%;
-    }
-    .banner-tokped::after {
-        content: '';
-        position: absolute;
-        bottom: -80px; left: 30%;
-        width: 220px; height: 220px;
-        background: radial-gradient(circle, rgba(110,231,183,0.15) 0%, transparent 70%);
-        border-radius: 50%;
-    }
-    .banner-tokped .badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        background: rgba(255,255,255,0.12);
-        border: 1px solid rgba(255,255,255,0.2);
-        backdrop-filter: blur(10px);
-        border-radius: 100px;
-        padding: 4px 14px;
-        font-size: 0.72rem;
-        font-weight: 700;
-        letter-spacing: 1.5px;
-        text-transform: uppercase;
-        color: #a7f3d0 !important;
-        margin-bottom: 14px;
-    }
-    .banner-tokped h1 {
-        color: white !important;
-        font-weight: 800;
-        margin: 0 0 8px 0;
-        font-size: 2.0rem;
-        line-height: 1.2;
-        letter-spacing: -0.5px;
-    }
-    .banner-tokped p {
-        color: rgba(209,250,229,0.8) !important;
-        font-size: 0.95rem;
-        margin: 0;
-        font-weight: 400;
-    }
-
-    /* ===================== METRIC CARDS ===================== */
-    div[data-testid="stMetric"] {
-        background: linear-gradient(145deg, #ffffff, #f8faff);
-        padding: 20px 22px;
-        border-radius: 16px;
-        box-shadow: 0 2px 12px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04);
-        border: 1px solid rgba(0,0,0,0.05);
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
-    div[data-testid="stMetric"]:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 24px rgba(0,0,0,0.1), 0 2px 6px rgba(0,0,0,0.06);
-    }
-    div[data-testid="stMetric"] label {
-        font-size: 0.78rem !important;
-        font-weight: 600 !important;
-        text-transform: uppercase !important;
-        letter-spacing: 0.8px !important;
-        color: #64748b !important;
-    }
-    div[data-testid="stMetric"] div[data-testid="stMetricValue"] {
-        font-size: 1.7rem !important;
-        font-weight: 800 !important;
-        color: #0f172a !important;
-        font-family: 'Plus Jakarta Sans', sans-serif !important;
-    }
-
-    /* ===================== METRIC ACCENT COLORS ===================== */
-    .metric-blue div[data-testid="stMetric"] {
-        border-left: 4px solid #3b82f6;
-    }
-    .metric-green div[data-testid="stMetric"] {
-        border-left: 4px solid #10b981;
-    }
-
-    /* ===================== TABS ===================== */
-    .stTabs [data-baseweb="tab-list"] {
-        background: #f1f5f9;
+    /* Header Utama */
+    .premium-header {
+        background: linear-gradient(135deg, #061e45 0%, #0d3b7a 60%, #1565c0 100%);
+        padding: 30px 40px;
         border-radius: 12px;
-        padding: 4px;
-        gap: 4px;
-        border: none;
+        margin-bottom: 25px;
+        box-shadow: 0 8px 20px rgba(6,30,69,0.15);
+        color: white !important;
+    }
+    .premium-header h1 {
+        color: white !important;
+        font-weight: 800;
+        margin-bottom: 5px;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    .premium-header p {
+        color: #e0f2fe !important;
+        font-size: 1.1rem;
+        margin: 0;
+    }
+    
+    /* Kartu Metrik (Angka-angka di Dashboard) */
+    div[data-testid="metric-container"] {
+        background-color: #ffffff !important;
+        border-left: 5px solid #1565c0 !important;
+        padding: 20px !important;
+        border-radius: 10px !important;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.05) !important;
+    }
+    div[data-testid="stMetricLabel"] p {
+        color: #475569 !important;
+        font-weight: 700 !important;
+        text-transform: uppercase;
+        font-size: 0.85rem !important;
+    }
+    div[data-testid="stMetricValue"] {
+        color: #0f172a !important;
+        font-weight: 800 !important;
+    }
+
+    /* Tombol Utama */
+    .stButton > button {
+        background: linear-gradient(135deg, #1565c0 0%, #00b4d8 100%) !important;
+        color: white !important;
+        border: none !important;
+        border-radius: 8px !important;
+        height: 3.2em !important;
+        font-weight: bold !important;
+        box-shadow: 0 4px 12px rgba(0,100,200,0.2) !important;
+    }
+    
+    /* Tombol Download */
+    .stDownloadButton > button {
+        background: linear-gradient(135deg, #166534 0%, #22c55e 100%) !important;
+        color: white !important;
+        font-weight: bold !important;
+        border-radius: 8px !important;
+    }
+    
+    /* Tab Menu */
+    .stTabs [data-baseweb="tab-list"] {
+        background-color: #ffffff !important;
+        border-radius: 10px 10px 0 0;
+        padding: 5px 10px 0 10px;
     }
     .stTabs [data-baseweb="tab"] {
-        border-radius: 9px;
-        font-weight: 600;
-        font-size: 0.85rem;
-        padding: 8px 18px;
         color: #64748b !important;
-        background: transparent;
-        border: none;
-        transition: all 0.2s;
+        font-weight: 600 !important;
     }
     .stTabs [aria-selected="true"] {
-        background: white !important;
-        color: #0f172a !important;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    }
-
-    /* ===================== DATAFRAME ===================== */
-    .stDataFrame {
-        border-radius: 12px;
-        overflow: hidden;
-        border: 1px solid #e2e8f0;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-    }
-
-    /* ===================== MULTISELECT ===================== */
-    .stMultiSelect > div {
-        border-radius: 10px;
-    }
-
-    /* ===================== BUTTONS ===================== */
-    .stButton > button, .stDownloadButton > button {
-        border-radius: 10px;
-        font-weight: 600;
-        font-size: 0.88rem;
-        padding: 10px 20px;
-        transition: all 0.2s ease;
-    }
-    .stButton > button[kind="primary"], .stDownloadButton > button[kind="primary"] {
-        box-shadow: 0 4px 14px rgba(59,130,246,0.35);
-    }
-    .stButton > button:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 6px 20px rgba(0,0,0,0.15);
-    }
-
-    /* ===================== FILE UPLOADER ===================== */
-    [data-testid="stFileUploader"] {
-        border-radius: 12px;
-    }
-
-    /* ===================== ALERTS / INFO ===================== */
-    .stAlert {
-        border-radius: 12px;
-    }
-
-    /* ===================== DIVIDER ===================== */
-    hr {
-        border-color: #e2e8f0;
-        margin: 1.5rem 0;
-    }
-
-    /* ===================== SIDEBAR SECTION TITLE ===================== */
-    .sidebar-section-title {
-        font-size: 0.7rem;
-        font-weight: 700;
-        letter-spacing: 1.5px;
-        text-transform: uppercase;
-        color: #64748b !important;
-        margin: 16px 0 8px 0;
-    }
-
-    /* ===================== STAT STRIP ===================== */
-    .stat-strip {
-        display: flex;
-        gap: 12px;
-        align-items: center;
-        background: #f8faff;
-        border: 1px solid #e2e8f0;
-        border-radius: 12px;
-        padding: 14px 20px;
-        margin-bottom: 20px;
-        flex-wrap: wrap;
-    }
-    .stat-strip-item {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        font-size: 0.85rem;
-        color: #475569;
-    }
-    .stat-strip-item strong {
-        color: #0f172a;
-        font-weight: 700;
-    }
-    .stat-dot {
-        width: 6px; height: 6px;
-        border-radius: 50%;
-        background: #cbd5e1;
-    }
-
-    /* ===================== SECTION HEADER ===================== */
-    .section-header {
-        font-size: 0.75rem;
-        font-weight: 700;
-        letter-spacing: 1px;
-        text-transform: uppercase;
-        color: #94a3b8;
-        margin: 20px 0 10px 0;
+        color: #1565c0 !important;
+        border-bottom-color: #1565c0 !important;
     }
     </style>
-""", unsafe_allow_html=True)
+    """, unsafe_allow_html=True)
 
 # --- 3. SESSION STATE ---
-if "data_shopee" not in st.session_state: st.session_state.data_shopee = None
-if "audit_shopee" not in st.session_state: st.session_state.audit_shopee = {}
+if "data_bersih" not in st.session_state:
+    st.session_state.data_bersih = None
+if "audit_data" not in st.session_state:
+    st.session_state.audit_data = {}
 
-if "data_tokped" not in st.session_state: st.session_state.data_tokped = None
-if "audit_tokped" not in st.session_state: st.session_state.audit_tokped = {}
+# --- 4. HEADER MEWAH ---
+st.markdown("""
+<div class="premium-header">
+    <span style="background: rgba(255,255,255,0.2); padding: 5px 15px; border-radius: 20px; font-size: 0.8rem; font-weight: bold;">🏛️ BADAN PUSAT STATISTIK</span>
+    <h1>Portal Integrasi Data E-Commerce UMKM</h1>
+    <p>Sistem ekstraksi, pembersihan, dan standarisasi pelaporan statistik Prov. Kep. Bangka Belitung</p>
+</div>
+""", unsafe_allow_html=True)
 
-# --- 4. SIDEBAR MENU ---
+# --- 5. SIDEBAR (PANEL KIRI) ---
 with st.sidebar:
+    # Mengecek apakah file logo.png ada di dalam folder
     if os.path.exists("logo.png"):
         st.image("logo.png", use_container_width=True)
+    elif os.path.exists("logo.jpg"):
+        st.image("logo.jpg", use_container_width=True)
     else:
-        st.markdown("""
-        <div style="text-align:center; padding: 20px 0 10px 0;">
-            <div style="font-size: 2.2rem;">🏛️</div>
-            <div style="font-size: 0.65rem; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; color: #64748b; margin-top: 4px;">Badan Pusat Statistik</div>
-        </div>
-        """, unsafe_allow_html=True)
-
-    st.divider()
-    st.markdown('<div class="sidebar-section-title">🧭 Platform E-Commerce</div>', unsafe_allow_html=True)
-    halaman = st.radio("", ["🟠 Shopee", "🟢 Tokopedia"], label_visibility="collapsed")
-    st.divider()
-
-# ==============================================================================
-#                             HALAMAN SHOPEE
-# ==============================================================================
-if halaman == "🟠 Shopee":
-    st.markdown("""
-    <div class="banner-shopee">
-        <div class="badge">🏛️ &nbsp;Badan Pusat Statistik</div>
-        <h1>Dashboard UMKM — Shopee</h1>
-        <p>Sistem Pengolahan Data Multi-File Berbasis Lokasi Shopee</p>
-    </div>
-    """, unsafe_allow_html=True)
-
-    with st.sidebar:
-        st.markdown('<div class="sidebar-section-title">📥 Input Data</div>', unsafe_allow_html=True)
-        files_shopee = st.file_uploader("Unggah CSV Shopee", type=["csv"], accept_multiple_files=True, key="file_shp")
-        mode_api_shp = st.checkbox("🔍 Deteksi Nama Toko via API", key="api_shp")
-        
-        if st.button("🚀 Proses Shopee", type="primary", use_container_width=True):
-            if not files_shopee:
-                st.error("⚠️ Unggah file CSV Shopee dulu!")
-            else:
-                with st.spinner("Memproses seluruh data Shopee..."):
-                    try:
-                        hasil, total_baris, err_h = [], 0, 0
-                        bar = st.progress(0)
+        st.info("💡 Taruh gambar 'logo.png' di folder aplikasi untuk menampilkan logo BPS.")
+    
+    st.markdown("---")
+    st.markdown("### 📥 Input Data")
+    uploaded_file = st.file_uploader("Upload CSV Shopee", type=["csv"])
+    
+    st.markdown("### ⚙️ Konfigurasi")
+    mode_api = st.checkbox("🔍 Deteksi Nama Toko via API", help="Mengambil nama asli toko dari database Shopee. Butuh internet lancar.")
+    
+    st.write("---")
+    if st.button("🚀 Mulai Pemrosesan Data", use_container_width=True):
+        if uploaded_file is None:
+            st.error("⚠️ Silakan upload file CSV terlebih dahulu!")
+        else:
+            with st.spinner("Menjalankan algoritma standarisasi BPS..."):
+                try:
+                    df_raw = pd.read_csv(uploaded_file, on_bad_lines="skip", dtype=str)
+                    hasil = []
+                    kota_bangka = ["Bangka", "Pangkal Pinang", "Pangkalpinang", "Sungailiat", "Toboali", "Mentok", "Koba"]
+                    
+                    total_baris = len(df_raw)
+                    luar_wilayah = 0
+                    error_harga = 0
+                    
+                    bar = st.progress(0)
+                    
+                    for i in range(total_baris):
+                        # Ekstraksi aman
+                        link        = str(df_raw.iloc[i, 0]) if len(df_raw.columns) > 0 else "-"
+                        nama_produk = str(df_raw.iloc[i, 3]) if len(df_raw.columns) > 3 else "Tidak Diketahui"
+                        harga_raw   = str(df_raw.iloc[i, 5]) if len(df_raw.columns) > 5 else "0"
+                        wilayah_raw = str(df_raw.iloc[i, 11]) if len(df_raw.columns) > 11 else "-"
                         
-                        for idx, file in enumerate(files_shopee):
-                            df_raw = pd.read_csv(file, dtype=str, on_bad_lines="skip")
-                            total_baris += len(df_raw)
+                        # Fix Harga
+                        try:
+                            angka = re.sub(r"[^\d]", "", harga_raw)
+                            harga = int(angka) if angka else 0
+                            if 0 < harga < 1000:
+                                harga *= 1000
+                        except:
+                            harga = 0
+                            error_harga += 1
                             
-                            col_link = next((c for c in df_raw.columns if 'href' in c.lower()), df_raw.columns[0])
-                            col_nama = next((c for c in df_raw.columns if 'whitespace-normal' in c.lower()), df_raw.columns[3])
-                            col_harga = next((c for c in df_raw.columns if 'font-medium 2' in c.lower()), df_raw.columns[4])
-                            col_wilayah = next((c for c in df_raw.columns if 'ml-[3px]' in c.lower()), df_raw.columns[7])
-
-                            for i in range(len(df_raw)):
-                                row = df_raw.iloc[i]
-                                link = str(row[col_link])
-                                nama = str(row[col_nama])
-                                harga_str = str(row[col_harga])
-                                lokasi_shopee = str(row[col_wilayah]).title()
+                        # Filter Wilayah
+                        wilayah_final = "Luar Wilayah"
+                        for k in kota_bangka:
+                            if k.lower() in wilayah_raw.lower():
+                                wilayah_final = "Kota Pangkalpinang" if "pangkal" in k.lower() else f"Kab. {k.title()}"
+                                break
                                 
-                                try: val_h = int(re.sub(r"[^\d]", "", harga_str))
-                                except: val_h, err_h = 0, err_h + 1
-                                
-                                toko = "Tidak Dilacak"
-                                if mode_api_shp:
-                                    match = re.search(r"i\.(\d+)\.", link)
-                                    if match:
-                                        try:
-                                            res = requests.get(f"https://shopee.co.id/api/v4/shop/get_shop_base?shopid={match.group(1)}", headers={"User-Agent":"Mozilla/5.0"}, timeout=2)
-                                            if res.status_code == 200: toko = res.json().get("data",{}).get("name", "Anonim")
-                                        except: pass
-
-                                hasil.append({"Nama Toko": toko, "Nama Produk": nama, "Harga": val_h, "Wilayah": lokasi_shopee, "Link": link})
-                            bar.progress((idx + 1) / len(files_shopee))
-                        
-                        bar.empty()
-                        st.session_state.data_shopee = pd.DataFrame(hasil)
-                        st.session_state.audit_shopee = {"total": total_baris, "valid": len(hasil), "file_count": len(files_shopee), "error_harga": err_h}
-                        st.success(f"✅ {len(hasil)} data Shopee berhasil diekstrak!")
-                    except Exception as e:
-                        st.error(f"Error Sistem: {e}")
-
-    df_shp = st.session_state.data_shopee
-    if df_shp is not None and not df_shp.empty:
-        f_wil = st.multiselect("🗺️ Filter Wilayah (Lokasi Asli):", options=sorted(df_shp["Wilayah"].unique()), default=sorted(df_shp["Wilayah"].unique()), key="f_wil_shp")
-        df_f = df_shp[df_shp["Wilayah"].isin(f_wil)]
-        st.write("---")
-        
-        tab1, tab2, tab3 = st.tabs(["📊 Executive Dashboard", "🗄️ Database Siap Ekspor", "📑 Log Penggabungan"])
-        with tab1:
-            c1, c2, c3 = st.columns(3)
-            with c1:
-                st.metric("Total Data Tampil", f"{len(df_f):,}".replace(",", "."))
-            with c2:
-                st.metric("Rata-rata Harga", f"Rp {df_f['Harga'].mean():,.0f}".replace(",", ".") if not df_f.empty else "Rp 0")
-            with c3:
-                st.metric("Titik Lokasi", f"{df_f['Wilayah'].nunique()}")
-
-            if not df_f.empty:
-                st.markdown("")
-                g1, g2 = st.columns(2)
-                with g1:
-                    fig_pie = px.pie(
-                        df_f, names="Wilayah",
-                        title="Sebaran UMKM per Lokasi",
-                        hole=0.5,
-                        color_discrete_sequence=px.colors.sequential.Blues_r
-                    )
-                    fig_pie.update_layout(
-                        plot_bgcolor='rgba(0,0,0,0)',
-                        paper_bgcolor='rgba(0,0,0,0)',
-                        font_family="Plus Jakarta Sans",
-                        title_font_size=14,
-                        title_font_color="#0f172a",
-                        legend=dict(font=dict(size=11))
-                    )
-                    fig_pie.update_traces(textfont_size=12)
-                    st.plotly_chart(fig_pie, use_container_width=True)
-                with g2:
-                    bar_data = df_f.groupby("Wilayah").size().reset_index(name='Jumlah').sort_values('Jumlah', ascending=True)
-                    fig_bar = px.bar(
-                        bar_data, x="Jumlah", y="Wilayah",
-                        title="Total Usaha per Wilayah",
-                        orientation='h',
-                        color="Jumlah",
-                        color_continuous_scale=px.colors.sequential.Blues
-                    )
-                    fig_bar.update_layout(
-                        plot_bgcolor='rgba(0,0,0,0)',
-                        paper_bgcolor='rgba(0,0,0,0)',
-                        font_family="Plus Jakarta Sans",
-                        title_font_size=14,
-                        title_font_color="#0f172a",
-                        coloraxis_showscale=False,
-                        yaxis=dict(gridcolor='rgba(0,0,0,0)', title=''),
-                        xaxis=dict(gridcolor='#f1f5f9', title='Jumlah Usaha')
-                    )
-                    st.plotly_chart(fig_bar, use_container_width=True)
-
-        with tab2:
-            df_view = df_f.copy()
-            df_view["Harga"] = df_view["Harga"].apply(lambda x: f"Rp {x:,.0f}".replace(",", "."))
-            st.dataframe(df_view, use_container_width=True, hide_index=True, height=350)
-            if not df_f.empty:
-                buf = io.BytesIO()
-                with pd.ExcelWriter(buf, engine="xlsxwriter") as writer:
-                    df_f.to_excel(writer, index=False, sheet_name="Data Shopee")
-                    wb, ws = writer.book, writer.sheets["Data Shopee"]
-                    for col_num, value in enumerate(df_f.columns.values): ws.write(0, col_num, value, wb.add_format({'bold': True, 'bg_color': '#022a5e', 'font_color': 'white'}))
-                    ws.set_column('A:A', 25); ws.set_column('B:B', 50); ws.set_column('C:C', 18, wb.add_format({'num_format': '#,##0'})); ws.set_column('D:D', 30); ws.set_column('E:E', 50)
-                st.markdown("")
-                st.download_button("⬇️ Download Excel Shopee", data=buf.getvalue(), file_name=f"UMKM_Shopee_{datetime.date.today()}.xlsx", type="primary")
-        with tab3:
-            audit = st.session_state.audit_shopee
-            col_a, col_b, col_c = st.columns(3)
-            col_a.metric("📂 File Diproses", f"{audit.get('file_count', 0)}")
-            col_b.metric("📥 Baris Ditarik", f"{audit.get('valid', 0):,}".replace(",", "."))
-            col_c.metric("🛠️ Perbaikan Harga", f"{audit.get('error_harga', 0)}")
-
-# ==============================================================================
-#                             HALAMAN TOKOPEDIA
-# ==============================================================================
-elif halaman == "🟢 Tokopedia":
-    st.markdown("""
-    <div class="banner-tokped">
-        <div class="badge">🏛️ &nbsp;Badan Pusat Statistik</div>
-        <h1>Dashboard UMKM — Tokopedia</h1>
-        <p>Deep Scanning Data Multi-File Berbasis Lokasi Tokopedia</p>
-    </div>
-    """, unsafe_allow_html=True)
-
-    with st.sidebar:
-        st.markdown('<div class="sidebar-section-title">📥 Input Data</div>', unsafe_allow_html=True)
-        files_tokped = st.file_uploader("Unggah CSV Tokopedia", type=["csv"], accept_multiple_files=True, key="file_tkp")
-        
-        if st.button("🚀 Proses Tokopedia", type="primary", use_container_width=True):
-            if not files_tokped:
-                st.error("⚠️ Unggah file CSV Tokopedia dulu!")
-            else:
-                with st.spinner("Menjalankan Deep Scanner Tokopedia..."):
-                    try:
-                        hasil, total_baris, err_h = [], 0, 0
-                        bar = st.progress(0)
-                        
-                        for idx, file in enumerate(files_tokped):
-                            df_raw = pd.read_csv(file, dtype=str, on_bad_lines="skip")
-                            total_baris += len(df_raw)
+                        if wilayah_final == "Luar Wilayah":
+                            luar_wilayah += 1
+                            continue
                             
-                            # LOGIKA DEEP SCANNER (Memindai per baris untuk mencari pola data)
-                            for _, row in df_raw.iterrows():
-                                links, names, prices, locs, shops = [], [], [], [], []
-                                
-                                for col in df_raw.columns:
-                                    val = str(row[col])
-                                    if val == 'nan' or val == '': continue
+                        # API Nama Toko
+                        nama_toko = "Tidak Dilacak"
+                        if mode_api:
+                            m = re.search(r"i\.(\d+)\.", link)
+                            if m:
+                                try:
+                                    r = requests.get(f"https://shopee.co.id/api/v4/shop/get_shop_base?shopid={m.group(1)}", headers={"User-Agent": "Mozilla/5.0"}, timeout=2)
+                                    if r.status_code == 200:
+                                        nama_toko = r.json().get("data", {}).get("name", "Nama Disembunyikan")
+                                except:
+                                    pass
                                     
-                                    # Deteksi Link
-                                    if 'tokopedia.com/' in val and 'extParam' in val: links.append(val)
-                                    # Deteksi Harga
-                                    elif 'Rp' in val: prices.append(val)
-                                    # Deteksi Wilayah (Kota-kota besar dan keyword regional)
-                                    elif any(k in val for k in ['Pangkal', 'Bangka', 'Belitung', 'Jakarta', 'Bogor', 'Mojokerto', 'Tangerang', 'Bandung', 'Bekasi', 'Medan', 'Surabaya']):
-                                        if 'terjual' not in val.lower() and 'http' not in val: locs.append(val)
-                                    # Deteksi Nama Produk (Teks panjang non-link)
-                                    elif len(val) > 15 and ' ' in val and 'http' not in val and 'Rp' not in val: names.append(val)
-                                    # Deteksi Nama Toko (Teks pendek non-angka)
-                                    elif len(val) <= 15 and not any(char.isdigit() for char in val): shops.append(val)
-
-                                # Menyatukan hasil scanning ke arah bawah (unrolling)
-                                for k in range(len(links)):
-                                    try:
-                                        h_raw = prices[k] if k < len(prices) else "0"
-                                        h_fix = int(re.sub(r"[^\d]", "", h_raw))
-                                        
-                                        # Buang jika harga 0 (Data sampah)
-                                        if h_fix == 0: continue
-                                        
-                                        hasil.append({
-                                            "Nama Toko": shops[k] if k < len(shops) else "Toko Tokopedia",
-                                            "Nama Produk": names[k] if k < len(names) else "Produk Tokopedia",
-                                            "Harga": h_fix,
-                                            "Wilayah": locs[k].title() if k < len(locs) else "Tidak Terdeteksi",
-                                            "Link": links[k]
-                                        })
-                                    except: continue
-                            bar.progress((idx + 1) / len(files_tokped))
+                        hasil.append({
+                            "Nama Toko": nama_toko, 
+                            "Nama Produk": nama_produk, 
+                            "Harga": harga, 
+                            "Wilayah": wilayah_final, 
+                            "Link": link
+                        })
                         
-                        bar.empty()
-                        # Hapus duplikat dan simpan
-                        df_final = pd.DataFrame(hasil).drop_duplicates()
-                        st.session_state.data_tokped = df_final
-                        st.session_state.audit_tokped = {"total": total_baris, "valid": len(df_final), "file_count": len(files_tokped), "error_harga": err_h}
-                        st.success(f"✅ {len(df_final)} produk berhasil ditarik!")
-                    except Exception as e:
-                        st.error(f"Error Sistem Tokopedia: {e}")
+                        bar.progress((i + 1) / total_baris)
+                    
+                    bar.empty()
+                    st.session_state.data_bersih = pd.DataFrame(hasil)
+                    st.session_state.audit_data = {"total": total_baris, "valid": len(hasil), "luar": luar_wilayah, "error_harga": error_harga}
+                    st.success(f"✅ Selesai! {len(hasil):,} data tervalidasi.".replace(",", "."))
+                    
+                except Exception as e:
+                    st.error(f"❌ Terjadi kesalahan! Pastikan file CSV sesuai. Detail: {e}")
 
-    df_tkp = st.session_state.data_tokped
-    if df_tkp is not None and not df_tkp.empty:
-        f_wil = st.multiselect("🗺️ Filter Wilayah Tokopedia:", options=sorted(df_tkp["Wilayah"].unique()), default=sorted(df_tkp["Wilayah"].unique()), key="f_wil_tkp")
-        df_f = df_tkp[df_tkp["Wilayah"].isin(f_wil)]
-        st.write("---")
+    st.caption(f"🗓️ Update: {datetime.datetime.now().strftime('%d %b %Y %H:%M')}")
+
+# --- 6. JIKA BELUM ADA DATA ---
+if st.session_state.data_bersih is None:
+    st.markdown("""
+    <div style="background: white; border: 2px dashed #cbd5e1; border-radius: 15px; padding: 60px 20px; text-align: center; margin-top: 20px;">
+        <h1 style="font-size: 3rem; margin: 0;">📊</h1>
+        <h3 style="color: #0f172a; font-family: sans-serif;">Workspace Kosong</h3>
+        <p style="color: #64748b;">Silakan unggah file CSV Shopee di panel sebelah kiri untuk melihat keajaiban sistem ini.</p>
+    </div>
+    """, unsafe_allow_html=True)
+    st.stop()
+
+# --- 7. DASHBOARD UTAMA (JIKA ADA DATA) ---
+df = st.session_state.data_bersih
+
+st.markdown("### 🔎 Filter Data")
+col_f1, col_f2 = st.columns(2)
+with col_f1:
+    filter_wilayah = st.multiselect("Pilih Wilayah (Kab/Kota)", options=sorted(df["Wilayah"].unique()), default=sorted(df["Wilayah"].unique()))
+with col_f2:
+    max_h = int(df["Harga"].max()) if not df.empty and df["Harga"].max() > 0 else 1000000
+    filter_harga = st.slider("Rentang Harga (Rp)", 0, max_h, (0, max_h))
+
+df_f = df[df["Wilayah"].isin(filter_wilayah) & (df["Harga"] >= filter_harga[0]) & (df["Harga"] <= filter_harga[1])]
+
+tab1, tab2, tab3 = st.tabs(["📊 Executive Dashboard", "🗄️ Database & Export Excel", "📑 Audit Data"])
+
+# ============ TAB 1: GRAFIK ============
+with tab1:
+    st.markdown("<br>", unsafe_allow_html=True)
+    k1, k2, k3, k4 = st.columns(4)
+    rata = df_f["Harga"].mean() if not df_f.empty else 0
+    maks = df_f["Harga"].max()  if not df_f.empty else 0
+    
+    k1.metric("🏪 Total UMKM", f"{len(df_f):,}".replace(",", "."))
+    k2.metric("💰 Rata-rata Harga", f"Rp {rata:,.0f}".replace(",", "."))
+    k3.metric("📈 Harga Tertinggi", f"Rp {maks:,.0f}".replace(",", "."))
+    k4.metric("🗺️ Cakupan Wilayah", f"{df_f['Wilayah'].nunique()} Kab/Kota")
+    
+    if not df_f.empty:
+        st.markdown("<hr style='border:1px solid #e2e8f0;'>", unsafe_allow_html=True)
+        g1, g2 = st.columns(2)
+        with g1:
+            fig_d = px.pie(df_f, names="Wilayah", title="Distribusi UMKM per Wilayah", hole=0.4, color_discrete_sequence=px.colors.sequential.Blues_r)
+            st.plotly_chart(fig_d, use_container_width=True)
+        with g2:
+            fig_b = px.box(df_f, x="Wilayah", y="Harga", title="Statistik Sebaran Harga", color="Wilayah", color_discrete_sequence=px.colors.sequential.Blues_r)
+            st.plotly_chart(fig_b, use_container_width=True)
+
+# ============ TAB 2: EXPORT EXCEL ============
+with tab2:
+    st.markdown("#### 📋 Tabel Data Tervalidasi")
+    
+    # Format Rupiah di layar
+    df_show = df_f.copy()
+    df_show["Harga"] = df_show["Harga"].apply(lambda x: f"Rp {x:,.0f}".replace(",", "."))
+    st.dataframe(df_show, use_container_width=True, height=350, hide_index=True)
+
+    if not df_f.empty:
+        # LOGIKA EXCEL SULTAN
+        buf = io.BytesIO()
+        with pd.ExcelWriter(buf, engine="xlsxwriter") as writer:
+            df_f.to_excel(writer, index=False, sheet_name="Data UMKM")
+            
+            workbook = writer.book
+            worksheet = writer.sheets["Data UMKM"]
+            
+            # Format
+            header_format = workbook.add_format({'bold': True, 'bg_color': '#061E45', 'font_color': 'white', 'border': 1, 'align': 'center'})
+            cell_format = workbook.add_format({'border': 1})
+            currency_format = workbook.add_format({'border': 1, 'num_format': '#,##0'})
+            
+            # Tulis Header
+            for col_num, value in enumerate(df_f.columns.values):
+                worksheet.write(0, col_num, value, header_format)
+                
+            # Lebar Kolom
+            worksheet.set_column("A:A", 25, cell_format)
+            worksheet.set_column("B:B", 50, cell_format)
+            worksheet.set_column("C:C", 15, currency_format) # Ini bikin harga pakai titik otomatis di Excel
+            worksheet.set_column("D:D", 25, cell_format)
+            worksheet.set_column("E:E", 50, cell_format)
+            worksheet.autofilter(0, 0, len(df_f), len(df_f.columns) - 1)
+            
+        st.download_button(
+            label="⬇️ Download Excel Resmi (.xlsx)", 
+            data=buf.getvalue(), 
+            file_name=f"Laporan_BPS_UMKM_{datetime.datetime.now().strftime('%Y%m%d')}.xlsx", 
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            use_container_width=True
+        )
+
+# ============ TAB 3: AUDIT DATA ============
+with tab3:
+    st.markdown("<br>", unsafe_allow_html=True)
+    audit = st.session_state.audit_data
+    
+    # Ekstraksi data dengan aman
+    total = int(audit.get('total', 0))
+    valid = int(audit.get('valid', 0))
+    luar = int(audit.get('luar', 0))
+    err_h = int(audit.get('error_harga', 0))
+    
+    # Hitung persentase kebersihan data
+    valid_pct = (valid / total * 100) if total > 0 else 0
+    
+    # Format angka menjadi format Indonesia (Pakai titik) di luar f-string agar tidak error
+    total_str = f"{total:,}".replace(",", ".")
+    valid_str = f"{valid:,}".replace(",", ".")
+    luar_str = f"{luar:,}".replace(",", ".")
+    err_str = f"{err_h:,}".replace(",", ".")
+    
+    st.markdown("#### 📑 Laporan Kualitas Data (Data Quality Audit)")
+    st.info("Laporan ini menunjukkan tingkat integritas dan kebersihan data setelah melewati algoritma standarisasi BPS.")
+    
+    # --- 1. KOTAK METRIK AUDIT ---
+    a1, a2, a3, a4 = st.columns(4)
+    a1.metric("📥 Total Data Mentah", f"{total_str}")
+    a2.metric("🚫 Luar Wilayah (Dibuang)", f"{luar_str}")
+    a3.metric("⚠️ Error Harga (Fix ke 0)", f"{err_str}")
+    a4.metric("✅ Data Valid (Siap Ekspor)", f"{valid_str}")
+    
+    st.write("---")
+    
+    # --- 2. VISUALISASI & LOG DETAIL ---
+    col_g1, col_g2 = st.columns([1, 1], gap="large")
+    
+    with col_g1:
+        st.markdown("<h5 style='text-align: center; color: #475569;'>📈 Tingkat Validitas Data (Yield Rate)</h5>", unsafe_allow_html=True)
         
-        tab1, tab2, tab3 = st.tabs(["📊 Executive Dashboard", "🗄️ Database Siap Ekspor", "📑 Log Deep Scan"])
-        with tab1:
-            c1, c2, c3 = st.columns(3)
-            with c1:
-                st.metric("Total Produk", f"{len(df_f):,}".replace(",", "."))
-            with c2:
-                st.metric("Rata-rata Harga", f"Rp {df_f['Harga'].mean():,.0f}".replace(",", ".") if not df_f.empty else "Rp 0")
-            with c3:
-                st.metric("Titik Lokasi", f"{df_f['Wilayah'].nunique()}")
-
-            if not df_f.empty:
-                st.markdown("")
-                g1, g2 = st.columns(2)
-                with g1:
-                    fig_pie = px.pie(
-                        df_f, names="Wilayah",
-                        title="Sebaran UMKM per Lokasi",
-                        hole=0.5,
-                        color_discrete_sequence=px.colors.sequential.Greens_r
-                    )
-                    fig_pie.update_layout(
-                        plot_bgcolor='rgba(0,0,0,0)',
-                        paper_bgcolor='rgba(0,0,0,0)',
-                        font_family="Plus Jakarta Sans",
-                        title_font_size=14,
-                        title_font_color="#0f172a",
-                        legend=dict(font=dict(size=11))
-                    )
-                    fig_pie.update_traces(textfont_size=12)
-                    st.plotly_chart(fig_pie, use_container_width=True)
-                with g2:
-                    bar_data = df_f.groupby("Wilayah").size().reset_index(name='Jumlah').sort_values('Jumlah', ascending=True)
-                    fig_bar = px.bar(
-                        bar_data, x="Jumlah", y="Wilayah",
-                        title="Total Usaha per Wilayah",
-                        orientation='h',
-                        color="Jumlah",
-                        color_continuous_scale=px.colors.sequential.Greens
-                    )
-                    fig_bar.update_layout(
-                        plot_bgcolor='rgba(0,0,0,0)',
-                        paper_bgcolor='rgba(0,0,0,0)',
-                        font_family="Plus Jakarta Sans",
-                        title_font_size=14,
-                        title_font_color="#0f172a",
-                        coloraxis_showscale=False,
-                        yaxis=dict(gridcolor='rgba(0,0,0,0)', title=''),
-                        xaxis=dict(gridcolor='#f1f5f9', title='Jumlah Usaha')
-                    )
-                    st.plotly_chart(fig_bar, use_container_width=True)
-
-        with tab2:
-            df_view = df_f.copy()
-            df_view["Harga"] = df_view["Harga"].apply(lambda x: f"Rp {x:,.0f}".replace(",", "."))
-            st.dataframe(df_view, use_container_width=True, hide_index=True, height=350)
-            if not df_f.empty:
-                buf = io.BytesIO()
-                with pd.ExcelWriter(buf, engine="xlsxwriter") as writer:
-                    df_f.to_excel(writer, index=False, sheet_name="Data Tokopedia")
-                    wb, ws = writer.book, writer.sheets["Data Tokopedia"]
-                    for col_num, value in enumerate(df_f.columns.values): ws.write(0, col_num, value, wb.add_format({'bold': True, 'bg_color': '#064e3b', 'font_color': 'white'}))
-                    ws.set_column('A:A', 25); ws.set_column('B:B', 50); ws.set_column('C:C', 18, wb.add_format({'num_format': '#,##0'})); ws.set_column('D:D', 30); ws.set_column('E:E', 50)
-                st.markdown("")
-                st.download_button("⬇️ Download Excel Tokopedia", data=buf.getvalue(), file_name=f"UMKM_Tokopedia_{datetime.date.today()}.xlsx")
-        with tab3:
-            audit = st.session_state.audit_tokped
-            col_a, col_b, col_c = st.columns(3)
-            col_a.metric("📂 File Diproses", f"{audit.get('file_count', 0)}")
-            col_b.metric("📥 Produk Ditemukan", f"{audit.get('valid', 0):,}".replace(",", "."))
-            col_c.metric("ℹ️ Mode", "Deep Scanner")
-            st.markdown("")
-            st.info("⚙️ **Keterangan:** Mesin memindai kolom secara dinamis karena format file Tokopedia menyamping.")
+        # Grafik Meteran (Gauge Chart) menggunakan Plotly
+        fig_gauge = go.Figure(go.Indicator(
+            mode = "gauge+number",
+            value = valid_pct,
+            number = {'suffix': "%", 'valueformat': '.1f', 'font': {'size': 45, 'color': '#0f172a'}},
+            gauge = {
+                'axis': {'range': [0, 100], 'tickwidth': 1, 'tickcolor': "darkblue"},
+                'bar': {'color': "#16a34a"}, 
+                'bgcolor': "white",
+                'borderwidth': 2,
+                'bordercolor': "#e2e8f0",
+                'steps': [
+                    {'range': [0, 50], 'color': '#fee2e2'},   
+                    {'range': [50, 80], 'color': '#fef08a'},  
+                    {'range': [80, 100], 'color': '#dcfce3'}  
+                ],
+                'threshold': {
+                    'line': {'color': "#1565c0", 'width': 4},
+                    'thickness': 0.75,
+                    'value': 80 
+                }
+            }
+        ))
+        fig_gauge.update_layout(height=280, margin=dict(t=30, b=10, l=30, r=30), paper_bgcolor="rgba(0,0,0,0)")
+        st.plotly_chart(fig_gauge, use_container_width=True)
+        
+    with col_g2:
+        st.markdown("<h5 style='color: #475569;'>📋 Detail Log Pembersihan Otomatis</h5>", unsafe_allow_html=True)
+        st.write("") # Memberi sedikit jarak
+        
+        # Menggunakan kotak pesan bawaan Streamlit (Pasti aman dari error UI)
+        st.info(f"**📥 Data Awal Masuk:** Menerima **{total_str}** baris data mentah dari hasil ekstraksi file CSV Shopee.")
+        
+        st.error(f"**📍 Filter Geospasial:** Sistem menghapus **{luar_str}** baris data karena terdeteksi berada di luar cakupan Provinsi Kepulauan Bangka Belitung.")
+        
+        st.warning(f"**💰 Standarisasi Harga:** Mendeteksi **{err_str}** baris dengan anomali format harga teks. Sistem telah membersihkan dan merapikannya ke format numerik.")
+        
+        st.success(f"**✅ Status Akhir Data:** **{valid_str}** baris berhasil lolos uji validasi dan 100% siap untuk diekspor ke Excel resmi BPS.")
