@@ -63,7 +63,7 @@ if halaman == "🟠 Shopee":
     <div class="banner-shopee">
         <div style="font-size: 0.85rem; font-weight: bold; letter-spacing: 1px; color: #93c5fd; margin-bottom: 5px;">🏛️ BADAN PUSAT STATISTIK</div>
         <h1>Dashboard UMKM - Shopee</h1>
-        <p>Pengolahan Data E-Commerce Multi-File Berbasis Lokasi Shopee</p>
+        <p>Pengolahan Data E-Commerce Berbasis Lokasi Shopee</p>
     </div>
     """, unsafe_allow_html=True)
 
@@ -161,7 +161,7 @@ elif halaman == "🟢 Tokopedia":
     <div class="banner-tokped">
         <div style="font-size: 0.85rem; font-weight: bold; letter-spacing: 1px; color: #a7f3d0; margin-bottom: 5px;">🏛️ BADAN PUSAT STATISTIK</div>
         <h1>Dashboard UMKM - Tokopedia</h1>
-        <p>Pengolahan Data E-Commerce Multi-File Berbasis Lokasi Tokopedia</p>
+        <p>Pengolahan Data E-Commerce Berbasis Lokasi Tokopedia</p>
     </div>
     """, unsafe_allow_html=True)
 
@@ -263,3 +263,4 @@ elif halaman == "🟢 Tokopedia":
             st.info(f"**📂 Jumlah File Diproses:** {audit.get('file_count',0)} File CSV")
             st.success(f"**📥 Total Data Berhasil Diekstrak:** {audit.get('valid',0)} Produk")
             st.warning(f"**🛠️ Perbaikan Format Harga:** {audit.get('error_harga',0)} Baris")
+
