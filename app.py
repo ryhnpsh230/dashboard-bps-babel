@@ -19,12 +19,10 @@ st.set_page_config(
 # --- 2. CSS MINIMALIS (AMAN & RAPI) ---
 st.markdown("""
     <style>
-    /* Mengurangi jarak kosong di bagian atas */
     .block-container {
         padding-top: 2rem;
         padding-bottom: 2rem;
     }
-    /* Banner Header BPS Elegan */
     .bps-banner {
         background: linear-gradient(90deg, #022a5e 0%, #0056b3 100%);
         padding: 25px 35px;
@@ -229,26 +227,39 @@ if st.session_state.data_bersih is not None:
                 label="⬇️ Download Excel Resmi BPS", 
                 data=buf.getvalue(), 
                 file_name=f"Data_UMKM_Babel_{datetime.date.today()}.xlsx",
-                type="primary" # Membuat tombol download warna biru solid
+                type="primary" 
             )
 
         # --- TAB 3: AUDIT ---
         with tab3:
             audit = st.session_state.audit_data
+            
+            # PERBAIKAN: Penarikan data dengan get() supaya tidak KeyError jika kosong
+            total_raw = int(audit.get('total', 0))
+            valid_raw = int(audit.get('valid', 0))
+            luar_raw = int(audit.get('luar', 0))
+            
+            # Ubah jadi string dengan format titik
+            t_str = f"{total_raw:,}".replace(",", ".")
+            v_str = f"{valid_raw:,}".replace(",", ".")
+            l_str = f"{luar_raw:,}".replace(",", ".")
+            
             st.write("#### 📑 Log Verifikasi Data")
             
             col_a, col_b = st.columns([1, 1])
             with col_a:
-                st.info(f"**📥 Data Masuk:** {audit['total']} Baris File CSV")
-                st.success(f"**✅ Lolos Verifikasi:** {audit['valid']} Baris (100% Bangka Belitung)")
-                st.error(f"**🚫 Dibuang:** {audit['luar']} Baris (Lokasi luar wilayah/Blacklist)")
+                st.info(f"**📥 Data Masuk:** {t_str} Baris File CSV")
+                st.success(f"**✅ Lolos Verifikasi:** {v_str} Baris (100% Bangka Belitung)")
+                st.error(f"**🚫 Dibuang:** {l_str} Baris (Lokasi luar wilayah/Blacklist)")
             
             with col_b:
-                pct = (audit['valid']/audit['total']*100) if audit['total']>0 else 0
+                # PERBAIKAN: Cegah pembagian dengan angka nol
+                pct = (valid_raw / total_raw * 100) if total_raw > 0 else 0
+                
                 fig_gauge = go.Figure(go.Indicator(
                     mode = "gauge+number",
                     value = pct,
-                    number = {'suffix': "%"},
+                    number = {'suffix': "%", 'valueformat': ".1f"},
                     title = {'text': "Tingkat Kebersihan Data Wilayah"},
                     gauge = {'axis': {'range': [0, 100]}, 'bar': {'color': "#0056b3"}}
                 ))
