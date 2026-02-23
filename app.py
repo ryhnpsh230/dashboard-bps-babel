@@ -82,8 +82,20 @@ with st.sidebar:
         else:
             with st.spinner("Menjalankan algoritma standarisasi BPS..."):
                 try:
-                    # PERBAIKAN: Membaca CSV dengan deteksi koma/titik koma otomatis (sep=None)
-                    df_raw = pd.read_csv(uploaded_file, sep=None, engine='python', on_bad_lines="skip", dtype=str)
+                    # MESIN PEMBACA CSV ANTI ERROR (Otomatis deteksi Koma atau Titik Koma)
+                    try:
+                        df_raw = pd.read_csv(uploaded_file, sep=',', dtype=str, on_bad_lines='skip')
+                        if len(df_raw.columns) < 5:  # Kalau kolomnya menyatu, berarti dia butuh titik koma
+                            uploaded_file.seek(0)
+                            df_raw = pd.read_csv(uploaded_file, sep=';', dtype=str, on_bad_lines='skip')
+                    except Exception:
+                        uploaded_file.seek(0)
+                        df_raw = pd.read_csv(uploaded_file, sep=';', dtype=str, on_bad_lines='skip')
+                    
+                    # Cek apakah kolomnya cukup
+                    if len(df_raw.columns) < 12:
+                        st.error("❌ Format file CSV tidak dikenali! Pastikan ini adalah file hasil scraping Shopee yang asli.")
+                        st.stop()
                     
                     hasil = []
                     kota_bangka = ["Bangka", "Pangkal Pinang", "Pangkalpinang", "Sungailiat", "Toboali", "Mentok", "Koba"]
@@ -95,11 +107,11 @@ with st.sidebar:
                     bar = st.progress(0)
                     
                     for i in range(total_baris):
-                        # Ekstraksi aman berdasarkan posisi kolom
-                        link        = str(df_raw.iloc[i, 0]) if len(df_raw.columns) > 0 else "-"
-                        nama_produk = str(df_raw.iloc[i, 3]) if len(df_raw.columns) > 3 else "Tidak Diketahui"
-                        harga_raw   = str(df_raw.iloc[i, 5]) if len(df_raw.columns) > 5 else "0"
-                        wilayah_raw = str(df_raw.iloc[i, 11]) if len(df_raw.columns) > 11 else "-"
+                        # Ekstraksi aman pakai indeks
+                        link        = str(df_raw.iloc[i, 0])
+                        nama_produk = str(df_raw.iloc[i, 3])
+                        harga_raw   = str(df_raw.iloc[i, 5])
+                        wilayah_raw = str(df_raw.iloc[i, 11])
                         
                         # Fix Harga
                         try:
@@ -145,18 +157,18 @@ with st.sidebar:
                         bar.progress((i + 1) / total_baris)
                     
                     bar.empty()
-                    # Simpan ke session state
+                    
+                    # Simpan data dengan aman
                     if len(hasil) > 0:
                         st.session_state.data_bersih = pd.DataFrame(hasil)
                     else:
-                        # Jika hasil kosong, buat dataframe kosong yang tetap punya kolom
                         st.session_state.data_bersih = pd.DataFrame(columns=["Nama Toko", "Nama Produk", "Harga", "Wilayah", "Link"])
                         
                     st.session_state.audit_data = {"total": total_baris, "valid": len(hasil), "luar": luar_wilayah, "error_harga": error_harga}
                     st.success(f"✅ Selesai! {len(hasil):,} data tervalidasi.".replace(",", "."))
                     
                 except Exception as e:
-                    st.error(f"❌ Terjadi kesalahan! Pastikan file CSV sesuai. Detail: {e}")
+                    st.error(f"❌ Terjadi kesalahan sistem: {str(e)}")
 
     st.caption(f"🗓️ Update: {datetime.datetime.now().strftime('%d %b %Y %H:%M')}")
 
@@ -166,7 +178,7 @@ if st.session_state.data_bersih is None:
     <div style="background: white; border: 2px dashed #cbd5e1; border-radius: 15px; padding: 60px 20px; text-align: center; margin-top: 20px;">
         <h1 style="font-size: 3rem; margin: 0;">📊</h1>
         <h3 style="color: #0f172a; font-family: sans-serif;">Workspace Kosong</h3>
-        <p style="color: #64748b;">Silakan unggah file CSV Shopee di panel sebelah kiri untuk melihat keajaiban sistem ini.</p>
+        <p style="color: #64748b;">Silakan unggah file CSV Shopee di panel sebelah kiri untuk memulai.</p>
     </div>
     """, unsafe_allow_html=True)
     st.stop()
@@ -174,18 +186,19 @@ if st.session_state.data_bersih is None:
 # --- 7. DASHBOARD UTAMA (JIKA ADA DATA) ---
 df = st.session_state.data_bersih
 
-# PERBAIKAN: Pengaman Anti-Crash jika data kosong
-if df.empty or "Wilayah" not in df.columns:
-    st.warning("⚠️ Proses selesai, tetapi **0 data yang valid** ditemukan. Seluruh baris terbuang karena tidak memiliki kata kunci wilayah Bangka Belitung, atau format file CSV tidak dikenali.")
+# PENGAMANAN EXTRA JIKA DATA KOSONG
+if df.empty:
+    st.warning("⚠️ Proses selesai, tetapi **0 data yang valid** ditemukan. Seluruh data terbuang karena bukan dari wilayah Bangka Belitung.")
     
-    # Tetap tampilkan tab Audit Data supaya user bisa melihat kenapa datanya terbuang
-    tab_error = st.tabs(["📑 Laporan Kualitas Data"])
-    with tab_error[0]:
-        st.write(f"**Total Data Dibaca:** {st.session_state.audit_data.get('total', 0)}")
-        st.write(f"**Dibuang (Luar Wilayah):** {st.session_state.audit_data.get('luar', 0)}")
+    # Tampilkan hanya log audit
+    audit = st.session_state.audit_data
+    total = int(audit.get('total', 0))
+    luar = int(audit.get('luar', 0))
+    
+    st.info(f"**Total Data Dibaca:** {total} baris | **Dibuang (Luar Wilayah):** {luar} baris")
     st.stop()
 
-# Jika aman, tampilkan filter
+# Jika data aman, tampilkan filter
 st.markdown("### 🔎 Filter Data")
 col_f1, col_f2 = st.columns(2)
 with col_f1:
@@ -224,11 +237,13 @@ with tab1:
 with tab2:
     st.markdown("#### 📋 Tabel Data Tervalidasi")
     
-    df_show = df_f.copy()
-    df_show["Harga"] = df_show["Harga"].apply(lambda x: f"Rp {x:,.0f}".replace(",", "."))
-    st.dataframe(df_show, use_container_width=True, height=350, hide_index=True)
+    if df_f.empty:
+        st.warning("Data kosong berdasarkan filter saat ini.")
+    else:
+        df_show = df_f.copy()
+        df_show["Harga"] = df_show["Harga"].apply(lambda x: f"Rp {x:,.0f}".replace(",", "."))
+        st.dataframe(df_show, use_container_width=True, height=350, hide_index=True)
 
-    if not df_f.empty:
         buf = io.BytesIO()
         with pd.ExcelWriter(buf, engine="xlsxwriter") as writer:
             df_f.to_excel(writer, index=False, sheet_name="Data UMKM")
