@@ -54,7 +54,6 @@ def deteksi_tipe_usaha(nama_toko):
     if pd.isna(nama_toko) or nama_toko in ["Tidak Dilacak", "Toko CSV", "Anonim", ""]:
         return "Tidak Terdeteksi (Butuh Nama Toko)"
     
-    # Khusus untuk Facebook
     if str(nama_toko) == "FB Seller":
         return "Perorangan (Facebook)"
     
@@ -76,7 +75,6 @@ with st.sidebar:
     halaman = st.radio("Pilih Fitur:", ["🟠 Shopee", "🟢 Tokopedia", "🔵 Facebook FB", "📊 Export Gabungan"])
     st.divider()
 
-# KATA KUNCI WILAYAH BANGKA BELITUNG
 babel_keys = ["pangkal", "bangka", "belitung", "sungailiat", "mentok", "muntok", "koba", "toboali", "manggar", "tanjung pandan", "tanjungpandan"]
 
 # ==============================================================================
@@ -144,8 +142,16 @@ if halaman == "🟠 Shopee":
                                     baris_diproses += 1
                                     continue
                                 
-                                try: val_h = int(re.sub(r"[^\d]", "", harga_str))
-                                except: val_h, err_h = 0, err_h + 1
+                                try: 
+                                    harga_bersih = harga_str.replace('.', '').replace(',', '')
+                                    angka_list = re.findall(r'\d+', harga_bersih)
+                                    if angka_list:
+                                        val_h = int(angka_list[0])
+                                        if val_h > 1000000000: val_h = 0
+                                    else:
+                                        val_h = 0
+                                except: 
+                                    val_h, err_h = 0, err_h + 1
                                 
                                 toko = "Tidak Dilacak"
                                 if mode_api_shp:
@@ -179,8 +185,7 @@ if halaman == "🟠 Shopee":
         st.markdown("### 🔎 Filter Data Pintar")
         col_f1, col_f2, col_f3 = st.columns([1, 1, 1])
         with col_f1: f_wil = st.multiselect("Pilih Wilayah:", options=sorted(df_shp["Wilayah"].unique()), default=sorted(df_shp["Wilayah"].unique()), key="f_wil_shp")
-        with col_f2: 
-            f_tipe = st.multiselect("Pilih Tipe Usaha:", options=sorted(df_shp["Tipe Usaha"].unique()), default=sorted(df_shp["Tipe Usaha"].unique()), key="f_tipe_shp")
+        with col_f2: f_tipe = st.multiselect("Pilih Tipe Usaha:", options=sorted(df_shp["Tipe Usaha"].unique()), default=sorted(df_shp["Tipe Usaha"].unique()), key="f_tipe_shp")
         with col_f3: 
             max_h = int(df_shp["Harga"].max()) if df_shp["Harga"].max() > 0 else 1000000
             f_hrg = st.slider("Rentang Harga (Rp)", 0, max_h, (0, max_h), key="f_hrg_shp")
@@ -277,22 +282,28 @@ elif halaman == "🟢 Tokopedia":
                                         lokasi_tokped = str(df_raw.iloc[i][col_lokasis[j]]).title() if j < len(col_lokasis) else "-"
                                         toko = str(df_raw.iloc[i][col_tokos[j]]) if j < len(col_tokos) else "Toko CSV"
                                         
-                                        if link == 'nan' or nama == 'nan':
-                                            continue
+                                        if link == 'nan' or nama == 'nan': continue
                                         
                                         if not any(k in lokasi_tokped.lower() for k in babel_keys):
                                             luar_wilayah += 1
                                             continue
                                             
-                                        try: val_h = int(re.sub(r"[^\d]", "", harga_str))
-                                        except: val_h, err_h = 0, err_h + 1
+                                        try: 
+                                            harga_bersih = harga_str.replace('.', '').replace(',', '')
+                                            angka_list = re.findall(r'\d+', harga_bersih)
+                                            if angka_list:
+                                                val_h = int(angka_list[0])
+                                                if val_h > 1000000000: val_h = 0
+                                            else:
+                                                val_h = 0
+                                        except: 
+                                            val_h, err_h = 0, err_h + 1
                                         
                                         if val_h > 0:
                                             tipe_usaha = deteksi_tipe_usaha(toko)
                                             hasil.append({"Nama Toko": toko, "Nama Produk": nama, "Harga": val_h, "Wilayah": lokasi_tokped, "Tipe Usaha": tipe_usaha, "Link": link})
                                             
-                                    except Exception:
-                                        continue
+                                    except Exception: continue
                                 
                                 baris_diproses += 1
                                 if baris_diproses % 5 == 0 or baris_diproses == total_semua_baris:
@@ -315,8 +326,7 @@ elif halaman == "🟢 Tokopedia":
         st.markdown("### 🔎 Filter Data Pintar")
         col_f1, col_f2, col_f3 = st.columns([1, 1, 1])
         with col_f1: f_wil = st.multiselect("Pilih Wilayah:", options=sorted(df_tkp["Wilayah"].unique()), default=sorted(df_tkp["Wilayah"].unique()), key="f_wil_tkp")
-        with col_f2: 
-            f_tipe = st.multiselect("Pilih Tipe Usaha:", options=sorted(df_tkp["Tipe Usaha"].unique()), default=sorted(df_tkp["Tipe Usaha"].unique()), key="f_tipe_tkp")
+        with col_f2: f_tipe = st.multiselect("Pilih Tipe Usaha:", options=sorted(df_tkp["Tipe Usaha"].unique()), default=sorted(df_tkp["Tipe Usaha"].unique()), key="f_tipe_tkp")
         with col_f3: 
             max_h = int(df_tkp["Harga"].max()) if df_tkp["Harga"].max() > 0 else 1000000
             f_hrg = st.slider("Rentang Harga (Rp)", 0, max_h, (0, max_h), key="f_hrg_tkp")
@@ -381,7 +391,6 @@ elif halaman == "🔵 Facebook FB":
                             
                         hasil, total_baris, err_h, luar_wilayah = [], 0, 0, 0
                         baris_diproses = 0
-                        
                         status_text = st.empty()
                         progress_bar = st.progress(0)
                         
@@ -389,11 +398,9 @@ elif halaman == "🔵 Facebook FB":
                             df_raw = pd.read_csv(file, dtype=str, on_bad_lines="skip")
                             total_baris += len(df_raw)
                             
-                            # Cek format kolom (mengikuti format BPS AntiError ekstensi lu)
                             if "Link" in df_raw.columns and "Nama Produk" in df_raw.columns:
                                 col_link, col_nama, col_harga, col_wilayah, col_toko = "Link", "Nama Produk", "Harga", "Wilayah", "Nama Toko"
                             else:
-                                # Jika format beda (jaga-jaga), fallback ke kolom index
                                 col_toko, col_nama, col_wilayah, col_harga, col_link = df_raw.columns[0], df_raw.columns[1], df_raw.columns[2], df_raw.columns[4], df_raw.columns[5]
 
                             for i in range(len(df_raw)):
@@ -404,14 +411,21 @@ elif halaman == "🔵 Facebook FB":
                                 lokasi_fb = str(row[col_wilayah]).title()
                                 toko = str(row.get(col_toko, "FB Seller"))
                                 
-                                # Filter wilayah Bangka Belitung
                                 if not any(k in lokasi_fb.lower() for k in babel_keys):
                                     luar_wilayah += 1
                                     baris_diproses += 1
                                     continue
                                 
-                                try: val_h = int(re.sub(r"[^\d]", "", harga_str))
-                                except: val_h, err_h = 0, err_h + 1
+                                try: 
+                                    harga_bersih = harga_str.replace('.', '').replace(',', '')
+                                    angka_list = re.findall(r'\d+', harga_bersih)
+                                    if angka_list:
+                                        val_h = int(angka_list[0])
+                                        if val_h > 1000000000: val_h = 0
+                                    else:
+                                        val_h = 0
+                                except: 
+                                    val_h, err_h = 0, err_h + 1
                                 
                                 if val_h > 0:
                                     tipe_usaha = deteksi_tipe_usaha(toko)
@@ -438,8 +452,10 @@ elif halaman == "🔵 Facebook FB":
         st.markdown("### 🔎 Filter Data Pintar")
         col_f1, col_f2, col_f3 = st.columns([1, 1, 1])
         with col_f1: f_wil = st.multiselect("Pilih Wilayah:", options=sorted(df_fb["Wilayah"].unique()), default=sorted(df_fb["Wilayah"].unique()), key="f_wil_fb")
-        with col_f2: 
-            f_tipe = st.multiselect("Pilih Tipe Usaha:", options=sorted(df_fb["Tipe Usaha"].unique()), default=sorted(df_fb["Tipe Usaha"].unique()), key="f_tipe_fb")
+        
+        # PERBAIKAN DI SINI: Default filter Tipe Usaha langsung aktif biar data otomatis muncul!
+        with col_f2: f_tipe = st.multiselect("Pilih Tipe Usaha:", options=sorted(df_fb["Tipe Usaha"].unique()), default=sorted(df_fb["Tipe Usaha"].unique()), key="f_tipe_fb")
+        
         with col_f3: 
             max_h = int(df_fb["Harga"].max()) if df_fb["Harga"].max() > 0 else 1000000
             f_hrg = st.slider("Rentang Harga (Rp)", 0, max_h, (0, max_h), key="f_hrg_fb")
@@ -472,7 +488,6 @@ elif halaman == "🔵 Facebook FB":
         with tab3:
             audit = st.session_state.audit_fb
             st.info(f"**📂 Jumlah File Diproses:** {audit.get('file_count',0)} File CSV")
-
 
 # ==============================================================================
 #                             HALAMAN EXPORT GABUNGAN
