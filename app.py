@@ -28,6 +28,10 @@ st.markdown("""
     .banner-tokped { background: linear-gradient(90deg, #064e3b 0%, #059669 100%); padding: 25px 35px; border-radius: 12px; margin-bottom: 25px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); color: white; }
     .banner-tokped h1 { color: white !important; font-weight: 700; margin-bottom: 5px; font-size: 2.2rem; }
     .banner-tokped p { color: #d1fae5 !important; font-size: 1.05rem; margin: 0; }
+
+    .banner-fb { background: linear-gradient(90deg, #1877f2 0%, #0866ff 100%); padding: 25px 35px; border-radius: 12px; margin-bottom: 25px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); color: white; }
+    .banner-fb h1 { color: white !important; font-weight: 700; margin-bottom: 5px; font-size: 2.2rem; }
+    .banner-fb p { color: #e7f3ff !important; font-size: 1.05rem; margin: 0; }
     
     .banner-gabungan { background: linear-gradient(90deg, #1e293b 0%, #0f172a 100%); padding: 25px 35px; border-radius: 12px; margin-bottom: 25px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); color: white; }
     .banner-gabungan h1 { color: white !important; font-weight: 700; margin-bottom: 5px; font-size: 2.2rem; }
@@ -42,13 +46,19 @@ if "audit_shopee" not in st.session_state: st.session_state.audit_shopee = {}
 if "data_tokped" not in st.session_state: st.session_state.data_tokped = None
 if "audit_tokped" not in st.session_state: st.session_state.audit_tokped = {}
 
+if "data_fb" not in st.session_state: st.session_state.data_fb = None
+if "audit_fb" not in st.session_state: st.session_state.audit_fb = {}
+
 # --- 4. FUNGSI DETEKSI TIPE USAHA (AI HEURISTIK) ---
 def deteksi_tipe_usaha(nama_toko):
     if pd.isna(nama_toko) or nama_toko in ["Tidak Dilacak", "Toko CSV", "Anonim", ""]:
         return "Tidak Terdeteksi (Butuh Nama Toko)"
     
-    nama_lower = str(nama_toko).lower()
+    # Khusus untuk Facebook
+    if str(nama_toko) == "FB Seller":
+        return "Perorangan (Facebook)"
     
+    nama_lower = str(nama_toko).lower()
     keyword_fisik = ['toko', 'warung', 'grosir', 'mart', 'apotek', 'cv.', 'pt.', 'official', 'agen', 'distributor', 'kios', 'kedai', 'supermarket', 'minimarket', 'cabang', 'jaya', 'abadi', 'makmur', 'motor', 'mobil', 'bengkel', 'snack', 'store']
     
     for kata in keyword_fisik:
@@ -63,8 +73,11 @@ with st.sidebar:
         st.image("logo.png", use_container_width=True)
         
     st.markdown("### 🧭 Menu Navigasi")
-    halaman = st.radio("Pilih Fitur:", ["🟠 Shopee", "🟢 Tokopedia", "📊 Export Gabungan"])
+    halaman = st.radio("Pilih Fitur:", ["🟠 Shopee", "🟢 Tokopedia", "🔵 Facebook FB", "📊 Export Gabungan"])
     st.divider()
+
+# KATA KUNCI WILAYAH BANGKA BELITUNG
+babel_keys = ["pangkal", "bangka", "belitung", "sungailiat", "mentok", "muntok", "koba", "toboali", "manggar", "tanjung pandan", "tanjungpandan"]
 
 # ==============================================================================
 #                             HALAMAN SHOPEE
@@ -91,21 +104,17 @@ if halaman == "🟠 Shopee":
             else:
                 with st.spinner("Membaca file CSV..."):
                     try:
-                        # Hitung total baris dari semua file terlebih dahulu untuk progress bar yang akurat
                         total_semua_baris = 0
                         for f in files_shopee:
                             df_temp = pd.read_csv(f, dtype=str, on_bad_lines="skip")
                             total_semua_baris += len(df_temp)
-                            f.seek(0) # Kembalikan pointer file ke awal setelah dibaca
+                            f.seek(0)
                             
                         hasil, total_baris, err_h, luar_wilayah = [], 0, 0, 0
                         baris_diproses = 0
                         
-                        # UI Progress Bar Real-Time
                         status_text = st.empty()
                         progress_bar = st.progress(0)
-                        
-                        babel_keys = ["pangkal", "bangka", "belitung", "sungailiat", "mentok", "muntok", "koba", "toboali", "manggar", "tanjung pandan", "tanjungpandan"]
                         
                         for idx, file in enumerate(files_shopee):
                             df_raw = pd.read_csv(file, dtype=str, on_bad_lines="skip")
@@ -150,14 +159,12 @@ if halaman == "🟠 Shopee":
                                 tipe_usaha = deteksi_tipe_usaha(toko)
                                 hasil.append({"Nama Toko": toko, "Nama Produk": nama, "Harga": val_h, "Wilayah": lokasi_shopee, "Tipe Usaha": tipe_usaha, "Link": link})
                                 
-                                # Update UI Progress (Setiap 5 baris agar tidak lag)
                                 baris_diproses += 1
                                 if baris_diproses % 5 == 0 or baris_diproses == total_semua_baris:
                                     pct = min(baris_diproses / total_semua_baris, 1.0)
                                     progress_bar.progress(pct)
                                     status_text.markdown(f"**⏳ Mengekstrak:** {baris_diproses} / {total_semua_baris} baris ({int(pct*100)}%)")
                         
-                        # Bersihkan UI Progress setelah selesai
                         status_text.empty()
                         progress_bar.empty()
                         
@@ -229,7 +236,6 @@ elif halaman == "🟢 Tokopedia":
             else:
                 with st.spinner("Membaca file CSV..."):
                     try:
-                        # Hitung total baris dari semua file terlebih dahulu untuk progress bar yang akurat
                         total_semua_baris = 0
                         for f in files_tokped:
                             df_temp = pd.read_csv(f, dtype=str, on_bad_lines="skip")
@@ -239,11 +245,8 @@ elif halaman == "🟢 Tokopedia":
                         hasil, total_baris, err_h, luar_wilayah = [], 0, 0, 0
                         baris_diproses = 0
                         
-                        # UI Progress Bar Real-Time
                         status_text = st.empty()
                         progress_bar = st.progress(0)
-                        
-                        babel_keys = ["pangkal", "bangka", "belitung", "sungailiat", "mentok", "muntok", "koba", "toboali", "manggar", "tanjung pandan", "tanjungpandan"]
                         
                         for idx, file in enumerate(files_tokped):
                             df_raw = pd.read_csv(file, dtype=str, on_bad_lines="skip")
@@ -291,14 +294,12 @@ elif halaman == "🟢 Tokopedia":
                                     except Exception:
                                         continue
                                 
-                                # Update UI Progress (Setiap 5 baris agar tidak lag)
                                 baris_diproses += 1
                                 if baris_diproses % 5 == 0 or baris_diproses == total_semua_baris:
                                     pct = min(baris_diproses / total_semua_baris, 1.0)
                                     progress_bar.progress(pct)
                                     status_text.markdown(f"**⏳ Mengekstrak:** {baris_diproses} / {total_semua_baris} baris ({int(pct*100)}%)")
                         
-                        # Bersihkan UI Progress setelah selesai
                         status_text.empty()
                         progress_bar.empty()
                         
@@ -349,6 +350,130 @@ elif halaman == "🟢 Tokopedia":
             audit = st.session_state.audit_tokped
             st.info(f"**📂 Jumlah File Diproses:** {audit.get('file_count',0)} File CSV")
 
+
+# ==============================================================================
+#                             HALAMAN FACEBOOK MARKETPLACE
+# ==============================================================================
+elif halaman == "🔵 Facebook FB":
+    st.markdown("""
+    <div class="banner-fb">
+        <div style="font-size: 0.85rem; font-weight: bold; letter-spacing: 1px; color: #93c5fd; margin-bottom: 5px;">🏛️ BADAN PUSAT STATISTIK</div>
+        <h1>Dashboard UMKM - Facebook</h1>
+        <p>Ekstraksi Data UMKM dari Facebook Marketplace Wilayah Bangka Belitung</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    with st.sidebar:
+        st.header("📥 Input Data Facebook")
+        files_fb = st.file_uploader("Unggah CSV Facebook FB", type=["csv"], accept_multiple_files=True, key="file_fb")
+        
+        if st.button("🚀 Proses Facebook FB", type="primary", use_container_width=True):
+            if not files_fb:
+                st.error("⚠️ Unggah file CSV Facebook FB dulu!")
+            else:
+                with st.spinner("Membaca file CSV..."):
+                    try:
+                        total_semua_baris = 0
+                        for f in files_fb:
+                            df_temp = pd.read_csv(f, dtype=str, on_bad_lines="skip")
+                            total_semua_baris += len(df_temp)
+                            f.seek(0)
+                            
+                        hasil, total_baris, err_h, luar_wilayah = [], 0, 0, 0
+                        baris_diproses = 0
+                        
+                        status_text = st.empty()
+                        progress_bar = st.progress(0)
+                        
+                        for idx, file in enumerate(files_fb):
+                            df_raw = pd.read_csv(file, dtype=str, on_bad_lines="skip")
+                            total_baris += len(df_raw)
+                            
+                            # Cek format kolom (mengikuti format BPS AntiError ekstensi lu)
+                            if "Link" in df_raw.columns and "Nama Produk" in df_raw.columns:
+                                col_link, col_nama, col_harga, col_wilayah, col_toko = "Link", "Nama Produk", "Harga", "Wilayah", "Nama Toko"
+                            else:
+                                # Jika format beda (jaga-jaga), fallback ke kolom index
+                                col_toko, col_nama, col_wilayah, col_harga, col_link = df_raw.columns[0], df_raw.columns[1], df_raw.columns[2], df_raw.columns[4], df_raw.columns[5]
+
+                            for i in range(len(df_raw)):
+                                row = df_raw.iloc[i]
+                                link = str(row[col_link])
+                                nama = str(row[col_nama])
+                                harga_str = str(row[col_harga])
+                                lokasi_fb = str(row[col_wilayah]).title()
+                                toko = str(row.get(col_toko, "FB Seller"))
+                                
+                                # Filter wilayah Bangka Belitung
+                                if not any(k in lokasi_fb.lower() for k in babel_keys):
+                                    luar_wilayah += 1
+                                    baris_diproses += 1
+                                    continue
+                                
+                                try: val_h = int(re.sub(r"[^\d]", "", harga_str))
+                                except: val_h, err_h = 0, err_h + 1
+                                
+                                if val_h > 0:
+                                    tipe_usaha = deteksi_tipe_usaha(toko)
+                                    hasil.append({"Nama Toko": toko, "Nama Produk": nama, "Harga": val_h, "Wilayah": lokasi_fb, "Tipe Usaha": tipe_usaha, "Link": link})
+                                
+                                baris_diproses += 1
+                                if baris_diproses % 5 == 0 or baris_diproses == total_semua_baris:
+                                    pct = min(baris_diproses / total_semua_baris, 1.0)
+                                    progress_bar.progress(pct)
+                                    status_text.markdown(f"**⏳ Mengekstrak:** {baris_diproses} / {total_semua_baris} baris ({int(pct*100)}%)")
+                        
+                        status_text.empty()
+                        progress_bar.empty()
+                        
+                        df_final = pd.DataFrame(hasil).drop_duplicates()
+                        st.session_state.data_fb = df_final
+                        st.session_state.audit_fb = {"total": total_baris, "valid": len(df_final), "file_count": len(files_fb), "error_harga": err_h, "luar": luar_wilayah}
+                        st.success(f"✅ {len(df_final)} data Facebook FB berhasil diekstrak!")
+                    except Exception as e:
+                        st.error(f"Error Sistem FB: {e}")
+
+    df_fb = st.session_state.data_fb
+    if df_fb is not None and not df_fb.empty:
+        st.markdown("### 🔎 Filter Data Pintar")
+        col_f1, col_f2, col_f3 = st.columns([1, 1, 1])
+        with col_f1: f_wil = st.multiselect("Pilih Wilayah:", options=sorted(df_fb["Wilayah"].unique()), default=sorted(df_fb["Wilayah"].unique()), key="f_wil_fb")
+        with col_f2: 
+            f_tipe = st.multiselect("Pilih Tipe Usaha:", options=sorted(df_fb["Tipe Usaha"].unique()), default=sorted(df_fb["Tipe Usaha"].unique()), key="f_tipe_fb")
+        with col_f3: 
+            max_h = int(df_fb["Harga"].max()) if df_fb["Harga"].max() > 0 else 1000000
+            f_hrg = st.slider("Rentang Harga (Rp)", 0, max_h, (0, max_h), key="f_hrg_fb")
+
+        df_f = df_fb[df_fb["Wilayah"].isin(f_wil) & df_fb["Tipe Usaha"].isin(f_tipe) & (df_fb["Harga"] >= f_hrg[0]) & (df_fb["Harga"] <= f_hrg[1])]
+        
+        tab1, tab2, tab3 = st.tabs(["📊 Executive Dashboard", "🗄️ Database Siap Ekspor", "📑 Log Audit"])
+        with tab1:
+            c1, c2, c3 = st.columns(3)
+            c1.metric("Total Data Tampil", f"{len(df_f):,}".replace(",", "."))
+            c2.metric("Perorangan (Ditampilkan)", f"{len(df_f[df_f['Tipe Usaha'] == 'Perorangan (Facebook)']):,}".replace(",", "."))
+            c3.metric("Titik Lokasi", f"{df_f['Wilayah'].nunique()}")
+            if not df_f.empty:
+                g1, g2 = st.columns(2)
+                with g1: st.plotly_chart(px.pie(df_f, names="Tipe Usaha", title="Komposisi Model Bisnis FB", hole=0.4, color_discrete_sequence=px.colors.sequential.Plotly3), use_container_width=True)
+                with g2: st.plotly_chart(px.bar(df_f.groupby("Wilayah").size().reset_index(name='Jumlah'), x="Wilayah", y="Jumlah", title="Total Usaha per Wilayah FB", color="Wilayah", color_discrete_sequence=px.colors.sequential.Plotly3), use_container_width=True)
+        with tab2:
+            df_view = df_f.copy()
+            df_view["Harga"] = df_view["Harga"].apply(lambda x: f"Rp {x:,.0f}".replace(",", "."))
+            st.dataframe(df_view, use_container_width=True, hide_index=True, height=350)
+            if not df_f.empty:
+                buf = io.BytesIO()
+                with pd.ExcelWriter(buf, engine="xlsxwriter") as writer:
+                    df_f.to_excel(writer, index=False, sheet_name="Data FB")
+                    wb, ws = writer.book, writer.sheets["Data FB"]
+                    for col_num, value in enumerate(df_f.columns.values): ws.write(0, col_num, value, wb.add_format({'bold': True, 'bg_color': '#1877f2', 'font_color': 'white'}))
+                    ws.set_column('A:A', 25); ws.set_column('B:B', 50); ws.set_column('C:C', 18, wb.add_format({'num_format': '#,##0'})); ws.set_column('D:D', 20); ws.set_column('E:E', 25); ws.set_column('F:F', 50)
+                st.markdown('<style>div[data-testid="stDownloadButton"] button {background-color: #0866ff; color: white; border:none;}</style>', unsafe_allow_html=True)
+                st.download_button("⬇️ Download Excel Facebook", data=buf.getvalue(), file_name=f"UMKM_Facebook_{datetime.date.today()}.xlsx")
+        with tab3:
+            audit = st.session_state.audit_fb
+            st.info(f"**📂 Jumlah File Diproses:** {audit.get('file_count',0)} File CSV")
+
+
 # ==============================================================================
 #                             HALAMAN EXPORT GABUNGAN
 # ==============================================================================
@@ -363,15 +488,17 @@ elif halaman == "📊 Export Gabungan":
     
     df_shp_ready = st.session_state.data_shopee is not None and not st.session_state.data_shopee.empty
     df_tkp_ready = st.session_state.data_tokped is not None and not st.session_state.data_tokped.empty
+    df_fb_ready = st.session_state.data_fb is not None and not st.session_state.data_fb.empty
     
-    if not df_shp_ready and not df_tkp_ready:
-        st.warning("⚠️ Belum ada data yang diproses. Silakan upload dan proses data di menu Shopee atau Tokopedia terlebih dahulu.")
+    if not df_shp_ready and not df_tkp_ready and not df_fb_ready:
+        st.warning("⚠️ Belum ada data yang diproses. Silakan upload dan proses data di menu Shopee, Tokopedia, atau Facebook terlebih dahulu.")
     else:
-        st.success("✅ Data siap untuk digabungkan menjadi file Master Excel!")
+        st.success("✅ Data siap untuk digabungkan menjadi file Master Excel 3-in-1!")
         
-        c1, c2 = st.columns(2)
-        if df_shp_ready: c1.metric("📦 Total Produk Shopee", f"{len(st.session_state.data_shopee):,}".replace(",", "."))
-        if df_tkp_ready: c2.metric("📦 Total Produk Tokopedia", f"{len(st.session_state.data_tokped):,}".replace(",", "."))
+        c1, c2, c3 = st.columns(3)
+        if df_shp_ready: c1.metric("📦 Produk Shopee", f"{len(st.session_state.data_shopee):,}".replace(",", "."))
+        if df_tkp_ready: c2.metric("📦 Produk Tokopedia", f"{len(st.session_state.data_tokped):,}".replace(",", "."))
+        if df_fb_ready: c3.metric("📦 Produk Facebook", f"{len(st.session_state.data_fb):,}".replace(",", "."))
             
         st.write("---")
         st.markdown("Klik tombol di bawah ini untuk mengunduh Excel dengan **Format Tab Terpisah** dan **Auto Filter**.")
@@ -385,10 +512,8 @@ elif halaman == "📊 Export Gabungan":
                 df_shp = st.session_state.data_shopee
                 df_shp.to_excel(writer, index=False, sheet_name="Data Shopee")
                 ws_shp = writer.sheets["Data Shopee"]
-                
                 header_fmt_shp = wb.add_format({'bold': True, 'bg_color': '#022a5e', 'font_color': 'white'})
                 for col_num, value in enumerate(df_shp.columns.values): ws_shp.write(0, col_num, value, header_fmt_shp)
-                
                 ws_shp.set_column('A:A', 25); ws_shp.set_column('B:B', 50); ws_shp.set_column('C:C', 18, currency_fmt); ws_shp.set_column('D:D', 20); ws_shp.set_column('E:E', 25); ws_shp.set_column('F:F', 50)
                 ws_shp.autofilter(0, 0, len(df_shp), len(df_shp.columns) - 1)
                 
@@ -396,16 +521,23 @@ elif halaman == "📊 Export Gabungan":
                 df_tkp = st.session_state.data_tokped
                 df_tkp.to_excel(writer, index=False, sheet_name="Data Tokopedia")
                 ws_tkp = writer.sheets["Data Tokopedia"]
-                
                 header_fmt_tkp = wb.add_format({'bold': True, 'bg_color': '#064e3b', 'font_color': 'white'})
                 for col_num, value in enumerate(df_tkp.columns.values): ws_tkp.write(0, col_num, value, header_fmt_tkp)
-                
                 ws_tkp.set_column('A:A', 25); ws_tkp.set_column('B:B', 50); ws_tkp.set_column('C:C', 18, currency_fmt); ws_tkp.set_column('D:D', 20); ws_tkp.set_column('E:E', 25); ws_tkp.set_column('F:F', 50)
                 ws_tkp.autofilter(0, 0, len(df_tkp), len(df_tkp.columns) - 1)
+
+            if df_fb_ready:
+                df_fb = st.session_state.data_fb
+                df_fb.to_excel(writer, index=False, sheet_name="Data Facebook")
+                ws_fb = writer.sheets["Data Facebook"]
+                header_fmt_fb = wb.add_format({'bold': True, 'bg_color': '#1877f2', 'font_color': 'white'})
+                for col_num, value in enumerate(df_fb.columns.values): ws_fb.write(0, col_num, value, header_fmt_fb)
+                ws_fb.set_column('A:A', 25); ws_fb.set_column('B:B', 50); ws_fb.set_column('C:C', 18, currency_fmt); ws_fb.set_column('D:D', 20); ws_fb.set_column('E:E', 25); ws_fb.set_column('F:F', 50)
+                ws_fb.autofilter(0, 0, len(df_fb), len(df_fb.columns) - 1)
                 
         st.markdown('<style>div[data-testid="stDownloadButton"] button {background-color: #0f172a; color: white; border:none; height: 3.5rem; font-size: 1.1rem;}</style>', unsafe_allow_html=True)
         st.download_button(
-            label="⬇️ DOWNLOAD EXCEL MASTER (GABUNGAN)",
+            label="⬇️ DOWNLOAD EXCEL MASTER 3-IN-1",
             data=buf.getvalue(),
             file_name=f"Master_UMKM_BPS_{datetime.date.today()}.xlsx",
             use_container_width=True
