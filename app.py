@@ -49,11 +49,9 @@ def deteksi_tipe_usaha(nama_toko):
     
     nama_lower = str(nama_toko).lower()
     
-    # KATA KUNCI UPDATE: 'snack' dan 'store' sudah ditambahkan!
     keyword_fisik = ['toko', 'warung', 'grosir', 'mart', 'apotek', 'cv.', 'pt.', 'official', 'agen', 'distributor', 'kios', 'kedai', 'supermarket', 'minimarket', 'cabang', 'jaya', 'abadi', 'makmur', 'motor', 'mobil', 'bengkel', 'snack', 'store']
     
     for kata in keyword_fisik:
-        # Cek apakah kata kunci ada di dalam nama toko
         if kata in nama_lower:
             return "Ada Toko Fisik"
             
@@ -91,10 +89,21 @@ if halaman == "🟠 Shopee":
             elif not mode_api_shp:
                 st.warning("⚠️ Untuk deteksi Toko Fisik/Murni Online, Centang kotak 'Deteksi Nama Toko via API'!")
             else:
-                with st.spinner("Memproses data & mendeteksi Tipe Usaha..."):
+                with st.spinner("Membaca file CSV..."):
                     try:
+                        # Hitung total baris dari semua file terlebih dahulu untuk progress bar yang akurat
+                        total_semua_baris = 0
+                        for f in files_shopee:
+                            df_temp = pd.read_csv(f, dtype=str, on_bad_lines="skip")
+                            total_semua_baris += len(df_temp)
+                            f.seek(0) # Kembalikan pointer file ke awal setelah dibaca
+                            
                         hasil, total_baris, err_h, luar_wilayah = [], 0, 0, 0
-                        bar = st.progress(0)
+                        baris_diproses = 0
+                        
+                        # UI Progress Bar Real-Time
+                        status_text = st.empty()
+                        progress_bar = st.progress(0)
                         
                         babel_keys = ["pangkal", "bangka", "belitung", "sungailiat", "mentok", "muntok", "koba", "toboali", "manggar", "tanjung pandan", "tanjungpandan"]
                         
@@ -102,7 +111,6 @@ if halaman == "🟠 Shopee":
                             df_raw = pd.read_csv(file, dtype=str, on_bad_lines="skip")
                             total_baris += len(df_raw)
                             
-                            # LOGIKA PINTAR DETEKSI SUMBER CSV
                             if "Link" in df_raw.columns and "Nama Produk" in df_raw.columns:
                                 col_link = "Link"
                                 col_nama = "Nama Produk"
@@ -112,7 +120,6 @@ if halaman == "🟠 Shopee":
                                 col_link = next((c for c in df_raw.columns if 'href' in c.lower()), df_raw.columns[0])
                                 col_nama = next((c for c in df_raw.columns if 'whitespace-normal' in c.lower()), df_raw.columns[3])
                                 col_harga = next((c for c in df_raw.columns if 'font-medium 2' in c.lower()), df_raw.columns[4])
-                                # Pengaman jika kolom kurang dari 8
                                 idx_wilayah = 7 if len(df_raw.columns) > 7 else len(df_raw.columns) - 1
                                 col_wilayah = next((c for c in df_raw.columns if 'ml-[3px]' in c.lower()), df_raw.columns[idx_wilayah])
 
@@ -125,6 +132,7 @@ if halaman == "🟠 Shopee":
                                 
                                 if not any(k in lokasi_shopee.lower() for k in babel_keys):
                                     luar_wilayah += 1
+                                    baris_diproses += 1
                                     continue
                                 
                                 try: val_h = int(re.sub(r"[^\d]", "", harga_str))
@@ -139,13 +147,20 @@ if halaman == "🟠 Shopee":
                                             if res.status_code == 200: toko = res.json().get("data",{}).get("name", "Anonim")
                                         except: pass
                                 
-                                # Proses Deteksi Tipe Usaha
                                 tipe_usaha = deteksi_tipe_usaha(toko)
-
                                 hasil.append({"Nama Toko": toko, "Nama Produk": nama, "Harga": val_h, "Wilayah": lokasi_shopee, "Tipe Usaha": tipe_usaha, "Link": link})
-                            bar.progress((idx + 1) / len(files_shopee))
+                                
+                                # Update UI Progress (Setiap 5 baris agar tidak lag)
+                                baris_diproses += 1
+                                if baris_diproses % 5 == 0 or baris_diproses == total_semua_baris:
+                                    pct = min(baris_diproses / total_semua_baris, 1.0)
+                                    progress_bar.progress(pct)
+                                    status_text.markdown(f"**⏳ Mengekstrak:** {baris_diproses} / {total_semua_baris} baris ({int(pct*100)}%)")
                         
-                        bar.empty()
+                        # Bersihkan UI Progress setelah selesai
+                        status_text.empty()
+                        progress_bar.empty()
+                        
                         st.session_state.data_shopee = pd.DataFrame(hasil)
                         st.session_state.audit_shopee = {"total": total_baris, "valid": len(hasil), "file_count": len(files_shopee), "error_harga": err_h, "luar": luar_wilayah}
                         st.success(f"✅ {len(hasil)} data Shopee berhasil diproses!")
@@ -163,7 +178,6 @@ if halaman == "🟠 Shopee":
             max_h = int(df_shp["Harga"].max()) if df_shp["Harga"].max() > 0 else 1000000
             f_hrg = st.slider("Rentang Harga (Rp)", 0, max_h, (0, max_h), key="f_hrg_shp")
 
-        # Menerapkan Filter Gabungan
         df_f = df_shp[df_shp["Wilayah"].isin(f_wil) & df_shp["Tipe Usaha"].isin(f_tipe) & (df_shp["Harga"] >= f_hrg[0]) & (df_shp["Harga"] <= f_hrg[1])]
         
         tab1, tab2, tab3 = st.tabs(["📊 Executive Dashboard", "🗄️ Database Siap Ekspor", "📑 Log Audit"])
@@ -213,10 +227,21 @@ elif halaman == "🟢 Tokopedia":
             if not files_tokped:
                 st.error("⚠️ Unggah file CSV Tokopedia dulu!")
             else:
-                with st.spinner("Memproses data & mendeteksi Tipe Usaha..."):
+                with st.spinner("Membaca file CSV..."):
                     try:
+                        # Hitung total baris dari semua file terlebih dahulu untuk progress bar yang akurat
+                        total_semua_baris = 0
+                        for f in files_tokped:
+                            df_temp = pd.read_csv(f, dtype=str, on_bad_lines="skip")
+                            total_semua_baris += len(df_temp)
+                            f.seek(0)
+                            
                         hasil, total_baris, err_h, luar_wilayah = [], 0, 0, 0
-                        bar = st.progress(0)
+                        baris_diproses = 0
+                        
+                        # UI Progress Bar Real-Time
+                        status_text = st.empty()
+                        progress_bar = st.progress(0)
                         
                         babel_keys = ["pangkal", "bangka", "belitung", "sungailiat", "mentok", "muntok", "koba", "toboali", "manggar", "tanjung pandan", "tanjungpandan"]
                         
@@ -224,7 +249,6 @@ elif halaman == "🟢 Tokopedia":
                             df_raw = pd.read_csv(file, dtype=str, on_bad_lines="skip")
                             total_baris += len(df_raw)
                             
-                            # LOGIKA PINTAR DETEKSI SUMBER CSV
                             if "Link" in df_raw.columns and "Nama Produk" in df_raw.columns:
                                 col_links = ["Link"]
                                 col_namas = ["Nama Produk"]
@@ -261,16 +285,23 @@ elif halaman == "🟢 Tokopedia":
                                         except: val_h, err_h = 0, err_h + 1
                                         
                                         if val_h > 0:
-                                            # Proses Deteksi Tipe Usaha
                                             tipe_usaha = deteksi_tipe_usaha(toko)
-                                            
                                             hasil.append({"Nama Toko": toko, "Nama Produk": nama, "Harga": val_h, "Wilayah": lokasi_tokped, "Tipe Usaha": tipe_usaha, "Link": link})
                                             
                                     except Exception:
                                         continue
-                            bar.progress((idx + 1) / len(files_tokped))
+                                
+                                # Update UI Progress (Setiap 5 baris agar tidak lag)
+                                baris_diproses += 1
+                                if baris_diproses % 5 == 0 or baris_diproses == total_semua_baris:
+                                    pct = min(baris_diproses / total_semua_baris, 1.0)
+                                    progress_bar.progress(pct)
+                                    status_text.markdown(f"**⏳ Mengekstrak:** {baris_diproses} / {total_semua_baris} baris ({int(pct*100)}%)")
                         
-                        bar.empty()
+                        # Bersihkan UI Progress setelah selesai
+                        status_text.empty()
+                        progress_bar.empty()
+                        
                         df_final = pd.DataFrame(hasil).drop_duplicates()
                         st.session_state.data_tokped = df_final
                         st.session_state.audit_tokped = {"total": total_baris, "valid": len(df_final), "file_count": len(files_tokped), "error_harga": err_h, "luar": luar_wilayah}
@@ -289,7 +320,6 @@ elif halaman == "🟢 Tokopedia":
             max_h = int(df_tkp["Harga"].max()) if df_tkp["Harga"].max() > 0 else 1000000
             f_hrg = st.slider("Rentang Harga (Rp)", 0, max_h, (0, max_h), key="f_hrg_tkp")
 
-        # Menerapkan Filter Gabungan
         df_f = df_tkp[df_tkp["Wilayah"].isin(f_wil) & df_tkp["Tipe Usaha"].isin(f_tipe) & (df_tkp["Harga"] >= f_hrg[0]) & (df_tkp["Harga"] <= f_hrg[1])]
         
         tab1, tab2, tab3 = st.tabs(["📊 Executive Dashboard", "🗄️ Database Siap Ekspor", "📑 Log Audit"])
@@ -312,7 +342,6 @@ elif halaman == "🟢 Tokopedia":
                     df_f.to_excel(writer, index=False, sheet_name="Data Tokopedia")
                     wb, ws = writer.book, writer.sheets["Data Tokopedia"]
                     for col_num, value in enumerate(df_f.columns.values): ws.write(0, col_num, value, wb.add_format({'bold': True, 'bg_color': '#064e3b', 'font_color': 'white'}))
-                    # Atur lebar kolom (A-F)
                     ws.set_column('A:A', 25); ws.set_column('B:B', 50); ws.set_column('C:C', 18, wb.add_format({'num_format': '#,##0'})); ws.set_column('D:D', 20); ws.set_column('E:E', 25); ws.set_column('F:F', 50)
                 st.markdown('<style>div[data-testid="stDownloadButton"] button {background-color: #059669; color: white; border:none;}</style>', unsafe_allow_html=True)
                 st.download_button("⬇️ Download Excel Tokopedia", data=buf.getvalue(), file_name=f"UMKM_Tokopedia_{datetime.date.today()}.xlsx")
