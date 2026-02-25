@@ -45,7 +45,7 @@ if "audit_tokped" not in st.session_state: st.session_state.audit_tokped = {}
 # --- 4. FUNGSI DETEKSI TIPE USAHA ---
 def deteksi_tipe_usaha(nama_toko):
     if pd.isna(nama_toko) or nama_toko in ["Tidak Dilacak", "Toko CSV", "Anonim", ""]:
-        return "Tidak Terdeteksi"
+        return "Tidak Terdeteksi (Butuh Nama Toko)"
     
     nama_lower = str(nama_toko).lower()
     keyword_fisik = ['toko', 'warung', 'grosir', 'mart', 'apotek', 'cv.', 'pt.', 'official', 'agen', 'distributor', 'kios', 'kedai', 'supermarket', 'minimarket', 'cabang', 'jaya', 'abadi', 'makmur', 'motor', 'mobil', 'bengkel', 'snack', 'store']
@@ -156,9 +156,13 @@ if halaman == "🟠 Shopee":
     df_shp = st.session_state.data_shopee
     if df_shp is not None and not df_shp.empty:
         st.markdown("### 🔎 Filter Data")
+        data_id_shp = len(df_shp) # Mencegah memory crash (Kunci Dinamis)
+        
         col_f1, col_f2, col_f3 = st.columns([1, 1, 1])
-        with col_f1: f_wil = st.multiselect("Pilih Wilayah:", options=sorted(df_shp["Wilayah"].unique()), default=sorted(df_shp["Wilayah"].unique()), key="f_wil_shp")
-        with col_f2: f_tipe = st.multiselect("Pilih Tipe Usaha:", options=sorted(df_shp["Tipe Usaha"].unique()), default=sorted(df_shp["Tipe Usaha"].unique()), key="f_tipe_shp")
+        with col_f1: 
+            f_wil = st.multiselect("Pilih Wilayah:", options=sorted(df_shp["Wilayah"].unique()), default=sorted(df_shp["Wilayah"].unique()), key=f"f_wil_shp_{data_id_shp}")
+        with col_f2: 
+            f_tipe = st.multiselect("Pilih Tipe Usaha:", options=sorted(df_shp["Tipe Usaha"].unique()), default=sorted(df_shp["Tipe Usaha"].unique()), key=f"f_tipe_shp_{data_id_shp}")
         
         # --- PERBAIKAN BUG SLIDER STREAMLIT SHOPEE ---
         try:
@@ -168,7 +172,8 @@ if halaman == "🟠 Shopee":
             max_h_shp = 1000000
             
         with col_f3: 
-            f_hrg = st.slider("Rentang Harga (Rp)", 0, max_h_shp, (0, max_h_shp), key="f_hrg_shp")
+            # Kunci dinamis ditambahkan agar Streamlit tidak bentrok dengan memori cache file sebelumnya
+            f_hrg = st.slider("Rentang Harga (Rp)", 0, max_h_shp, (0, max_h_shp), key=f"f_hrg_shp_safe_{data_id_shp}_{max_h_shp}")
 
         df_f = df_shp[df_shp["Wilayah"].isin(f_wil) & df_shp["Tipe Usaha"].isin(f_tipe) & (df_shp["Harga"] >= f_hrg[0]) & (df_shp["Harga"] <= f_hrg[1])]
         
@@ -309,9 +314,13 @@ elif halaman == "🟢 Tokopedia":
     df_tkp = st.session_state.data_tokped
     if df_tkp is not None and not df_tkp.empty:
         st.markdown("### 🔎 Filter Data Pintar")
+        data_id_tkp = len(df_tkp) # Mencegah memory crash (Kunci Dinamis)
+        
         col_f1, col_f2, col_f3 = st.columns([1, 1, 1])
-        with col_f1: f_wil = st.multiselect("Pilih Wilayah:", options=sorted(df_tkp["Wilayah"].unique()), default=sorted(df_tkp["Wilayah"].unique()), key="f_wil_tkp")
-        with col_f2: f_tipe = st.multiselect("Pilih Tipe Usaha:", options=sorted(df_tkp["Tipe Usaha"].unique()), default=sorted(df_tkp["Tipe Usaha"].unique()), key="f_tipe_tkp")
+        with col_f1: 
+            f_wil = st.multiselect("Pilih Wilayah:", options=sorted(df_tkp["Wilayah"].unique()), default=sorted(df_tkp["Wilayah"].unique()), key=f"f_wil_tkp_{data_id_tkp}")
+        with col_f2: 
+            f_tipe = st.multiselect("Pilih Tipe Usaha:", options=sorted(df_tkp["Tipe Usaha"].unique()), default=sorted(df_tkp["Tipe Usaha"].unique()), key=f"f_tipe_tkp_{data_id_tkp}")
         
         # --- PERBAIKAN BUG SLIDER STREAMLIT TOKOPEDIA ---
         try:
@@ -321,7 +330,8 @@ elif halaman == "🟢 Tokopedia":
             max_h_tkp = 1000000
             
         with col_f3: 
-            f_hrg = st.slider("Rentang Harga (Rp)", 0, max_h_tkp, (0, max_h_tkp), key="f_hrg_tkp")
+            # Kunci dinamis ditambahkan agar Streamlit tidak bentrok dengan memori cache file sebelumnya
+            f_hrg = st.slider("Rentang Harga (Rp)", 0, max_h_tkp, (0, max_h_tkp), key=f"f_hrg_tkp_safe_{data_id_tkp}_{max_h_tkp}")
 
         df_f = df_tkp[df_tkp["Wilayah"].isin(f_wil) & df_tkp["Tipe Usaha"].isin(f_tipe) & (df_tkp["Harga"] >= f_hrg[0]) & (df_tkp["Harga"] <= f_hrg[1])]
         
