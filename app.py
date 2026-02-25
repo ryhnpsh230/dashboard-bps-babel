@@ -49,8 +49,8 @@ def deteksi_tipe_usaha(nama_toko):
     
     nama_lower = str(nama_toko).lower()
     
-    # Kata kunci yang mengindikasikan mereka punya ruko/bangunan fisik di dunia nyata
-    keyword_fisik = ['toko', 'warung', 'grosir', 'mart', 'apotek', 'cv.', 'pt.', 'official', 'agen', 'distributor', 'kios', 'kedai', 'supermarket', 'minimarket', 'cabang', 'jaya', 'abadi', 'makmur', 'motor', 'mobil', 'bengkel']
+    # KATA KUNCI UPDATE: 'snack' dan 'store' sudah ditambahkan!
+    keyword_fisik = ['toko', 'warung', 'grosir', 'mart', 'apotek', 'cv.', 'pt.', 'official', 'agen', 'distributor', 'kios', 'kedai', 'supermarket', 'minimarket', 'cabang', 'jaya', 'abadi', 'makmur', 'motor', 'mobil', 'bengkel', 'snack', 'store']
     
     for kata in keyword_fisik:
         # Cek apakah kata kunci ada di dalam nama toko
@@ -149,7 +149,6 @@ if halaman == "🟠 Shopee":
         col_f1, col_f2, col_f3 = st.columns([1, 1, 1])
         with col_f1: f_wil = st.multiselect("Pilih Wilayah:", options=sorted(df_shp["Wilayah"].unique()), default=sorted(df_shp["Wilayah"].unique()), key="f_wil_shp")
         with col_f2: 
-            # FILTER BARU: TIPE USAHA
             f_tipe = st.multiselect("Pilih Tipe Usaha:", options=sorted(df_shp["Tipe Usaha"].unique()), default=sorted(df_shp["Tipe Usaha"].unique()), key="f_tipe_shp")
         with col_f3: 
             max_h = int(df_shp["Harga"].max()) if df_shp["Harga"].max() > 0 else 1000000
@@ -178,7 +177,6 @@ if halaman == "🟠 Shopee":
                     df_f.to_excel(writer, index=False, sheet_name="Data Shopee")
                     wb, ws = writer.book, writer.sheets["Data Shopee"]
                     for col_num, value in enumerate(df_f.columns.values): ws.write(0, col_num, value, wb.add_format({'bold': True, 'bg_color': '#022a5e', 'font_color': 'white'}))
-                    # Atur lebar kolom (A-F sekarang)
                     ws.set_column('A:A', 25); ws.set_column('B:B', 50); ws.set_column('C:C', 18, wb.add_format({'num_format': '#,##0'})); ws.set_column('D:D', 20); ws.set_column('E:E', 25); ws.set_column('F:F', 50)
                 st.download_button("⬇️ Download Excel Shopee", data=buf.getvalue(), file_name=f"UMKM_Shopee_{datetime.date.today()}.xlsx", type="primary")
         with tab3:
