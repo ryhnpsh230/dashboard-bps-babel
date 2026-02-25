@@ -102,10 +102,19 @@ if halaman == "🟠 Shopee":
                             df_raw = pd.read_csv(file, dtype=str, on_bad_lines="skip")
                             total_baris += len(df_raw)
                             
-                            col_link = next((c for c in df_raw.columns if 'href' in c.lower()), df_raw.columns[0])
-                            col_nama = next((c for c in df_raw.columns if 'whitespace-normal' in c.lower()), df_raw.columns[3])
-                            col_harga = next((c for c in df_raw.columns if 'font-medium 2' in c.lower()), df_raw.columns[4])
-                            col_wilayah = next((c for c in df_raw.columns if 'ml-[3px]' in c.lower()), df_raw.columns[7])
+                            # LOGIKA PINTAR DETEKSI SUMBER CSV
+                            if "Link" in df_raw.columns and "Nama Produk" in df_raw.columns:
+                                col_link = "Link"
+                                col_nama = "Nama Produk"
+                                col_harga = "Harga"
+                                col_wilayah = "Wilayah"
+                            else:
+                                col_link = next((c for c in df_raw.columns if 'href' in c.lower()), df_raw.columns[0])
+                                col_nama = next((c for c in df_raw.columns if 'whitespace-normal' in c.lower()), df_raw.columns[3])
+                                col_harga = next((c for c in df_raw.columns if 'font-medium 2' in c.lower()), df_raw.columns[4])
+                                # Pengaman jika kolom kurang dari 8
+                                idx_wilayah = 7 if len(df_raw.columns) > 7 else len(df_raw.columns) - 1
+                                col_wilayah = next((c for c in df_raw.columns if 'ml-[3px]' in c.lower()), df_raw.columns[idx_wilayah])
 
                             for i in range(len(df_raw)):
                                 row = df_raw.iloc[i]
@@ -215,11 +224,19 @@ elif halaman == "🟢 Tokopedia":
                             df_raw = pd.read_csv(file, dtype=str, on_bad_lines="skip")
                             total_baris += len(df_raw)
                             
-                            col_links = [c for c in df_raw.columns if 'Ui5' in c]
-                            col_namas = [c for c in df_raw.columns if '+tnoqZhn' in c]
-                            col_hargas = [c for c in df_raw.columns if 'urMOIDHH' in c]
-                            col_lokasis = [c for c in df_raw.columns if 'gxi+fs' in c]
-                            col_tokos = [c for c in df_raw.columns if 'si3CN' in c]
+                            # LOGIKA PINTAR DETEKSI SUMBER CSV
+                            if "Link" in df_raw.columns and "Nama Produk" in df_raw.columns:
+                                col_links = ["Link"]
+                                col_namas = ["Nama Produk"]
+                                col_hargas = ["Harga"]
+                                col_lokasis = ["Wilayah"]
+                                col_tokos = ["Nama Toko"]
+                            else:
+                                col_links = [c for c in df_raw.columns if 'Ui5' in c]
+                                col_namas = [c for c in df_raw.columns if '+tnoqZhn' in c]
+                                col_hargas = [c for c in df_raw.columns if 'urMOIDHH' in c]
+                                col_lokasis = [c for c in df_raw.columns if 'gxi+fs' in c]
+                                col_tokos = [c for c in df_raw.columns if 'si3CN' in c]
                             
                             max_items = max(len(col_links), len(col_namas), len(col_hargas), len(col_lokasis), len(col_tokos))
                             if max_items == 0: max_items = 1
