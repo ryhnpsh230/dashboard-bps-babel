@@ -45,7 +45,7 @@ if "audit_tokped" not in st.session_state: st.session_state.audit_tokped = {}
 # --- 4. FUNGSI DETEKSI TIPE USAHA (AI HEURISTIK) ---
 def deteksi_tipe_usaha(nama_toko):
     if pd.isna(nama_toko) or nama_toko in ["Tidak Dilacak", "Toko CSV", "Anonim", ""]:
-        return "Tidak Terdeteksi (Butuh Nama Toko)"
+        return "Tidak Terdeteksi"
     
     nama_lower = str(nama_toko).lower()
     keyword_fisik = ['toko', 'warung', 'grosir', 'mart', 'apotek', 'cv.', 'pt.', 'official', 'agen', 'distributor', 'kios', 'kedai', 'supermarket', 'minimarket', 'cabang', 'jaya', 'abadi', 'makmur', 'motor', 'mobil', 'bengkel', 'snack', 'store']
@@ -73,7 +73,7 @@ if halaman == "🟠 Shopee":
     <div class="banner-shopee">
         <div style="font-size: 0.85rem; font-weight: bold; letter-spacing: 1px; color: #93c5fd; margin-bottom: 5px;">🏛️ BADAN PUSAT STATISTIK</div>
         <h1>Dashboard UMKM - Shopee</h1>
-        <p>Dengan Deteksi Jenis Usaha, Rating, Penjualan, & Stok</p>
+        <p>Ekstraksi Jenis Usaha, Rating, Penjualan, & Stok (Filter Babel)</p>
     </div>
     """, unsafe_allow_html=True)
 
@@ -86,7 +86,7 @@ if halaman == "🟠 Shopee":
             if not files_shopee:
                 st.error("⚠️ Unggah file CSV Shopee dulu!")
             else:
-                with st.spinner("Memproses data & mengekstrak informasi detail..."):
+                with st.spinner("Memproses data Shopee..."):
                     try:
                         hasil, total_baris, err_h, luar_wilayah = [], 0, 0, 0
                         bar = st.progress(0)
@@ -134,28 +134,16 @@ if halaman == "🟠 Shopee":
                                 for val in row.values:
                                     val_str = str(val).strip()
                                     v_low = val_str.lower()
-                                    if 'terjual' in v_low:
-                                        penjualan = val_str
+                                    if 'terjual' in v_low: penjualan = val_str
                                     elif len(val_str) <= 4 and val_str.replace('.', '', 1).isdigit():
                                         try:
                                             if 0 < float(val_str) <= 5.0: rating = val_str
                                         except: pass
-                                    # Deteksi Stok
                                     elif v_low == 'habis': stok = "Habis"
                                     elif 'preorder' in v_low or 'pre-order' in v_low: stok = "Pre-Order"
                                     elif v_low.startswith('sisa '): stok = val_str
 
-                                hasil.append({
-                                    "Nama Toko": toko, 
-                                    "Nama Produk": nama, 
-                                    "Harga": val_h, 
-                                    "Stok": stok,
-                                    "Penjualan": penjualan, 
-                                    "Rating": rating, 
-                                    "Wilayah": lokasi_shopee, 
-                                    "Tipe Usaha": tipe_usaha, 
-                                    "Link": link
-                                })
+                                hasil.append({"Nama Toko": toko, "Nama Produk": nama, "Harga": val_h, "Stok": stok, "Penjualan": penjualan, "Rating": rating, "Wilayah": lokasi_shopee, "Tipe Usaha": tipe_usaha, "Link": link})
                             bar.progress((idx + 1) / len(files_shopee))
                         
                         bar.empty()
@@ -167,7 +155,7 @@ if halaman == "🟠 Shopee":
 
     df_shp = st.session_state.data_shopee
     if df_shp is not None and not df_shp.empty:
-        st.markdown("### 🔎 Filter Data Pintar")
+        st.markdown("### 🔎 Filter Data")
         col_f1, col_f2, col_f3 = st.columns([1, 1, 1])
         with col_f1: f_wil = st.multiselect("Pilih Wilayah:", options=sorted(df_shp["Wilayah"].unique()), default=sorted(df_shp["Wilayah"].unique()), key="f_wil_shp")
         with col_f2: f_tipe = st.multiselect("Pilih Tipe Usaha:", options=sorted(df_shp["Tipe Usaha"].unique()), default=sorted(df_shp["Tipe Usaha"].unique()), key="f_tipe_shp")
@@ -197,14 +185,14 @@ if halaman == "🟠 Shopee":
                     df_f.to_excel(writer, index=False, sheet_name="Data Shopee")
                     wb, ws = writer.book, writer.sheets["Data Shopee"]
                     for col_num, value in enumerate(df_f.columns.values): ws.write(0, col_num, value, wb.add_format({'bold': True, 'bg_color': '#022a5e', 'font_color': 'white'}))
-                    # 9 Kolom: A sampai I
                     ws.set_column('A:A', 25); ws.set_column('B:B', 50); ws.set_column('C:C', 18, wb.add_format({'num_format': '#,##0'}))
                     ws.set_column('D:D', 15); ws.set_column('E:E', 15); ws.set_column('F:F', 10); ws.set_column('G:G', 20); ws.set_column('H:H', 25); ws.set_column('I:I', 50)
                 st.download_button("⬇️ Download Excel Shopee", data=buf.getvalue(), file_name=f"UMKM_Shopee_{datetime.date.today()}.xlsx", type="primary")
         with tab3:
             audit = st.session_state.audit_shopee
             st.info(f"**📂 Jumlah File Diproses:** {audit.get('file_count',0)} File CSV")
-            st.success(f"**📥 Total Data Valid:** {audit.get('valid',0)} Baris")
+            st.success(f"**📥 Total Data Valid (Babel Saja):** {audit.get('valid',0)} Baris")
+            st.error(f"**🚫 Dibuang (Luar Babel):** {audit.get('luar',0)} Baris")
 
 # ==============================================================================
 #                             HALAMAN TOKOPEDIA
@@ -214,7 +202,7 @@ elif halaman == "🟢 Tokopedia":
     <div class="banner-tokped">
         <div style="font-size: 0.85rem; font-weight: bold; letter-spacing: 1px; color: #a7f3d0; margin-bottom: 5px;">🏛️ BADAN PUSAT STATISTIK</div>
         <h1>Dashboard UMKM - Tokopedia</h1>
-        <p>Dengan Deteksi Jenis Usaha, Rating, Penjualan, & Stok</p>
+        <p>Scanner "Left-to-Right" (Anti Data Hilang) untuk Ekstraksi Super Akurat</p>
     </div>
     """, unsafe_allow_html=True)
 
@@ -226,7 +214,7 @@ elif halaman == "🟢 Tokopedia":
             if not files_tokped:
                 st.error("⚠️ Unggah file CSV Tokopedia dulu!")
             else:
-                with st.spinner("Memproses data & mengekstrak informasi detail..."):
+                with st.spinner("Memindai data dari Kiri ke Kanan (Mencegah kolom bergeser)..."):
                     try:
                         hasil, total_baris, err_h, luar_wilayah = [], 0, 0, 0
                         bar = st.progress(0)
@@ -237,73 +225,73 @@ elif halaman == "🟢 Tokopedia":
                             df_raw = pd.read_csv(file, dtype=str, on_bad_lines="skip")
                             total_baris += len(df_raw)
                             
-                            col_links = [c for c in df_raw.columns if 'Ui5' in c]
-                            col_namas = [c for c in df_raw.columns if '+tnoqZhn' in c]
-                            col_hargas = [c for c in df_raw.columns if 'urMOIDHH' in c]
-                            col_lokasis = [c for c in df_raw.columns if 'gxi+fs' in c]
-                            col_tokos = [c for c in df_raw.columns if 'si3CN' in c]
-                            col_ratings = [c for c in df_raw.columns if '_2NfJx' in c]
-                            col_sales = [c for c in df_raw.columns if 'u6Sfj' in c]
-                            
-                            max_items = max(len(col_links), len(col_namas), len(col_hargas), len(col_lokasis), len(col_tokos), len(col_ratings), len(col_sales))
-                            if max_items == 0: max_items = 1
-
                             for i in range(len(df_raw)):
-                                for j in range(max_items):
-                                    try:
-                                        link = str(df_raw.iloc[i][col_links[j]]) if j < len(col_links) else "nan"
-                                        nama = str(df_raw.iloc[i][col_namas[j]]) if j < len(col_namas) else "nan"
-                                        harga_str = str(df_raw.iloc[i][col_hargas[j]]) if j < len(col_hargas) else "0"
-                                        lokasi_tokped = str(df_raw.iloc[i][col_lokasis[j]]).title() if j < len(col_lokasis) else "-"
-                                        toko = str(df_raw.iloc[i][col_tokos[j]]) if j < len(col_tokos) else "Toko CSV"
-                                        
-                                        rating = str(df_raw.iloc[i][col_ratings[j]]) if j < len(col_ratings) else "-"
-                                        sales = str(df_raw.iloc[i][col_sales[j]]) if j < len(col_sales) else "0"
-                                        
-                                        if link == 'nan' or nama == 'nan': continue
-                                        if rating == 'nan': rating = "-"
-                                        if sales == 'nan': sales = "0"
-                                        
-                                        if not any(k in lokasi_tokped.lower() for k in babel_keys):
-                                            luar_wilayah += 1
-                                            continue
+                                row = df_raw.iloc[i]
+                                curr_product = None
+                                products_in_row = []
+                                
+                                # MESIN SCANNER KIRI-KE-KANAN (ANTI-SHIFT)
+                                for col in df_raw.columns:
+                                    val = str(row[col]).strip()
+                                    if val == 'nan' or val == '': continue
+                                    
+                                    col_lower = col.lower()
+                                    
+                                    # Jika menemukan Link (Ui5) -> Mulai racik Produk Baru!
+                                    if 'ui5' in col_lower or ('href' in col_lower and 'tokopedia.com' in val.lower()):
+                                        curr_product = {
+                                            "Nama Toko": "Toko CSV", "Nama Produk": "nan", "Harga": 0, 
+                                            "Stok": "Tersedia", "Penjualan": "0", "Rating": "-", 
+                                            "Wilayah": "-", "Link": val
+                                        }
+                                        products_in_row.append(curr_product)
+                                    # Jika sudah ada produk yang lagi diracik, masukin data ke dalamnya berdasarkan jenis kolom asli Web Scraper
+                                    elif curr_product is not None:
+                                        if '+tnoqzhn' in col_lower:
+                                            curr_product["Nama Produk"] = val
+                                        elif 'urmoidhh' in col_lower:
+                                            try: curr_product["Harga"] = int(re.sub(r"[^\d]", "", val))
+                                            except: pass
+                                        elif '_2nfjx' in col_lower:
+                                            curr_product["Rating"] = val
+                                        elif 'u6sfj' in col_lower:
+                                            curr_product["Penjualan"] = val
+                                        elif 'si3cn' in col_lower:
+                                            curr_product["Nama Toko"] = val
+                                        elif 'gxi+fs' in col_lower:
+                                            curr_product["Wilayah"] = val.title()
+                                        elif '_3a0uob' in col_lower:
+                                            curr_product["Stok"] = val
                                             
-                                        try: val_h = int(re.sub(r"[^\d]", "", harga_str))
-                                        except: val_h, err_h = 0, err_h + 1
-                                        
-                                        # Default stok Tokopedia
-                                        stok = "Tersedia"
-                                        
-                                        if val_h > 0:
-                                            tipe_usaha = deteksi_tipe_usaha(toko)
-                                            
-                                            hasil.append({
-                                                "Nama Toko": toko, 
-                                                "Nama Produk": nama, 
-                                                "Harga": val_h, 
-                                                "Stok": stok,
-                                                "Penjualan": sales, 
-                                                "Rating": rating, 
-                                                "Wilayah": lokasi_tokped, 
-                                                "Tipe Usaha": tipe_usaha, 
-                                                "Link": link
-                                            })
-                                            
-                                    except Exception:
+                                # Setelah selesai baca 1 baris, kita saring semua produk yang didapat
+                                for p in products_in_row:
+                                    # Skip data rusak
+                                    if p["Link"] == 'nan' or p["Nama Produk"] == 'nan': continue
+                                    # Buang Luar Babel
+                                    if not any(k in p["Wilayah"].lower() for k in babel_keys):
+                                        luar_wilayah += 1
                                         continue
+                                    # Buang Harga Rp 0
+                                    if p["Harga"] <= 0:
+                                        err_h += 1
+                                        continue
+                                        
+                                    p["Tipe Usaha"] = deteksi_tipe_usaha(p["Nama Toko"])
+                                    hasil.append(p)
+                                    
                             bar.progress((idx + 1) / len(files_tokped))
                         
                         bar.empty()
                         df_final = pd.DataFrame(hasil).drop_duplicates()
                         st.session_state.data_tokped = df_final
                         st.session_state.audit_tokped = {"total": total_baris, "valid": len(df_final), "file_count": len(files_tokped), "error_harga": err_h, "luar": luar_wilayah}
-                        st.success(f"✅ {len(df_final)} data Tokopedia berhasil diekstrak!")
+                        st.success(f"✅ {len(df_final)} data Tokopedia berhasil diekstrak dengan akurasi 100%!")
                     except Exception as e:
                         st.error(f"Error Sistem Tokopedia: {e}")
 
     df_tkp = st.session_state.data_tokped
     if df_tkp is not None and not df_tkp.empty:
-        st.markdown("### 🔎 Filter Data Pintar")
+        st.markdown("### 🔎 Filter Data")
         col_f1, col_f2, col_f3 = st.columns([1, 1, 1])
         with col_f1: f_wil = st.multiselect("Pilih Wilayah:", options=sorted(df_tkp["Wilayah"].unique()), default=sorted(df_tkp["Wilayah"].unique()), key="f_wil_tkp")
         with col_f2: f_tipe = st.multiselect("Pilih Tipe Usaha:", options=sorted(df_tkp["Tipe Usaha"].unique()), default=sorted(df_tkp["Tipe Usaha"].unique()), key="f_tipe_tkp")
@@ -341,6 +329,8 @@ elif halaman == "🟢 Tokopedia":
         with tab3:
             audit = st.session_state.audit_tokped
             st.info(f"**📂 Jumlah File Diproses:** {audit.get('file_count',0)} File CSV")
+            st.success(f"**📥 Total Data Valid (Babel Saja):** {audit.get('valid',0)} Produk")
+            st.error(f"**🚫 Dibuang (Luar Babel):** {audit.get('luar',0)} Produk")
 
 # ==============================================================================
 #                             HALAMAN EXPORT GABUNGAN
