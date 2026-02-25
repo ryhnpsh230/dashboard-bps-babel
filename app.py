@@ -48,9 +48,12 @@ def deteksi_tipe_usaha(nama_toko):
         return "Tidak Terdeteksi (Butuh Nama Toko)"
     
     nama_lower = str(nama_toko).lower()
+    
+    # KATA KUNCI UPDATE: 'snack' dan 'store' sudah ditambahkan!
     keyword_fisik = ['toko', 'warung', 'grosir', 'mart', 'apotek', 'cv.', 'pt.', 'official', 'agen', 'distributor', 'kios', 'kedai', 'supermarket', 'minimarket', 'cabang', 'jaya', 'abadi', 'makmur', 'motor', 'mobil', 'bengkel', 'snack', 'store']
     
     for kata in keyword_fisik:
+        # Cek apakah kata kunci ada di dalam nama toko
         if kata in nama_lower:
             return "Ada Toko Fisik"
             
@@ -73,7 +76,7 @@ if halaman == "🟠 Shopee":
     <div class="banner-shopee">
         <div style="font-size: 0.85rem; font-weight: bold; letter-spacing: 1px; color: #93c5fd; margin-bottom: 5px;">🏛️ BADAN PUSAT STATISTIK</div>
         <h1>Dashboard UMKM - Shopee</h1>
-        <p>Dengan Deteksi Otomatis Jenis Usaha, Rating & Penjualan</p>
+        <p>Dengan Deteksi Otomatis Jenis Usaha (Murni Online vs Toko Fisik)</p>
     </div>
     """, unsafe_allow_html=True)
 
@@ -88,7 +91,7 @@ if halaman == "🟠 Shopee":
             elif not mode_api_shp:
                 st.warning("⚠️ Untuk deteksi Toko Fisik/Murni Online, Centang kotak 'Deteksi Nama Toko via API'!")
             else:
-                with st.spinner("Memproses data & mendeteksi Rating/Penjualan..."):
+                with st.spinner("Memproses data & mendeteksi Tipe Usaha..."):
                     try:
                         hasil, total_baris, err_h, luar_wilayah = [], 0, 0, 0
                         bar = st.progress(0)
@@ -127,31 +130,10 @@ if halaman == "🟠 Shopee":
                                             if res.status_code == 200: toko = res.json().get("data",{}).get("name", "Anonim")
                                         except: pass
                                 
+                                # Proses Deteksi Tipe Usaha
                                 tipe_usaha = deteksi_tipe_usaha(toko)
-                                
-                                # EKSTRAKSI RATING & PENJUALAN SHOPEE
-                                penjualan = "0"
-                                rating = "-"
-                                for val in row.values:
-                                    val_str = str(val).strip()
-                                    v_low = val_str.lower()
-                                    if 'terjual' in v_low:
-                                        penjualan = val_str
-                                    elif len(val_str) <= 4 and val_str.replace('.', '', 1).isdigit():
-                                        try:
-                                            if 0 < float(val_str) <= 5.0: rating = val_str
-                                        except: pass
 
-                                hasil.append({
-                                    "Nama Toko": toko, 
-                                    "Nama Produk": nama, 
-                                    "Harga": val_h, 
-                                    "Penjualan": penjualan, 
-                                    "Rating": rating, 
-                                    "Wilayah": lokasi_shopee, 
-                                    "Tipe Usaha": tipe_usaha, 
-                                    "Link": link
-                                })
+                                hasil.append({"Nama Toko": toko, "Nama Produk": nama, "Harga": val_h, "Wilayah": lokasi_shopee, "Tipe Usaha": tipe_usaha, "Link": link})
                             bar.progress((idx + 1) / len(files_shopee))
                         
                         bar.empty()
@@ -166,11 +148,13 @@ if halaman == "🟠 Shopee":
         st.markdown("### 🔎 Filter Data Pintar")
         col_f1, col_f2, col_f3 = st.columns([1, 1, 1])
         with col_f1: f_wil = st.multiselect("Pilih Wilayah:", options=sorted(df_shp["Wilayah"].unique()), default=sorted(df_shp["Wilayah"].unique()), key="f_wil_shp")
-        with col_f2: f_tipe = st.multiselect("Pilih Tipe Usaha:", options=sorted(df_shp["Tipe Usaha"].unique()), default=sorted(df_shp["Tipe Usaha"].unique()), key="f_tipe_shp")
+        with col_f2: 
+            f_tipe = st.multiselect("Pilih Tipe Usaha:", options=sorted(df_shp["Tipe Usaha"].unique()), default=sorted(df_shp["Tipe Usaha"].unique()), key="f_tipe_shp")
         with col_f3: 
             max_h = int(df_shp["Harga"].max()) if df_shp["Harga"].max() > 0 else 1000000
             f_hrg = st.slider("Rentang Harga (Rp)", 0, max_h, (0, max_h), key="f_hrg_shp")
 
+        # Menerapkan Filter Gabungan
         df_f = df_shp[df_shp["Wilayah"].isin(f_wil) & df_shp["Tipe Usaha"].isin(f_tipe) & (df_shp["Harga"] >= f_hrg[0]) & (df_shp["Harga"] <= f_hrg[1])]
         
         tab1, tab2, tab3 = st.tabs(["📊 Executive Dashboard", "🗄️ Database Siap Ekspor", "📑 Log Audit"])
@@ -193,9 +177,7 @@ if halaman == "🟠 Shopee":
                     df_f.to_excel(writer, index=False, sheet_name="Data Shopee")
                     wb, ws = writer.book, writer.sheets["Data Shopee"]
                     for col_num, value in enumerate(df_f.columns.values): ws.write(0, col_num, value, wb.add_format({'bold': True, 'bg_color': '#022a5e', 'font_color': 'white'}))
-                    # Atur lebar kolom (Ada 8 Kolom: A-H)
-                    ws.set_column('A:A', 25); ws.set_column('B:B', 50); ws.set_column('C:C', 18, wb.add_format({'num_format': '#,##0'}))
-                    ws.set_column('D:D', 15); ws.set_column('E:E', 10); ws.set_column('F:F', 20); ws.set_column('G:G', 25); ws.set_column('H:H', 50)
+                    ws.set_column('A:A', 25); ws.set_column('B:B', 50); ws.set_column('C:C', 18, wb.add_format({'num_format': '#,##0'})); ws.set_column('D:D', 20); ws.set_column('E:E', 25); ws.set_column('F:F', 50)
                 st.download_button("⬇️ Download Excel Shopee", data=buf.getvalue(), file_name=f"UMKM_Shopee_{datetime.date.today()}.xlsx", type="primary")
         with tab3:
             audit = st.session_state.audit_shopee
@@ -210,7 +192,7 @@ elif halaman == "🟢 Tokopedia":
     <div class="banner-tokped">
         <div style="font-size: 0.85rem; font-weight: bold; letter-spacing: 1px; color: #a7f3d0; margin-bottom: 5px;">🏛️ BADAN PUSAT STATISTIK</div>
         <h1>Dashboard UMKM - Tokopedia</h1>
-        <p>Dengan Deteksi Otomatis Jenis Usaha, Rating & Penjualan</p>
+        <p>Dengan Deteksi Otomatis Jenis Usaha (Murni Online vs Toko Fisik)</p>
     </div>
     """, unsafe_allow_html=True)
 
@@ -222,7 +204,7 @@ elif halaman == "🟢 Tokopedia":
             if not files_tokped:
                 st.error("⚠️ Unggah file CSV Tokopedia dulu!")
             else:
-                with st.spinner("Memproses data & mendeteksi Rating/Penjualan..."):
+                with st.spinner("Memproses data & mendeteksi Tipe Usaha..."):
                     try:
                         hasil, total_baris, err_h, luar_wilayah = [], 0, 0, 0
                         bar = st.progress(0)
@@ -239,11 +221,7 @@ elif halaman == "🟢 Tokopedia":
                             col_lokasis = [c for c in df_raw.columns if 'gxi+fs' in c]
                             col_tokos = [c for c in df_raw.columns if 'si3CN' in c]
                             
-                            # RADAR TAMBAHAN UNTUK RATING & PENJUALAN
-                            col_ratings = [c for c in df_raw.columns if '_2NfJx' in c]
-                            col_sales = [c for c in df_raw.columns if 'u6Sfj' in c]
-                            
-                            max_items = max(len(col_links), len(col_namas), len(col_hargas), len(col_lokasis), len(col_tokos), len(col_ratings), len(col_sales))
+                            max_items = max(len(col_links), len(col_namas), len(col_hargas), len(col_lokasis), len(col_tokos))
                             if max_items == 0: max_items = 1
 
                             for i in range(len(df_raw)):
@@ -255,12 +233,8 @@ elif halaman == "🟢 Tokopedia":
                                         lokasi_tokped = str(df_raw.iloc[i][col_lokasis[j]]).title() if j < len(col_lokasis) else "-"
                                         toko = str(df_raw.iloc[i][col_tokos[j]]) if j < len(col_tokos) else "Toko CSV"
                                         
-                                        rating = str(df_raw.iloc[i][col_ratings[j]]) if j < len(col_ratings) else "-"
-                                        sales = str(df_raw.iloc[i][col_sales[j]]) if j < len(col_sales) else "0"
-                                        
-                                        if link == 'nan' or nama == 'nan': continue
-                                        if rating == 'nan': rating = "-"
-                                        if sales == 'nan': sales = "0"
+                                        if link == 'nan' or nama == 'nan':
+                                            continue
                                         
                                         if not any(k in lokasi_tokped.lower() for k in babel_keys):
                                             luar_wilayah += 1
@@ -270,17 +244,10 @@ elif halaman == "🟢 Tokopedia":
                                         except: val_h, err_h = 0, err_h + 1
                                         
                                         if val_h > 0:
+                                            # Proses Deteksi Tipe Usaha
                                             tipe_usaha = deteksi_tipe_usaha(toko)
-                                            hasil.append({
-                                                "Nama Toko": toko, 
-                                                "Nama Produk": nama, 
-                                                "Harga": val_h, 
-                                                "Penjualan": sales, 
-                                                "Rating": rating, 
-                                                "Wilayah": lokasi_tokped, 
-                                                "Tipe Usaha": tipe_usaha, 
-                                                "Link": link
-                                            })
+                                            
+                                            hasil.append({"Nama Toko": toko, "Nama Produk": nama, "Harga": val_h, "Wilayah": lokasi_tokped, "Tipe Usaha": tipe_usaha, "Link": link})
                                             
                                     except Exception:
                                         continue
@@ -299,11 +266,13 @@ elif halaman == "🟢 Tokopedia":
         st.markdown("### 🔎 Filter Data Pintar")
         col_f1, col_f2, col_f3 = st.columns([1, 1, 1])
         with col_f1: f_wil = st.multiselect("Pilih Wilayah:", options=sorted(df_tkp["Wilayah"].unique()), default=sorted(df_tkp["Wilayah"].unique()), key="f_wil_tkp")
-        with col_f2: f_tipe = st.multiselect("Pilih Tipe Usaha:", options=sorted(df_tkp["Tipe Usaha"].unique()), default=sorted(df_tkp["Tipe Usaha"].unique()), key="f_tipe_tkp")
+        with col_f2: 
+            f_tipe = st.multiselect("Pilih Tipe Usaha:", options=sorted(df_tkp["Tipe Usaha"].unique()), default=sorted(df_tkp["Tipe Usaha"].unique()), key="f_tipe_tkp")
         with col_f3: 
             max_h = int(df_tkp["Harga"].max()) if df_tkp["Harga"].max() > 0 else 1000000
             f_hrg = st.slider("Rentang Harga (Rp)", 0, max_h, (0, max_h), key="f_hrg_tkp")
 
+        # Menerapkan Filter Gabungan
         df_f = df_tkp[df_tkp["Wilayah"].isin(f_wil) & df_tkp["Tipe Usaha"].isin(f_tipe) & (df_tkp["Harga"] >= f_hrg[0]) & (df_tkp["Harga"] <= f_hrg[1])]
         
         tab1, tab2, tab3 = st.tabs(["📊 Executive Dashboard", "🗄️ Database Siap Ekspor", "📑 Log Audit"])
@@ -326,9 +295,8 @@ elif halaman == "🟢 Tokopedia":
                     df_f.to_excel(writer, index=False, sheet_name="Data Tokopedia")
                     wb, ws = writer.book, writer.sheets["Data Tokopedia"]
                     for col_num, value in enumerate(df_f.columns.values): ws.write(0, col_num, value, wb.add_format({'bold': True, 'bg_color': '#064e3b', 'font_color': 'white'}))
-                    # Atur lebar kolom (Ada 8 Kolom: A-H)
-                    ws.set_column('A:A', 25); ws.set_column('B:B', 50); ws.set_column('C:C', 18, wb.add_format({'num_format': '#,##0'}))
-                    ws.set_column('D:D', 15); ws.set_column('E:E', 10); ws.set_column('F:F', 20); ws.set_column('G:G', 25); ws.set_column('H:H', 50)
+                    # Atur lebar kolom (A-F)
+                    ws.set_column('A:A', 25); ws.set_column('B:B', 50); ws.set_column('C:C', 18, wb.add_format({'num_format': '#,##0'})); ws.set_column('D:D', 20); ws.set_column('E:E', 25); ws.set_column('F:F', 50)
                 st.markdown('<style>div[data-testid="stDownloadButton"] button {background-color: #059669; color: white; border:none;}</style>', unsafe_allow_html=True)
                 st.download_button("⬇️ Download Excel Tokopedia", data=buf.getvalue(), file_name=f"UMKM_Tokopedia_{datetime.date.today()}.xlsx")
         with tab3:
@@ -343,7 +311,7 @@ elif halaman == "📊 Export Gabungan":
     <div class="banner-gabungan">
         <div style="font-size: 0.85rem; font-weight: bold; letter-spacing: 1px; color: #94a3b8; margin-bottom: 5px;">🏛️ BADAN PUSAT STATISTIK</div>
         <h1>Export Master Data Gabungan</h1>
-        <p>Dilengkapi Kolom Rating, Penjualan, & Analisis 'Tipe Usaha'</p>
+        <p>Dilengkapi dengan Kolom Analisis 'Tipe Usaha' (Fisik vs Murni Online)</p>
     </div>
     """, unsafe_allow_html=True)
     
@@ -375,8 +343,7 @@ elif halaman == "📊 Export Gabungan":
                 header_fmt_shp = wb.add_format({'bold': True, 'bg_color': '#022a5e', 'font_color': 'white'})
                 for col_num, value in enumerate(df_shp.columns.values): ws_shp.write(0, col_num, value, header_fmt_shp)
                 
-                ws_shp.set_column('A:A', 25); ws_shp.set_column('B:B', 50); ws_shp.set_column('C:C', 18, currency_fmt)
-                ws_shp.set_column('D:D', 15); ws_shp.set_column('E:E', 10); ws_shp.set_column('F:F', 20); ws_shp.set_column('G:G', 25); ws_shp.set_column('H:H', 50)
+                ws_shp.set_column('A:A', 25); ws_shp.set_column('B:B', 50); ws_shp.set_column('C:C', 18, currency_fmt); ws_shp.set_column('D:D', 20); ws_shp.set_column('E:E', 25); ws_shp.set_column('F:F', 50)
                 ws_shp.autofilter(0, 0, len(df_shp), len(df_shp.columns) - 1)
                 
             if df_tkp_ready:
@@ -387,8 +354,7 @@ elif halaman == "📊 Export Gabungan":
                 header_fmt_tkp = wb.add_format({'bold': True, 'bg_color': '#064e3b', 'font_color': 'white'})
                 for col_num, value in enumerate(df_tkp.columns.values): ws_tkp.write(0, col_num, value, header_fmt_tkp)
                 
-                ws_tkp.set_column('A:A', 25); ws_tkp.set_column('B:B', 50); ws_tkp.set_column('C:C', 18, currency_fmt)
-                ws_tkp.set_column('D:D', 15); ws_tkp.set_column('E:E', 10); ws_tkp.set_column('F:F', 20); ws_tkp.set_column('G:G', 25); ws_tkp.set_column('H:H', 50)
+                ws_tkp.set_column('A:A', 25); ws_tkp.set_column('B:B', 50); ws_tkp.set_column('C:C', 18, currency_fmt); ws_tkp.set_column('D:D', 20); ws_tkp.set_column('E:E', 25); ws_tkp.set_column('F:F', 50)
                 ws_tkp.autofilter(0, 0, len(df_tkp), len(df_tkp.columns) - 1)
                 
         st.markdown('<style>div[data-testid="stDownloadButton"] button {background-color: #0f172a; color: white; border:none; height: 3.5rem; font-size: 1.1rem;}</style>', unsafe_allow_html=True)
