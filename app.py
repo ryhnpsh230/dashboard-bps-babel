@@ -111,7 +111,7 @@ st.markdown(f"""
     /* --- SIDEBAR: DIBIKIN GELAP BIAR KONTRAS DENGAN KANAN YANG OREN --- */
     [data-testid="stSidebar"] {{
          background-color: #0d0d0d !important;
-         border-right: 2px solid {BPS_OREN_UTAMA};
+         border-right: 2px solid #FF6F00;
     }}
     [data-testid="stSidebar"] * {{
         color: #ffffff !important;
@@ -689,3 +689,4 @@ elif halaman == "📊 Export Gabungan":
                 file_name=f"Master_UMKM_BPS_{datetime.date.today()}.xlsx",
                 use_container_width=True
             )
+
