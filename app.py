@@ -10,13 +10,13 @@ import os
 
 # --- 1. KONFIGURASI HALAMAN ---
 st.set_page_config(
-    page_title="Dashboard UMKM BPS",
+    page_title="Dashboard Ekstraksi Data BPS",
     page_icon="🏛️",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# --- 2. CSS CUSTOM (TEMA PROFESIONAL KANTOR) ---
+# --- 2. CSS CUSTOM (TEMA PROFESIONAL KANTOR & OREN BPS) ---
 st.markdown("""
     <style>
     /* Mengatur jarak aman atas dan bawah */
@@ -35,41 +35,33 @@ st.markdown("""
     .banner-fb h1 { color: white !important; font-weight: 700; margin-bottom: 5px; font-size: 2.2rem; }
     .banner-fb p { color: #e7f3ff !important; font-size: 1.05rem; margin: 0; opacity: 0.9;}
     
-    .banner-gabungan { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); padding: 25px 35px; border-radius: 12px; margin-bottom: 25px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); color: white; border-left: 6px solid #94a3b8;}
-    .banner-gabungan h1 { color: white !important; font-weight: 700; margin-bottom: 5px; font-size: 2.2rem; }
-    .banner-gabungan p { color: #cbd5e1 !important; font-size: 1.05rem; margin: 0; opacity: 0.9;}
+    /* BANNER GOOGLE MAPS & MASTER GABUNGAN (TEMA OREN BPS) */
+    .banner-maps, .banner-gabungan { background: linear-gradient(135deg, #ea580c 0%, #f97316 100%); padding: 25px 35px; border-radius: 12px; margin-bottom: 25px; box-shadow: 0 4px 12px rgba(234,88,12,0.2); color: white; border-left: 6px solid #ffedd5;}
+    .banner-maps h1, .banner-gabungan h1 { color: white !important; font-weight: 700; margin-bottom: 5px; font-size: 2.2rem; }
+    .banner-maps p, .banner-gabungan p { color: #ffedd5 !important; font-size: 1.05rem; margin: 0; opacity: 0.9;}
     
-    /* Mempercantik Card Metrik (Total Data, Titik Lokasi, dll) */
+    /* Mempercantik Card Metrik */
     div[data-testid="metric-container"] {
         background-color: #ffffff;
-        border: 1px solid #e2e8f0;
+        border: 1px solid #ffedd5;
         padding: 15px 20px;
         border-radius: 10px;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+        box-shadow: 0 2px 6px rgba(234,88,12,0.05);
         transition: transform 0.2s ease;
     }
     div[data-testid="metric-container"]:hover {
         transform: translateY(-2px);
-        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        box-shadow: 0 4px 10px rgba(234,88,12,0.15);
+        border-color: #fdba74;
     }
     
-    /* Support Dark Mode untuk Metrik */
     @media (prefers-color-scheme: dark) {
-        div[data-testid="metric-container"] {
-            background-color: #1e293b;
-            border: 1px solid #334155;
-        }
+        div[data-testid="metric-container"] { background-color: #1e293b; border: 1px solid #334155; }
+        div[data-testid="metric-container"]:hover { border-color: #ea580c; }
     }
     
-    /* Mempercantik style Header Tab */
     .stTabs [data-baseweb="tab-list"] { gap: 10px; }
-    .stTabs [data-baseweb="tab"] {
-        height: 50px;
-        white-space: pre-wrap;
-        background-color: transparent;
-        border-radius: 5px 5px 0 0;
-        padding: 0 20px;
-    }
+    .stTabs [data-baseweb="tab"] { height: 50px; white-space: pre-wrap; background-color: transparent; border-radius: 5px 5px 0 0; padding: 0 20px; }
     </style>
 """, unsafe_allow_html=True)
 
@@ -83,38 +75,172 @@ if "audit_tokped" not in st.session_state: st.session_state.audit_tokped = {}
 if "data_fb" not in st.session_state: st.session_state.data_fb = None
 if "audit_fb" not in st.session_state: st.session_state.audit_fb = {}
 
-# --- 4. FUNGSI DETEKSI TIPE USAHA (AI HEURISTIK) ---
+if "data_maps" not in st.session_state: st.session_state.data_maps = None
+if "audit_maps" not in st.session_state: st.session_state.audit_maps = {}
+
+# --- 4. FUNGSI BANTUAN ---
 def deteksi_tipe_usaha(nama_toko):
-    if pd.isna(nama_toko) or nama_toko in ["Tidak Dilacak", "Toko CSV", "Anonim", ""]:
-        return "Tidak Terdeteksi (Butuh Nama Toko)"
-    
-    if str(nama_toko) == "FB Seller":
-        return "Perorangan (Facebook)"
-    
+    if pd.isna(nama_toko) or nama_toko in ["Tidak Dilacak", "Toko CSV", "Anonim", ""]: return "Tidak Terdeteksi"
+    if str(nama_toko) == "FB Seller": return "Perorangan (Facebook)"
     nama_lower = str(nama_toko).lower()
     keyword_fisik = ['toko', 'warung', 'grosir', 'mart', 'apotek', 'cv.', 'pt.', 'official', 'agen', 'distributor', 'kios', 'kedai', 'supermarket', 'minimarket', 'cabang', 'jaya', 'abadi', 'makmur', 'motor', 'mobil', 'bengkel', 'snack', 'store']
-    
     for kata in keyword_fisik:
-        if kata in nama_lower:
-            return "Ada Toko Fisik"
-            
+        if kata in nama_lower: return "Ada Toko Fisik"
     return "Murni Online (Rumahan)"
+
+# Fungsi khusus Maps untuk mengekstrak nomor telepon dari deskripsi
+def ekstrak_no_hp(teks):
+    if pd.isna(teks): return "-"
+    # Regex ini nyari pola angka yang panjangnya 9-14 digit, bisa diawali '0' atau '+62'
+    pola = re.search(r'(\+62|0)\s*[-]*\d{2,4}\s*[-]*\d{3,4}\s*[-]*\d{3,4}', str(teks))
+    if pola: return pola.group(0)
+    return "-"
 
 # --- 5. SIDEBAR MENU ---
 with st.sidebar:
-    if os.path.exists("logo.png"):
-        st.image("logo.png", use_container_width=True)
-        
+    if os.path.exists("logo.png"): st.image("logo.png", use_container_width=True)
     st.markdown("### 🧭 Menu Navigasi")
-    halaman = st.radio("Pilih Fitur:", ["🟠 Shopee", "🟢 Tokopedia", "🔵 Facebook FB", "📊 Export Gabungan"])
+    halaman = st.radio("Pilih Fitur:", ["🟠 Shopee", "🟢 Tokopedia", "🔵 Facebook FB", "📍 Google Maps", "📊 Export Gabungan (4-in-1)"])
     st.divider()
 
 babel_keys = ["pangkal", "bangka", "belitung", "sungailiat", "mentok", "muntok", "koba", "toboali", "manggar", "tanjung pandan", "tanjungpandan"]
 
+
+# ==============================================================================
+#                             HALAMAN GOOGLE MAPS
+# ==============================================================================
+if halaman == "📍 Google Maps":
+    st.markdown("""
+    <div class="banner-maps">
+        <div style="font-size: 0.85rem; font-weight: bold; letter-spacing: 1px; margin-bottom: 5px;">🏛️ BADAN PUSAT STATISTIK</div>
+        <h1>Dashboard Usaha - Google Maps</h1>
+        <p>Data Spasial, Koordinat, dan Kontak Usaha Fisik Wilayah Bangka Belitung</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    with st.sidebar:
+        st.header("📥 Input Data Maps")
+        files_maps = st.file_uploader("Unggah CSV Google Maps", type=["csv"], accept_multiple_files=True, key="file_maps")
+        
+        if st.button("🚀 Proses Data Maps", type="primary", use_container_width=True):
+            if not files_maps:
+                st.error("⚠️ Silakan unggah file CSV Google Maps hasil ekstensi terlebih dahulu.")
+            else:
+                with st.spinner("Sedang membaca dan membersihkan data Maps..."):
+                    try:
+                        total_semua_baris = 0
+                        for f in files_maps:
+                            df_temp = pd.read_csv(f, dtype=str, on_bad_lines="skip")
+                            total_semua_baris += len(df_temp)
+                            f.seek(0)
+                            
+                        hasil, total_baris, luar_wilayah = [], 0, 0
+                        baris_diproses = 0
+                        status_text = st.empty()
+                        progress_bar = st.progress(0)
+                        
+                        for file in files_maps:
+                            df_raw = pd.read_csv(file, dtype=str, on_bad_lines="skip")
+                            total_baris += len(df_raw)
+                            
+                            # Kolom CSV Maps dari Ekstensi: Nama Toko, Alamat, Titik Koordinat, Deskripsi, Foto, Link
+                            for i in range(len(df_raw)):
+                                row = df_raw.iloc[i]
+                                nama = str(row.get("Nama Toko", "Tanpa Nama"))
+                                alamat = str(row.get("Alamat", "-"))
+                                koordinat = str(row.get("Titik Koordinat", "N/A"))
+                                deskripsi = str(row.get("Deskripsi", "-"))
+                                foto = str(row.get("Foto", "-"))
+                                link = str(row.get("Link", "-"))
+                                
+                                # Filter wilayah Babel dari kolom alamat
+                                # Catatan: Jika ingin memasukkan semua data walau tanpa kata bangka/belitung, hapus 3 baris di bawah ini
+                                if not any(k in alamat.lower() for k in babel_keys) and alamat != "-" and "Cek di Link" not in alamat:
+                                    luar_wilayah += 1
+                                    baris_diproses += 1
+                                    continue
+                                
+                                # Ekstrak No Telepon dari Deskripsi
+                                no_telp = ekstrak_no_hp(deskripsi)
+                                
+                                # Pembersihan Deskripsi (Membuang sisa no telp atau tulisan Ulasan biar bersih)
+                                deskripsi_bersih = re.sub(r'(\+62|0)\s*[-]*\d{2,4}\s*[-]*\d{3,4}\s*[-]*\d{3,4}', '', deskripsi)
+                                deskripsi_bersih = re.sub(r'\d+\s*Ulasan', '', deskripsi_bersih).replace('·', '').strip()
+                                
+                                hasil.append({
+                                    "Nama Toko/Usaha": nama, 
+                                    "Kategori Bisnis": deskripsi_bersih if deskripsi_bersih else "Lainnya", 
+                                    "Alamat Lengkap": alamat, 
+                                    "Koordinat": koordinat,
+                                    "No Telepon": no_telp,
+                                    "Foto Lokasi": foto, 
+                                    "Link Gmaps": link
+                                })
+                                
+                                baris_diproses += 1
+                                if baris_diproses % 5 == 0 or baris_diproses == total_semua_baris:
+                                    pct = min(baris_diproses / total_semua_baris, 1.0)
+                                    progress_bar.progress(pct)
+                                    status_text.markdown(f"**⏳ Membersihkan Data:** {baris_diproses} / {total_semua_baris} baris ({int(pct*100)}%)")
+                        
+                        status_text.empty()
+                        progress_bar.empty()
+                        
+                        df_final = pd.DataFrame(hasil).drop_duplicates()
+                        st.session_state.data_maps = df_final
+                        st.session_state.audit_maps = {"total": total_baris, "valid": len(df_final), "file_count": len(files_maps), "luar": luar_wilayah}
+                        st.success(f"✅ Selesai! {len(df_final)} Data Usaha Fisik Google Maps berhasil dibersihkan.")
+                    except Exception as e:
+                        st.error(f"Error Sistem Maps: {e}")
+
+    df_maps = st.session_state.data_maps
+    if df_maps is not None and not df_maps.empty:
+        with st.container(border=True):
+            st.markdown("#### 🔎 Filter Data Pintar")
+            col_f1, col_f2 = st.columns([1, 1])
+            with col_f1: f_kat = st.multiselect("🏷️ Kategori Bisnis:", options=sorted(df_maps["Kategori Bisnis"].unique()), default=sorted(df_maps["Kategori Bisnis"].unique())[:5], key="f_kat_maps")
+            with col_f2: 
+                punya_telp = st.checkbox("📞 Tampilkan hanya yang memiliki No Telepon")
+
+            df_f = df_maps[df_maps["Kategori Bisnis"].isin(f_kat)]
+            if punya_telp: df_f = df_f[df_f["No Telepon"] != "-"]
+            
+            tab1, tab2, tab3 = st.tabs(["📊 Executive Dashboard", "🗄️ Database Siap Ekspor", "📑 Log Audit"])
+            with tab1:
+                st.markdown("<br>", unsafe_allow_html=True)
+                c1, c2, c3 = st.columns(3)
+                c1.metric("📌 Total Usaha Terdata", f"{len(df_f):,}".replace(",", "."))
+                c2.metric("📍 Memiliki Titik Koordinat", f"{len(df_f[df_f['Koordinat'] != 'N/A']):,}".replace(",", "."))
+                c3.metric("📞 Memiliki Kontak", f"{len(df_f[df_f['No Telepon'] != '-']):,}".replace(",", "."))
+                
+                st.markdown("<br>", unsafe_allow_html=True)
+                if not df_f.empty:
+                    top_kategori = df_f.groupby("Kategori Bisnis").size().reset_index(name='Jumlah').sort_values('Jumlah', ascending=False).head(10)
+                    st.plotly_chart(px.bar(top_kategori, x="Kategori Bisnis", y="Jumlah", title="Top 10 Kategori Usaha Terbanyak", color="Kategori Bisnis", color_discrete_sequence=px.colors.sequential.Oranges_r), use_container_width=True)
+            with tab2:
+                st.markdown("<br>", unsafe_allow_html=True)
+                st.dataframe(df_f, use_container_width=True, hide_index=True, height=400)
+                
+                if not df_f.empty:
+                    buf = io.BytesIO()
+                    with pd.ExcelWriter(buf, engine="xlsxwriter") as writer:
+                        df_f.to_excel(writer, index=False, sheet_name="Data Maps")
+                        wb, ws = writer.book, writer.sheets["Data Maps"]
+                        for col_num, value in enumerate(df_f.columns.values): ws.write(0, col_num, value, wb.add_format({'bold': True, 'bg_color': '#ea580c', 'font_color': 'white'}))
+                        ws.set_column('A:A', 35); ws.set_column('B:B', 20); ws.set_column('C:C', 45); ws.set_column('D:D', 25); ws.set_column('E:E', 18); ws.set_column('F:G', 40)
+                    st.markdown('<style>div[data-testid="stDownloadButton"] button {background-color: #f97316; color: white; border:none;}</style>', unsafe_allow_html=True)
+                    st.download_button("⬇️ Unduh Excel Database Maps", data=buf.getvalue(), file_name=f"UMKM_Maps_{datetime.date.today()}.xlsx")
+            with tab3:
+                st.markdown("<br>", unsafe_allow_html=True)
+                audit = st.session_state.audit_maps
+                st.info(f"**📂 Dokumen Diproses:** {audit.get('file_count',0)} File CSV")
+                st.success(f"**📥 Data Baris Dibersihkan:** {audit.get('valid',0)} Baris")
+                st.warning(f"**⚠️ Data Luar Wilayah:** {audit.get('luar',0)} Baris")
+
 # ==============================================================================
 #                             HALAMAN SHOPEE
 # ==============================================================================
-if halaman == "🟠 Shopee":
+elif halaman == "🟠 Shopee":
     st.markdown("""
     <div class="banner-shopee">
         <div style="font-size: 0.85rem; font-weight: bold; letter-spacing: 1px; color: #cbd5e1; margin-bottom: 5px;">🏛️ BADAN PUSAT STATISTIK</div>
@@ -153,10 +279,7 @@ if halaman == "🟠 Shopee":
                             total_baris += len(df_raw)
                             
                             if "Link" in df_raw.columns and "Nama Produk" in df_raw.columns:
-                                col_link = "Link"
-                                col_nama = "Nama Produk"
-                                col_harga = "Harga"
-                                col_wilayah = "Wilayah"
+                                col_link, col_nama, col_harga, col_wilayah = "Link", "Nama Produk", "Harga", "Wilayah"
                             else:
                                 col_link = next((c for c in df_raw.columns if 'href' in c.lower()), df_raw.columns[0])
                                 col_nama = next((c for c in df_raw.columns if 'whitespace-normal' in c.lower()), df_raw.columns[3])
@@ -302,11 +425,7 @@ elif halaman == "🟢 Tokopedia":
                             total_baris += len(df_raw)
                             
                             if "Link" in df_raw.columns and "Nama Produk" in df_raw.columns:
-                                col_links = ["Link"]
-                                col_namas = ["Nama Produk"]
-                                col_hargas = ["Harga"]
-                                col_lokasis = ["Wilayah"]
-                                col_tokos = ["Nama Toko"]
+                                col_links, col_namas, col_hargas, col_lokasis, col_tokos = ["Link"], ["Nama Produk"], ["Harga"], ["Wilayah"], ["Nama Toko"]
                             else:
                                 col_links = [c for c in df_raw.columns if 'Ui5' in c]
                                 col_namas = [c for c in df_raw.columns if '+tnoqZhn' in c]
@@ -551,35 +670,38 @@ elif halaman == "🔵 Facebook FB":
             st.success(f"**📥 Data Baris Terekstrak Bersih:** {audit.get('valid',0)} Baris")
             st.warning(f"**⚠️ Data Diabaikan (Luar Wilayah):** {audit.get('luar',0)} Baris")
 
+
 # ==============================================================================
-#                             HALAMAN EXPORT GABUNGAN
+#                             HALAMAN EXPORT GABUNGAN (4-IN-1)
 # ==============================================================================
-elif halaman == "📊 Export Gabungan":
+elif halaman == "📊 Export Gabungan (4-in-1)":
     st.markdown("""
     <div class="banner-gabungan">
-        <div style="font-size: 0.85rem; font-weight: bold; letter-spacing: 1px; color: #cbd5e1; margin-bottom: 5px;">🏛️ BADAN PUSAT STATISTIK</div>
+        <div style="font-size: 0.85rem; font-weight: bold; letter-spacing: 1px; margin-bottom: 5px;">🏛️ BADAN PUSAT STATISTIK</div>
         <h1>Export Master Data Gabungan</h1>
-        <p>Konsolidasi Master Data (Shopee, Tokopedia, Facebook) - Siap Analisis</p>
+        <p>Konsolidasi Master Data (Shopee, Tokopedia, Facebook, Maps) - Siap Analisis</p>
     </div>
     """, unsafe_allow_html=True)
     
     df_shp_ready = st.session_state.data_shopee is not None and not st.session_state.data_shopee.empty
     df_tkp_ready = st.session_state.data_tokped is not None and not st.session_state.data_tokped.empty
     df_fb_ready = st.session_state.data_fb is not None and not st.session_state.data_fb.empty
+    df_maps_ready = st.session_state.data_maps is not None and not st.session_state.data_maps.empty
     
-    if not df_shp_ready and not df_tkp_ready and not df_fb_ready:
-        st.warning("⚠️ Belum ada data yang diekstrak. Silakan unggah dan proses dokumen di menu Shopee, Tokopedia, atau Facebook pada panel navigasi kiri.")
+    if not any([df_shp_ready, df_tkp_ready, df_fb_ready, df_maps_ready]):
+        st.warning("⚠️ Belum ada data yang diproses. Silakan unggah dokumen di menu samping terlebih dahulu.")
     else:
-        st.success("✅ Seluruh instansi data siap untuk dikonsolidasi menjadi satu file Master Excel (3-in-1)!")
+        st.success("✅ Seluruh instansi data siap untuk dikonsolidasi menjadi satu file Master Excel!")
         
         st.markdown("<br>", unsafe_allow_html=True)
-        c1, c2, c3 = st.columns(3)
-        if df_shp_ready: c1.metric("📦 Data Shopee Terekstrak", f"{len(st.session_state.data_shopee):,}".replace(",", "."))
-        if df_tkp_ready: c2.metric("📦 Data Tokopedia Terekstrak", f"{len(st.session_state.data_tokped):,}".replace(",", "."))
-        if df_fb_ready: c3.metric("📦 Data Facebook Terekstrak", f"{len(st.session_state.data_fb):,}".replace(",", "."))
+        c1, c2, c3, c4 = st.columns(4)
+        if df_shp_ready: c1.metric("📦 Shopee", f"{len(st.session_state.data_shopee):,}".replace(",", "."))
+        if df_tkp_ready: c2.metric("📦 Tokopedia", f"{len(st.session_state.data_tokped):,}".replace(",", "."))
+        if df_fb_ready: c3.metric("📦 Facebook", f"{len(st.session_state.data_fb):,}".replace(",", "."))
+        if df_maps_ready: c4.metric("📍 Google Maps", f"{len(st.session_state.data_maps):,}".replace(",", "."))
             
         st.write("---")
-        st.markdown("Dokumen di bawah ini akan diunduh dengan format **Tab Sheet Terpisah** sesuai platform, serta sudah dilengkapi **Auto-Filter** untuk memudahkan penyortiran di Microsoft Excel.")
+        st.markdown("Dokumen di bawah ini akan diunduh dengan format **Tab Sheet Terpisah** sesuai platform, serta sudah dilengkapi **Auto-Filter** untuk memudahkan penyortiran di Excel.")
         st.markdown("<br>", unsafe_allow_html=True)
         
         buf = io.BytesIO()
@@ -613,14 +735,24 @@ elif halaman == "📊 Export Gabungan":
                 for col_num, value in enumerate(df_fb.columns.values): ws_fb.write(0, col_num, value, header_fmt_fb)
                 ws_fb.set_column('A:A', 25); ws_fb.set_column('B:B', 50); ws_fb.set_column('C:C', 18, currency_fmt); ws_fb.set_column('D:D', 20); ws_fb.set_column('E:E', 25); ws_fb.set_column('F:F', 50)
                 ws_fb.autofilter(0, 0, len(df_fb), len(df_fb.columns) - 1)
+            
+            if df_maps_ready:
+                df_maps = st.session_state.data_maps
+                df_maps.to_excel(writer, index=False, sheet_name="Data Maps")
+                ws_maps = writer.sheets["Data Maps"]
+                header_fmt_maps = wb.add_format({'bold': True, 'bg_color': '#ea580c', 'font_color': 'white'})
+                for col_num, value in enumerate(df_maps.columns.values): ws_maps.write(0, col_num, value, header_fmt_maps)
+                ws_maps.set_column('A:A', 35); ws_maps.set_column('B:B', 20); ws_maps.set_column('C:C', 45); ws_maps.set_column('D:D', 25); ws_maps.set_column('E:E', 18); ws_maps.set_column('F:G', 40)
+                ws_maps.autofilter(0, 0, len(df_maps), len(df_maps.columns) - 1)
                 
-        st.markdown('<style>div[data-testid="stDownloadButton"] button {background-color: #0f172a; color: white; border:none; height: 3.5rem; font-size: 1.1rem; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);}</style>', unsafe_allow_html=True)
+        st.markdown('<style>div[data-testid="stDownloadButton"] button {background-color: #ea580c; color: white; border:none; height: 3.5rem; font-size: 1.1rem; border-radius: 8px; box-shadow: 0 4px 6px rgba(234,88,12,0.3); transition: all 0.3s ease;}</style>', unsafe_allow_html=True)
+        st.markdown('<style>div[data-testid="stDownloadButton"] button:hover {background-color: #c2410c; transform: translateY(-2px); box-shadow: 0 6px 12px rgba(234,88,12,0.4);}</style>', unsafe_allow_html=True)
         
         _, col_btn, _ = st.columns([1, 2, 1])
         with col_btn:
             st.download_button(
-                label="⬇️ UNDUH EXCEL MASTER (3-IN-1)",
+                label="⬇️ UNDUH EXCEL MASTER DATA (GABUNGAN)",
                 data=buf.getvalue(),
-                file_name=f"Master_UMKM_BPS_{datetime.date.today()}.xlsx",
+                file_name=f"Master_Data_BPS_{datetime.date.today()}.xlsx",
                 use_container_width=True
             )
