@@ -85,7 +85,7 @@ if halaman == "🟠 Shopee":
     <div class="banner-shopee">
         <div style="font-size: 0.85rem; font-weight: bold; letter-spacing: 1px; color: #93c5fd; margin-bottom: 5px;">🏛️ BADAN PUSAT STATISTIK</div>
         <h1>Dashboard UMKM - Shopee</h1>
-        <p>Dengan Deteksi Otomatis Jenis Usaha (Murni Online vs Toko Fisik)</p>
+        <p>Ekstraksi Data UMKM dari Shopee Marketplace Wilayah Bangka Belitung</p>
     </div>
     """, unsafe_allow_html=True)
 
@@ -227,7 +227,7 @@ elif halaman == "🟢 Tokopedia":
     <div class="banner-tokped">
         <div style="font-size: 0.85rem; font-weight: bold; letter-spacing: 1px; color: #a7f3d0; margin-bottom: 5px;">🏛️ BADAN PUSAT STATISTIK</div>
         <h1>Dashboard UMKM - Tokopedia</h1>
-        <p>Dengan Deteksi Otomatis Jenis Usaha (Murni Online vs Toko Fisik)</p>
+        <p>Ekstraksi Data UMKM dari Tokopedia Wilayah Bangka Belitung</p>
     </div>
     """, unsafe_allow_html=True)
 
@@ -557,3 +557,4 @@ elif halaman == "📊 Export Gabungan":
             file_name=f"Master_UMKM_BPS_{datetime.date.today()}.xlsx",
             use_container_width=True
         )
+
