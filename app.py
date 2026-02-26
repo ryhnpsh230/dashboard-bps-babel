@@ -16,26 +16,391 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# --- 2. CSS MINIMALIS ---
+# --- 2. CSS PREMIUM REDESIGN ---
 st.markdown("""
     <style>
-    .block-container { padding-top: 2rem; padding-bottom: 2rem; }
-    
-    .banner-shopee { background: linear-gradient(90deg, #022a5e 0%, #0056b3 100%); padding: 25px 35px; border-radius: 12px; margin-bottom: 25px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); color: white; }
-    .banner-shopee h1 { color: white !important; font-weight: 700; margin-bottom: 5px; font-size: 2.2rem; }
-    .banner-shopee p { color: #dbeafe !important; font-size: 1.05rem; margin: 0; }
-    
-    .banner-tokped { background: linear-gradient(90deg, #064e3b 0%, #059669 100%); padding: 25px 35px; border-radius: 12px; margin-bottom: 25px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); color: white; }
-    .banner-tokped h1 { color: white !important; font-weight: 700; margin-bottom: 5px; font-size: 2.2rem; }
-    .banner-tokped p { color: #d1fae5 !important; font-size: 1.05rem; margin: 0; }
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Syne:wght@700;800&display=swap');
 
-    .banner-fb { background: linear-gradient(90deg, #1877f2 0%, #0866ff 100%); padding: 25px 35px; border-radius: 12px; margin-bottom: 25px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); color: white; }
-    .banner-fb h1 { color: white !important; font-weight: 700; margin-bottom: 5px; font-size: 2.2rem; }
-    .banner-fb p { color: #e7f3ff !important; font-size: 1.05rem; margin: 0; }
+    /* ===== GLOBAL RESET & BASE ===== */
+    html, body, [class*="css"] {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+    }
     
-    .banner-gabungan { background: linear-gradient(90deg, #1e293b 0%, #0f172a 100%); padding: 25px 35px; border-radius: 12px; margin-bottom: 25px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); color: white; }
-    .banner-gabungan h1 { color: white !important; font-weight: 700; margin-bottom: 5px; font-size: 2.2rem; }
-    .banner-gabungan p { color: #cbd5e1 !important; font-size: 1.05rem; margin: 0; }
+    .main .block-container {
+        padding: 2rem 2.5rem 3rem 2.5rem;
+        max-width: 1400px;
+    }
+
+    /* ===== SIDEBAR REDESIGN ===== */
+    [data-testid="stSidebar"] {
+        background: linear-gradient(180deg, #0a0f1e 0%, #0d1530 60%, #0a1628 100%);
+        border-right: 1px solid rgba(99, 179, 237, 0.12);
+    }
+    [data-testid="stSidebar"] * {
+        color: #e2e8f0 !important;
+    }
+    [data-testid="stSidebar"] .stRadio label {
+        font-size: 0.9rem;
+        font-weight: 500;
+        padding: 0.5rem 0.75rem;
+        border-radius: 8px;
+        transition: all 0.2s ease;
+        cursor: pointer;
+        display: block;
+    }
+    [data-testid="stSidebar"] .stRadio label:hover {
+        background: rgba(99, 179, 237, 0.1);
+        color: #63b3ed !important;
+    }
+    [data-testid="stSidebar"] [data-testid="stMarkdownContainer"] p {
+        color: #94a3b8 !important;
+        font-size: 0.75rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        font-weight: 600;
+    }
+    [data-testid="stSidebar"] h3 {
+        font-family: 'Syne', sans-serif !important;
+        font-size: 1rem !important;
+        color: #f1f5f9 !important;
+        letter-spacing: 0.02em;
+    }
+
+    /* ===== HEADER BANNER — SHOPEE ===== */
+    .banner-shopee {
+        background: linear-gradient(135deg, #0b1c3d 0%, #0d2e6e 50%, #1042a0 100%);
+        padding: 32px 40px;
+        border-radius: 16px;
+        margin-bottom: 28px;
+        position: relative;
+        overflow: hidden;
+        border: 1px solid rgba(99, 179, 237, 0.2);
+        box-shadow: 0 20px 60px rgba(10, 30, 80, 0.5), inset 0 1px 0 rgba(255,255,255,0.05);
+    }
+    .banner-shopee::before {
+        content: '';
+        position: absolute;
+        top: -60px; right: -60px;
+        width: 220px; height: 220px;
+        background: radial-gradient(circle, rgba(66,135,245,0.25) 0%, transparent 70%);
+        border-radius: 50%;
+    }
+    .banner-shopee::after {
+        content: '';
+        position: absolute;
+        bottom: -40px; left: 30%;
+        width: 160px; height: 160px;
+        background: radial-gradient(circle, rgba(30,80,200,0.2) 0%, transparent 70%);
+        border-radius: 50%;
+    }
+    .banner-shopee h1 { 
+        color: white !important; font-weight: 800; margin-bottom: 6px; 
+        font-size: 2.2rem; font-family: 'Syne', sans-serif; 
+        letter-spacing: -0.02em; position: relative; z-index: 1;
+    }
+    .banner-shopee p { 
+        color: #93c5fd !important; font-size: 0.95rem; margin: 0; 
+        font-weight: 400; position: relative; z-index: 1;
+    }
+    .banner-label {
+        font-size: 0.72rem; font-weight: 700; letter-spacing: 0.12em;
+        text-transform: uppercase; margin-bottom: 8px; display: block;
+        position: relative; z-index: 1;
+    }
+    .banner-shopee .banner-label { color: #60a5fa !important; }
+
+    /* ===== HEADER BANNER — TOKOPEDIA ===== */
+    .banner-tokped {
+        background: linear-gradient(135deg, #022518 0%, #054a2e 50%, #076344 100%);
+        padding: 32px 40px;
+        border-radius: 16px;
+        margin-bottom: 28px;
+        position: relative;
+        overflow: hidden;
+        border: 1px solid rgba(52, 211, 153, 0.2);
+        box-shadow: 0 20px 60px rgba(5, 40, 25, 0.5), inset 0 1px 0 rgba(255,255,255,0.05);
+    }
+    .banner-tokped::before {
+        content: '';
+        position: absolute;
+        top: -60px; right: -60px;
+        width: 220px; height: 220px;
+        background: radial-gradient(circle, rgba(52,211,153,0.2) 0%, transparent 70%);
+        border-radius: 50%;
+    }
+    .banner-tokped h1 { 
+        color: white !important; font-weight: 800; margin-bottom: 6px; 
+        font-size: 2.2rem; font-family: 'Syne', sans-serif; 
+        letter-spacing: -0.02em; position: relative; z-index: 1;
+    }
+    .banner-tokped p { 
+        color: #a7f3d0 !important; font-size: 0.95rem; margin: 0; 
+        font-weight: 400; position: relative; z-index: 1;
+    }
+    .banner-tokped .banner-label { color: #6ee7b7 !important; }
+
+    /* ===== HEADER BANNER — FACEBOOK ===== */
+    .banner-fb {
+        background: linear-gradient(135deg, #0a1628 0%, #0f2757 50%, #1a3a7a 100%);
+        padding: 32px 40px;
+        border-radius: 16px;
+        margin-bottom: 28px;
+        position: relative;
+        overflow: hidden;
+        border: 1px solid rgba(96, 165, 250, 0.2);
+        box-shadow: 0 20px 60px rgba(8, 20, 60, 0.5), inset 0 1px 0 rgba(255,255,255,0.05);
+    }
+    .banner-fb::before {
+        content: '';
+        position: absolute;
+        top: -60px; right: -60px;
+        width: 220px; height: 220px;
+        background: radial-gradient(circle, rgba(59,130,246,0.25) 0%, transparent 70%);
+        border-radius: 50%;
+    }
+    .banner-fb h1 { 
+        color: white !important; font-weight: 800; margin-bottom: 6px; 
+        font-size: 2.2rem; font-family: 'Syne', sans-serif;
+        letter-spacing: -0.02em; position: relative; z-index: 1;
+    }
+    .banner-fb p { 
+        color: #bfdbfe !important; font-size: 0.95rem; margin: 0; 
+        font-weight: 400; position: relative; z-index: 1;
+    }
+    .banner-fb .banner-label { color: #93c5fd !important; }
+
+    /* ===== HEADER BANNER — GABUNGAN ===== */
+    .banner-gabungan {
+        background: linear-gradient(135deg, #07090f 0%, #0f1523 50%, #161e33 100%);
+        padding: 32px 40px;
+        border-radius: 16px;
+        margin-bottom: 28px;
+        position: relative;
+        overflow: hidden;
+        border: 1px solid rgba(148, 163, 184, 0.15);
+        box-shadow: 0 20px 60px rgba(5, 8, 20, 0.6), inset 0 1px 0 rgba(255,255,255,0.04);
+    }
+    .banner-gabungan::before {
+        content: '';
+        position: absolute;
+        top: -50px; right: -50px;
+        width: 200px; height: 200px;
+        background: radial-gradient(circle, rgba(148,163,184,0.12) 0%, transparent 70%);
+        border-radius: 50%;
+    }
+    .banner-gabungan h1 { 
+        color: white !important; font-weight: 800; margin-bottom: 6px; 
+        font-size: 2.2rem; font-family: 'Syne', sans-serif;
+        letter-spacing: -0.02em; position: relative; z-index: 1;
+    }
+    .banner-gabungan p { 
+        color: #94a3b8 !important; font-size: 0.95rem; margin: 0; 
+        font-weight: 400; position: relative; z-index: 1;
+    }
+    .banner-gabungan .banner-label { color: #64748b !important; }
+
+    /* ===== METRIC CARDS ===== */
+    [data-testid="stMetric"] {
+        background: linear-gradient(145deg, #f8fafc, #f1f5f9);
+        border: 1px solid #e2e8f0;
+        border-radius: 14px;
+        padding: 1.25rem 1.5rem !important;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.04), 0 1px 3px rgba(0,0,0,0.06);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    [data-testid="stMetric"]:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+    }
+    [data-testid="stMetricLabel"] {
+        font-size: 0.75rem !important;
+        font-weight: 600 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.06em !important;
+        color: #64748b !important;
+    }
+    [data-testid="stMetricValue"] {
+        font-family: 'Syne', sans-serif !important;
+        font-size: 2rem !important;
+        font-weight: 800 !important;
+        color: #0f172a !important;
+        line-height: 1.1 !important;
+    }
+
+    /* ===== TABS ===== */
+    [data-testid="stTabs"] [role="tablist"] {
+        border-bottom: 2px solid #e2e8f0;
+        gap: 0.25rem;
+        padding-bottom: 0;
+    }
+    [data-testid="stTabs"] [role="tab"] {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-weight: 600;
+        font-size: 0.875rem;
+        color: #64748b;
+        padding: 0.6rem 1.2rem;
+        border-radius: 8px 8px 0 0;
+        border: none;
+        border-bottom: 2px solid transparent;
+        margin-bottom: -2px;
+        transition: all 0.2s ease;
+    }
+    [data-testid="stTabs"] [role="tab"][aria-selected="true"] {
+        color: #1e40af;
+        border-bottom-color: #1e40af;
+        background: rgba(30, 64, 175, 0.05);
+    }
+    [data-testid="stTabs"] [role="tab"]:hover {
+        color: #1e40af;
+        background: rgba(30, 64, 175, 0.04);
+    }
+
+    /* ===== FILTER SECTION ===== */
+    .filter-section-label {
+        font-size: 0.8rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: #64748b;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .filter-section-label::before {
+        content: '';
+        display: inline-block;
+        width: 3px;
+        height: 14px;
+        background: #1e40af;
+        border-radius: 2px;
+    }
+
+    /* ===== BUTTONS ===== */
+    .stButton > button[kind="primary"] {
+        background: linear-gradient(135deg, #1e40af 0%, #2563eb 100%);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-weight: 700;
+        font-size: 0.9rem;
+        padding: 0.65rem 1.5rem;
+        letter-spacing: 0.01em;
+        transition: all 0.2s ease;
+        box-shadow: 0 4px 14px rgba(30, 64, 175, 0.35);
+    }
+    .stButton > button[kind="primary"]:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 6px 20px rgba(30, 64, 175, 0.45);
+        background: linear-gradient(135deg, #1d3fa8 0%, #1d4ed8 100%);
+    }
+
+    /* ===== DOWNLOAD BUTTON ===== */
+    [data-testid="stDownloadButton"] > button {
+        border-radius: 10px !important;
+        font-family: 'Plus Jakarta Sans', sans-serif !important;
+        font-weight: 700 !important;
+        letter-spacing: 0.02em !important;
+        transition: all 0.2s ease !important;
+        box-shadow: 0 4px 14px rgba(0,0,0,0.15) !important;
+    }
+    [data-testid="stDownloadButton"] > button:hover {
+        transform: translateY(-1px) !important;
+        box-shadow: 0 6px 20px rgba(0,0,0,0.22) !important;
+    }
+
+    /* ===== FILE UPLOADER ===== */
+    [data-testid="stFileUploader"] {
+        border: 2px dashed rgba(99, 179, 237, 0.3);
+        border-radius: 12px;
+        padding: 0.5rem;
+        background: rgba(255,255,255,0.03);
+        transition: border-color 0.2s ease;
+    }
+    [data-testid="stFileUploader"]:hover {
+        border-color: rgba(99, 179, 237, 0.6);
+    }
+
+    /* ===== DATAFRAME ===== */
+    [data-testid="stDataFrame"] {
+        border-radius: 12px !important;
+        overflow: hidden;
+        border: 1px solid #e2e8f0 !important;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.04) !important;
+    }
+
+    /* ===== ALERTS & MESSAGES ===== */
+    [data-testid="stAlert"] {
+        border-radius: 12px !important;
+        border-left-width: 4px !important;
+        font-weight: 500 !important;
+        font-size: 0.875rem !important;
+    }
+
+    /* ===== SECTION HEADING ===== */
+    .section-heading {
+        font-family: 'Syne', sans-serif;
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: #0f172a;
+        margin: 1.5rem 0 1rem 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .section-heading::after {
+        content: '';
+        flex: 1;
+        height: 1px;
+        background: linear-gradient(90deg, #e2e8f0, transparent);
+        margin-left: 0.75rem;
+    }
+
+    /* ===== PROGRESS BAR ===== */
+    [data-testid="stProgress"] > div > div {
+        background: linear-gradient(90deg, #1e40af, #3b82f6) !important;
+        border-radius: 99px !important;
+    }
+
+    /* ===== DIVIDER ===== */
+    hr {
+        border: none !important;
+        border-top: 1px solid #e2e8f0 !important;
+        margin: 1.5rem 0 !important;
+    }
+
+    /* ===== MULTISELECT ===== */
+    [data-testid="stMultiSelect"] [data-baseweb="select"] {
+        border-radius: 10px !important;
+    }
+
+    /* ===== SPINNER ===== */
+    [data-testid="stSpinner"] {
+        color: #2563eb !important;
+    }
+
+    /* ===== SIDEBAR HEADER ===== */
+    [data-testid="stSidebar"] .stFileUploader label,
+    [data-testid="stSidebar"] .stCheckbox label {
+        font-size: 0.85rem !important;
+        font-weight: 500 !important;
+        color: #cbd5e1 !important;
+    }
+    [data-testid="stSidebar"] h2 {
+        font-size: 0.95rem !important;
+        font-weight: 700 !important;
+        color: #e2e8f0 !important;
+        letter-spacing: 0.01em;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid rgba(255,255,255,0.08);
+        margin-bottom: 1rem !important;
+    }
+
+    /* ===== MAIN BG ===== */
+    .main {
+        background: #f8fafd;
+    }
     </style>
 """, unsafe_allow_html=True)
 
@@ -70,10 +435,30 @@ def deteksi_tipe_usaha(nama_toko):
 with st.sidebar:
     if os.path.exists("logo.png"):
         st.image("logo.png", use_container_width=True)
-        
+    
+    st.markdown("""
+        <div style="padding: 1rem 0 0.5rem 0;">
+            <span style="font-size:0.7rem; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; color:#64748b;">
+                🏛️ Badan Pusat Statistik
+            </span>
+            <div style="font-family:'Syne',sans-serif; font-size:1.1rem; font-weight:800; color:#f1f5f9; margin-top:4px; line-height:1.3;">
+                Dashboard<br>UMKM
+            </div>
+        </div>
+        <div style="height:1px; background:linear-gradient(90deg, rgba(99,179,237,0.3), transparent); margin: 0.75rem 0 1.25rem 0;"></div>
+    """, unsafe_allow_html=True)
+
     st.markdown("### 🧭 Menu Navigasi")
     halaman = st.radio("Pilih Fitur:", ["🟠 Shopee", "🟢 Tokopedia", "🔵 Facebook FB", "📊 Export Gabungan"])
-    st.divider()
+    
+    st.markdown("""
+        <div style="margin-top:2rem; padding-top:1rem; border-top:1px solid rgba(255,255,255,0.07);">
+            <p style="font-size:0.7rem; color:#475569; text-align:center; margin:0;">
+                Versi 2.0 · Bangka Belitung<br>
+                <span style="color:#334155;">© 2025 BPS Indonesia</span>
+            </p>
+        </div>
+    """, unsafe_allow_html=True)
 
 babel_keys = ["pangkal", "bangka", "belitung", "sungailiat", "mentok", "muntok", "koba", "toboali", "manggar", "tanjung pandan", "tanjungpandan"]
 
@@ -83,9 +468,9 @@ babel_keys = ["pangkal", "bangka", "belitung", "sungailiat", "mentok", "muntok",
 if halaman == "🟠 Shopee":
     st.markdown("""
     <div class="banner-shopee">
-        <div style="font-size: 0.85rem; font-weight: bold; letter-spacing: 1px; color: #93c5fd; margin-bottom: 5px;">🏛️ BADAN PUSAT STATISTIK</div>
-        <h1>Dashboard UMKM - Shopee</h1>
-        <p>Ekstraksi Data UMKM dari Shopee Marketplace Wilayah Bangka Belitung</p>
+        <span class="banner-label">🏛️ Badan Pusat Statistik · Bangka Belitung</span>
+        <h1>Dashboard UMKM — Shopee</h1>
+        <p>Ekstraksi & Analisis Data UMKM dari Shopee Marketplace Wilayah Bangka Belitung</p>
     </div>
     """, unsafe_allow_html=True)
 
@@ -182,7 +567,7 @@ if halaman == "🟠 Shopee":
 
     df_shp = st.session_state.data_shopee
     if df_shp is not None and not df_shp.empty:
-        st.markdown("### 🔎 Filter Data Pintar")
+        st.markdown('<div class="section-heading">🔎 Filter Data Pintar</div>', unsafe_allow_html=True)
         col_f1, col_f2, col_f3 = st.columns([1, 1, 1])
         with col_f1: f_wil = st.multiselect("Pilih Wilayah:", options=sorted(df_shp["Wilayah"].unique()), default=sorted(df_shp["Wilayah"].unique()), key="f_wil_shp")
         with col_f2: f_tipe = st.multiselect("Pilih Tipe Usaha:", options=sorted(df_shp["Tipe Usaha"].unique()), default=sorted(df_shp["Tipe Usaha"].unique()), key="f_tipe_shp")
@@ -225,9 +610,9 @@ if halaman == "🟠 Shopee":
 elif halaman == "🟢 Tokopedia":
     st.markdown("""
     <div class="banner-tokped">
-        <div style="font-size: 0.85rem; font-weight: bold; letter-spacing: 1px; color: #a7f3d0; margin-bottom: 5px;">🏛️ BADAN PUSAT STATISTIK</div>
-        <h1>Dashboard UMKM - Tokopedia</h1>
-        <p>Ekstraksi Data UMKM dari Tokopedia Wilayah Bangka Belitung</p>
+        <span class="banner-label">🏛️ Badan Pusat Statistik · Bangka Belitung</span>
+        <h1>Dashboard UMKM — Tokopedia</h1>
+        <p>Ekstraksi & Analisis Data UMKM dari Tokopedia Wilayah Bangka Belitung</p>
     </div>
     """, unsafe_allow_html=True)
 
@@ -323,7 +708,7 @@ elif halaman == "🟢 Tokopedia":
 
     df_tkp = st.session_state.data_tokped
     if df_tkp is not None and not df_tkp.empty:
-        st.markdown("### 🔎 Filter Data Pintar")
+        st.markdown('<div class="section-heading">🔎 Filter Data Pintar</div>', unsafe_allow_html=True)
         col_f1, col_f2, col_f3 = st.columns([1, 1, 1])
         with col_f1: f_wil = st.multiselect("Pilih Wilayah:", options=sorted(df_tkp["Wilayah"].unique()), default=sorted(df_tkp["Wilayah"].unique()), key="f_wil_tkp")
         with col_f2: f_tipe = st.multiselect("Pilih Tipe Usaha:", options=sorted(df_tkp["Tipe Usaha"].unique()), default=sorted(df_tkp["Tipe Usaha"].unique()), key="f_tipe_tkp")
@@ -367,9 +752,9 @@ elif halaman == "🟢 Tokopedia":
 elif halaman == "🔵 Facebook FB":
     st.markdown("""
     <div class="banner-fb">
-        <div style="font-size: 0.85rem; font-weight: bold; letter-spacing: 1px; color: #93c5fd; margin-bottom: 5px;">🏛️ BADAN PUSAT STATISTIK</div>
-        <h1>Dashboard UMKM - Facebook</h1>
-        <p>Ekstraksi Data UMKM dari Facebook Marketplace Wilayah Bangka Belitung</p>
+        <span class="banner-label">🏛️ Badan Pusat Statistik · Bangka Belitung</span>
+        <h1>Dashboard UMKM — Facebook</h1>
+        <p>Ekstraksi & Analisis Data UMKM dari Facebook Marketplace Wilayah Bangka Belitung</p>
     </div>
     """, unsafe_allow_html=True)
 
@@ -449,13 +834,10 @@ elif halaman == "🔵 Facebook FB":
 
     df_fb = st.session_state.data_fb
     if df_fb is not None and not df_fb.empty:
-        st.markdown("### 🔎 Filter Data Pintar")
+        st.markdown('<div class="section-heading">🔎 Filter Data Pintar</div>', unsafe_allow_html=True)
         col_f1, col_f2, col_f3 = st.columns([1, 1, 1])
         with col_f1: f_wil = st.multiselect("Pilih Wilayah:", options=sorted(df_fb["Wilayah"].unique()), default=sorted(df_fb["Wilayah"].unique()), key="f_wil_fb")
-        
-        # PERBAIKAN DI SINI: Default filter Tipe Usaha langsung aktif biar data otomatis muncul!
         with col_f2: f_tipe = st.multiselect("Pilih Tipe Usaha:", options=sorted(df_fb["Tipe Usaha"].unique()), default=sorted(df_fb["Tipe Usaha"].unique()), key="f_tipe_fb")
-        
         with col_f3: 
             max_h = int(df_fb["Harga"].max()) if df_fb["Harga"].max() > 0 else 1000000
             f_hrg = st.slider("Rentang Harga (Rp)", 0, max_h, (0, max_h), key="f_hrg_fb")
@@ -495,9 +877,9 @@ elif halaman == "🔵 Facebook FB":
 elif halaman == "📊 Export Gabungan":
     st.markdown("""
     <div class="banner-gabungan">
-        <div style="font-size: 0.85rem; font-weight: bold; letter-spacing: 1px; color: #94a3b8; margin-bottom: 5px;">🏛️ BADAN PUSAT STATISTIK</div>
+        <span class="banner-label">🏛️ Badan Pusat Statistik · Bangka Belitung</span>
         <h1>Export Master Data Gabungan</h1>
-        <p>Dilengkapi dengan Kolom Analisis 'Tipe Usaha' (Fisik vs Murni Online)</p>
+        <p>Dilengkapi dengan Kolom Analisis 'Tipe Usaha' (Fisik vs Murni Online) · Format Tab Terpisah & Auto Filter</p>
     </div>
     """, unsafe_allow_html=True)
     
@@ -557,4 +939,3 @@ elif halaman == "📊 Export Gabungan":
             file_name=f"Master_UMKM_BPS_{datetime.date.today()}.xlsx",
             use_container_width=True
         )
-
