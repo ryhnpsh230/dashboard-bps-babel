@@ -23,34 +23,43 @@ BPS_OREN_UTAMA = '#FF6F00'
 # --- 2. CSS CUSTOM (TEMA OREN-HITAM KEKINIAN / GLASSMORPHISM) ---
 st.markdown(f"""
     <style>
+    /* Hilangkan header putih bawaan Streamlit agar warna tidak belang */
     [data-testid="stHeader"] {{
         background: transparent !important;
     }}
+
+    /* --- BACKGROUND UTAMA APLIKASI: OREN CAMPUR HITAM --- */
     [data-testid="stAppViewContainer"] {{
         background: linear-gradient(135deg, #FF6F00 0%, #7A3400 35%, #0f0f0f 100%) !important;
         background-attachment: fixed !important;
     }}
+    
+    /* Warna teks dasar jadi putih agar terbaca di atas oren/hitam */
     .stApp {{
         color: #ffffff;
     }}
-    .block-container {{ padding-top: 1rem; padding-bottom: 2rem; }}
 
+    /* Mengatur jarak aman */
+    .block-container {{ padding-top: 1rem; padding-bottom: 2rem; }}
+    
+    /* --- UNIFIED BPS BANNER (Efek Kaca Gelap) --- */
     .banner-bps {{ 
-        background: rgba(15, 15, 15, 0.75);
-        backdrop-filter: blur(12px);
+        background: rgba(15, 15, 15, 0.75); /* Hitam semi transparan */
+        backdrop-filter: blur(12px); /* Efek blur ala Apple/Glassmorphism */
         -webkit-backdrop-filter: blur(12px);
         padding: 25px 35px; 
         border-radius: 12px; 
         margin-bottom: 25px; 
         box-shadow: 0 8px 32px rgba(0,0,0,0.5); 
         color: white; 
-        border-left: 8px solid #FFC107;
+        border-left: 8px solid #FFC107; /* Aksen kuning/oren terang */
         border-top: 1px solid rgba(255, 255, 255, 0.1);
     }}
     .banner-bps h1 {{ color: white !important; font-weight: 800; margin-bottom: 5px; font-size: 2.2rem; letter-spacing: 0.5px; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); }}
     .banner-bps p {{ color: #e0e0e0 !important; font-size: 1.05rem; margin: 0; }}
     .banner-sub-title {{ font-size: 0.85rem; font-weight: bold; letter-spacing: 2px; color: #FFC107; margin-bottom: 5px; text-transform: uppercase; }}
 
+    /* --- TEMA UNTUK CONTAINER FILTER --- */
     [data-testid="stVerticalBlockBorderWrapper"] {{
         background: rgba(20, 20, 20, 0.6);
         backdrop-filter: blur(10px);
@@ -60,6 +69,7 @@ st.markdown(f"""
         box-shadow: 0 4px 15px rgba(0,0,0,0.3);
     }}
 
+    /* --- MEMPERCANTIK CARD METRIK (ANGKA) --- */
     div[data-testid="metric-container"] {{
         background: rgba(25, 25, 25, 0.8);
         backdrop-filter: blur(10px);
@@ -79,7 +89,8 @@ st.markdown(f"""
     }}
     div[data-testid="metric-container"] label {{ color: #cccccc !important; font-weight: 600; letter-spacing: 0.5px; }}
     div[data-testid="metric-container"] div[data-testid="stMetricValue"] {{ color: #ffffff !important; font-weight: 800; text-shadow: 1px 1px 2px rgba(0,0,0,0.8); }}
-
+    
+    /* --- MEMPERCANTIK TABS --- */
     .stTabs [data-baseweb="tab-list"] {{ gap: 10px; background-color: rgba(10, 10, 10, 0.6); padding: 10px; border-radius: 10px; backdrop-filter: blur(8px); }}
     .stTabs [data-baseweb="tab"] {{
         height: 50px;
@@ -97,6 +108,7 @@ st.markdown(f"""
         box-shadow: 0 4px 10px rgba(255, 111, 0, 0.6);
     }}
 
+    /* --- SIDEBAR: DIBIKIN GELAP BIAR KONTRAS DENGAN KANAN YANG OREN --- */
     [data-testid="stSidebar"] {{
          background: linear-gradient(180deg, #0d0d0d 0%, #331600 100%) !important;
          border-right: 2px solid #FF6F00;
@@ -105,7 +117,8 @@ st.markdown(f"""
     [data-testid="stSidebar"] * {{
         color: #ffffff !important;
     }}
-
+    
+    /* Teks dan judul di luar kontainer */
     h1, h2, h3, h4, p {{ text-shadow: 1px 1px 3px rgba(0,0,0,0.5); }}
     </style>
 """, unsafe_allow_html=True)
@@ -119,10 +132,6 @@ if "audit_tokped" not in st.session_state: st.session_state.audit_tokped = {}
 
 if "data_fb" not in st.session_state: st.session_state.data_fb = None
 if "audit_fb" not in st.session_state: st.session_state.audit_fb = {}
-
-# BARU: FB GROUP
-if "data_fb_group" not in st.session_state: st.session_state.data_fb_group = None
-if "audit_fb_group" not in st.session_state: st.session_state.audit_fb_group = {}
 
 # --- 4. FUNGSI DETEKSI TIPE USAHA (AI HEURISTIK) ---
 def deteksi_tipe_usaha(nama_toko):
@@ -149,13 +158,7 @@ with st.sidebar:
         st.markdown(f"<h2 style='color:{BPS_OREN_UTAMA} !important; text-align:center;'>🏛️ BPS UMKM</h2>", unsafe_allow_html=True)
         
     st.markdown("### 🧭 Menu Navigasi")
-    halaman = st.radio("Pilih Fitur:", [
-    "🟠 Shopee",
-    "🟢 Tokopedia",
-    "🔵 Facebook FB",
-    "🟣 Facebook Group (Manual)",
-    "📊 Export Gabungan"
-])
+    halaman = st.radio("Pilih Fitur:", ["🟠 Shopee", "🟢 Tokopedia", "🔵 Facebook FB", "📊 Export Gabungan"])
     st.divider()
 
 babel_keys = ["pangkal", "bangka", "belitung", "sungailiat", "mentok", "muntok", "koba", "toboali", "manggar", "tanjung pandan", "tanjungpandan"]
@@ -240,15 +243,9 @@ if halaman == "🟠 Shopee":
                                     match = re.search(r"i\.(\d+)\.", link)
                                     if match:
                                         try:
-                                            res = requests.get(
-                                                f"https://shopee.co.id/api/v4/shop/get_shop_base?shopid={match.group(1)}",
-                                                headers={"User-Agent":"Mozilla/5.0"},
-                                                timeout=2
-                                            )
-                                            if res.status_code == 200:
-                                                toko = res.json().get("data",{}).get("name", "Anonim")
-                                        except:
-                                            pass
+                                            res = requests.get(f"https://shopee.co.id/api/v4/shop/get_shop_base?shopid={match.group(1)}", headers={"User-Agent":"Mozilla/5.0"}, timeout=2)
+                                            if res.status_code == 200: toko = res.json().get("data",{}).get("name", "Anonim")
+                                        except: pass
                                 
                                 tipe_usaha = deteksi_tipe_usaha(toko)
                                 hasil.append({"Nama Toko": toko, "Nama Produk": nama, "Harga": val_h, "Wilayah": lokasi_shopee, "Tipe Usaha": tipe_usaha, "Link": link})
@@ -406,8 +403,7 @@ elif halaman == "🟢 Tokopedia":
                                             tipe_usaha = deteksi_tipe_usaha(toko)
                                             hasil.append({"Nama Toko": toko, "Nama Produk": nama, "Harga": val_h, "Wilayah": lokasi_tokped, "Tipe Usaha": tipe_usaha, "Link": link})
                                             
-                                    except Exception:
-                                        continue
+                                    except Exception: continue
                                 
                                 baris_diproses += 1
                                 if baris_diproses % 5 == 0 or baris_diproses == total_semua_baris:
@@ -494,7 +490,7 @@ elif halaman == "🔵 Facebook FB":
 
     with st.sidebar:
         st.header("📥 Input Data Facebook")
-        files_fb = st.file_uploader("Unggah CSV Facebook FB", type=["csv"], accept_multiple_files=True, key="file_fb")
+        files_fb = st.file_uploader("Unggah CSV Facebook", type=["csv"], accept_multiple_files=True, key="file_fb")
         
         if st.button("🚀 Proses Data Facebook", type="primary", use_container_width=True):
             if not files_fb:
@@ -622,226 +618,34 @@ elif halaman == "🔵 Facebook FB":
             st.warning(f"**⚠️ Data Diabaikan (Luar Wilayah):** {audit.get('luar',0)} Baris")
 
 # ==============================================================================
-#                             HALAMAN FACEBOOK GROUP (MANUAL)
-# ==============================================================================
-elif halaman == "🟣 Facebook Group (Manual)":
-    st.markdown("""
-    <div class="banner-bps">
-        <div class="banner-sub-title">🏛️ BADAN PUSAT STATISTIK</div>
-        <h1>Dashboard UMKM - Facebook Group (Manual)</h1>
-        <p>Input manual teks postingan FB Group (copy-paste) → parsing harga & ekspor</p>
-    </div>
-    """, unsafe_allow_html=True)
-
-    st.info(
-        "Cara pakai: buka FB Group → copy teks postingan (bisa banyak) → "
-        "paste di bawah. Pisahkan antar postingan pakai garis:  ---  "
-        "(3 strip) lalu klik Proses."
-    )
-
-    contoh = (
-        "Promo hari ini\n"
-        "Speaker Bluetooth Fleco 8 Inch + 1 Mic Wireless\n"
-        "Barang baru harga cuma Rp 350.000 saja\n"
-        "Minat wa 0882-8632-3682\n"
-        "---\n"
-        "Jual motor beat 2017\n"
-        "Harga 7jt nego\n"
-        "Lokasi Pangkalpinang\n"
-        "---\n"
-        "Baju anak murah\n"
-        "25rb minat wa 0831xxxxxxx\n"
-    )
-
-    teks = st.text_area(
-        "📋 Paste teks postingan FB Group (pisahkan dengan '---')",
-        value=contoh,
-        height=260
-    )
-
-    col1, col2 = st.columns([1, 1])
-    with col1:
-        wilayah_default = st.text_input("📍 Wilayah default (jika tidak terdeteksi)", value="Pangkalpinang")
-    with col2:
-        tipe_default = st.selectbox("🏢 Tipe usaha", ["Perorangan (Facebook Group)"], index=0)
-
-    # --- helper: buang nomor/email biar aman privasi ---
-    def mask_sensitive(text: str) -> str:
-        t = text or ""
-        t = re.sub(r"\b08\d{8,13}\b", "[REDACTED_HP]", t)  # no hp indo sederhana
-        t = re.sub(r"[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}", "[REDACTED_EMAIL]", t, flags=re.I)
-        return t
-
-    def parse_rupiah(text: str) -> int:
-        if not text:
-            return 0
-        t = str(text).lower()
-
-        # Rp 350.000 / rp350000
-        m = re.search(r"rp\.?\s*([0-9][0-9\.\s,]{2,})", t)
-        if m:
-            digits = re.sub(r"[^\d]", "", m.group(1))
-            try:
-                return int(digits)
-            except:
-                pass
-
-        # 7jt / 7.5jt / 7 juta
-        m = re.search(r"(\d+(?:[.,]\d+)?)\s*(jt|juta)\b", t)
-        if m:
-            try:
-                val = float(m.group(1).replace(",", "."))
-                return int(round(val * 1_000_000))
-            except:
-                pass
-
-        # 350rb / 350 ribu
-        m = re.search(r"(\d+(?:[.,]\d+)?)\s*(rb|ribu)\b", t)
-        if m:
-            try:
-                val = float(m.group(1).replace(",", "."))
-                return int(round(val * 1_000))
-            except:
-                pass
-
-        # 25k / 1.5k / A1k
-        m = re.search(r"\b[a]?\s*(\d+(?:[.,]\d+)?)\s*k\b", t)
-        if m:
-            try:
-                val = float(m.group(1).replace(",", "."))
-                return int(round(val * 1_000))
-            except:
-                pass
-
-        return 0
-
-    def detect_wilayah(text: str, default: str) -> str:
-        t = (text or "").lower()
-        for k in babel_keys:
-            if k in t:
-                return k.title()
-        return default
-
-    def pick_nama_produk(block: str) -> str:
-        lines = [ln.strip() for ln in block.splitlines() if ln.strip()]
-        # ambil baris pertama yg bukan cuma harga/wa/email
-        for ln in lines:
-            ln_low = ln.lower()
-            if "http" in ln_low or "www" in ln_low:
-                continue
-            if "wa" in ln_low or "whatsapp" in ln_low:
-                continue
-            if parse_rupiah(ln) > 0 and len(ln) <= 14:
-                continue
-            if len(ln) >= 4:
-                return ln
-        return "Posting Grup"
-
-    if st.button("🚀 Proses Postingan FB Group", type="primary", use_container_width=True):
-        blocks = [b.strip() for b in teks.split("---") if b.strip()]
-        hasil = []
-
-        for b in blocks:
-            clean = mask_sensitive(b)
-            harga = parse_rupiah(clean)
-            if harga <= 0:
-                continue
-
-            nama_produk = pick_nama_produk(clean)
-            wil = detect_wilayah(clean, wilayah_default)
-
-            hasil.append({
-                "Nama Toko": "Privasi (Anggota Grup)",
-                "Nama Produk": nama_produk,
-                "Harga": harga,
-                "Wilayah": wil,
-                "Tipe Usaha": tipe_default,
-                "Link": ""
-            })
-
-        df_final = pd.DataFrame(hasil).drop_duplicates()
-        st.session_state.data_fb_group = df_final
-        st.session_state.audit_fb_group = {
-            "total": len(blocks),
-            "valid": len(df_final),
-            "file_count": 0,
-            "error_harga": 0,
-            "luar": 0
-        }
-
-        if df_final.empty:
-            st.warning("⚠️ Tidak ada data terdeteksi. Pastikan di teks ada harga (Rp / rb / jt / k / A1k).")
-        else:
-            st.success(f"✅ Berhasil! {len(df_final)} postingan terdeteksi memiliki harga.")
-
-    df_fbg = st.session_state.data_fb_group
-    if df_fbg is not None and not df_fbg.empty:
-        with st.container(border=True):
-            st.markdown("#### 🗄️ Database FB Group (Manual)")
-
-            df_view = df_fbg.copy()
-            df_view["Harga"] = df_view["Harga"].apply(lambda x: f"Rp {x:,.0f}".replace(",", "."))
-            st.dataframe(df_view, use_container_width=True, hide_index=True, height=420)
-
-            buf = io.BytesIO()
-            with pd.ExcelWriter(buf, engine="xlsxwriter") as writer:
-                df_fbg.to_excel(writer, index=False, sheet_name="FB Group")
-                wb, ws = writer.book, writer.sheets["FB Group"]
-                header_fmt = wb.add_format({'bold': True, 'bg_color': BPS_OREN_UTAMA, 'font_color': 'white'})
-                for col_num, value in enumerate(df_fbg.columns.values):
-                    ws.write(0, col_num, value, header_fmt)
-                ws.set_column('A:A', 28)
-                ws.set_column('B:B', 55)
-                ws.set_column('C:C', 18, wb.add_format({'num_format': '#,##0'}))
-                ws.set_column('D:D', 22)
-                ws.set_column('E:E', 28)
-                ws.set_column('F:F', 55)
-                ws.autofilter(0, 0, len(df_fbg), len(df_fbg.columns) - 1)
-
-            st.markdown(
-                f'<style>div[data-testid="stDownloadButton"] button {{background-color: {BPS_OREN_UTAMA} !important; color: white !important; border:none;}}</style>',
-                unsafe_allow_html=True
-            )
-            st.download_button(
-                "⬇️ Unduh Excel FB Group (Manual)",
-                data=buf.getvalue(),
-                file_name=f"UMKM_FBGroup_{datetime.date.today()}.xlsx",
-                type="primary"
-            )
-    else:
-        st.warning("Belum ada data. Paste postingan dan klik Proses.")
-
-# ==============================================================================
-#                             HALAMAN EXPORT GABUNGAN (UPDATE)
+#                             HALAMAN EXPORT GABUNGAN
 # ==============================================================================
 elif halaman == "📊 Export Gabungan":
     st.markdown("""
     <div class="banner-bps">
         <div class="banner-sub-title">🏛️ BADAN PUSAT STATISTIK</div>
         <h1>Export Master Data Gabungan</h1>
-        <p>Konsolidasi Master Data (Shopee, Tokopedia, Facebook, FB Group) - Siap Analisis</p>
+        <p>Konsolidasi Master Data (Shopee, Tokopedia, Facebook) - Siap Analisis</p>
     </div>
     """, unsafe_allow_html=True)
     
     df_shp_ready = st.session_state.data_shopee is not None and not st.session_state.data_shopee.empty
     df_tkp_ready = st.session_state.data_tokped is not None and not st.session_state.data_tokped.empty
     df_fb_ready = st.session_state.data_fb is not None and not st.session_state.data_fb.empty
-    df_fbg_ready = st.session_state.data_fb_group is not None and not st.session_state.data_fb_group.empty
     
-    if not df_shp_ready and not df_tkp_ready and not df_fb_ready and not df_fbg_ready:
-        st.warning("⚠️ Belum ada data yang diekstrak. Silakan unggah dan proses dokumen di menu Shopee, Tokopedia, Facebook, atau FB Group pada panel navigasi kiri.")
+    if not df_shp_ready and not df_tkp_ready and not df_fb_ready:
+        st.warning("⚠️ Belum ada data yang diekstrak. Silakan unggah dan proses dokumen di menu Shopee, Tokopedia, atau Facebook pada panel navigasi kiri.")
     else:
-        st.success("✅ Seluruh instansi data siap untuk dikonsolidasi menjadi satu file Master Excel!")
+        st.success("✅ Seluruh instansi data siap untuk dikonsolidasi menjadi satu file Master Excel (3-in-1)!")
         
         st.markdown("<br>", unsafe_allow_html=True)
-        c1, c2, c3, c4 = st.columns(4)
-        if df_shp_ready: c1.metric("📦 Data Shopee", f"{len(st.session_state.data_shopee):,}".replace(",", "."))
-        if df_tkp_ready: c2.metric("📦 Data Tokopedia", f"{len(st.session_state.data_tokped):,}".replace(",", "."))
-        if df_fb_ready: c3.metric("📦 Data Facebook", f"{len(st.session_state.data_fb):,}".replace(",", "."))
-        if df_fbg_ready: c4.metric("📦 Data FB Group", f"{len(st.session_state.data_fb_group):,}".replace(",", "."))
+        c1, c2, c3 = st.columns(3)
+        if df_shp_ready: c1.metric("📦 Data Shopee Terekstrak", f"{len(st.session_state.data_shopee):,}".replace(",", "."))
+        if df_tkp_ready: c2.metric("📦 Data Tokopedia Terekstrak", f"{len(st.session_state.data_tokped):,}".replace(",", "."))
+        if df_fb_ready: c3.metric("📦 Data Facebook Terekstrak", f"{len(st.session_state.data_fb):,}".replace(",", "."))
             
         st.write("---")
-        st.markdown("Dokumen di bawah ini akan diunduh dengan format **Tab Sheet Terpisah** sesuai platform, serta sudah dilengkapi **Auto-Filter**.")
+        st.markdown("Dokumen di bawah ini akan diunduh dengan format **Tab Sheet Terpisah** sesuai platform, serta sudah dilengkapi **Auto-Filter** untuk memudahkan penyortiran di Microsoft Excel.")
         st.markdown("<br>", unsafe_allow_html=True)
         
         buf = io.BytesIO()
@@ -875,25 +679,17 @@ elif halaman == "📊 Export Gabungan":
                 for col_num, value in enumerate(df_fb.columns.values): ws_fb.write(0, col_num, value, header_fmt_fb)
                 ws_fb.set_column('A:A', 25); ws_fb.set_column('B:B', 50); ws_fb.set_column('C:C', 18, currency_fmt); ws_fb.set_column('D:D', 20); ws_fb.set_column('E:E', 25); ws_fb.set_column('F:F', 50)
                 ws_fb.autofilter(0, 0, len(df_fb), len(df_fb.columns) - 1)
-
-            if df_fbg_ready:
-                df_fbg = st.session_state.data_fb_group
-                df_fbg.to_excel(writer, index=False, sheet_name="Data FB Group")
-                ws_fbg = writer.sheets["Data FB Group"]
-                header_fmt_fbg = wb.add_format({'bold': True, 'bg_color': BPS_OREN_UTAMA, 'font_color': 'white'})
-                for col_num, value in enumerate(df_fbg.columns.values): ws_fbg.write(0, col_num, value, header_fmt_fbg)
-                ws_fbg.set_column('A:A', 25); ws_fbg.set_column('B:B', 50); ws_fbg.set_column('C:C', 18, currency_fmt); ws_fbg.set_column('D:D', 25); ws_fbg.set_column('E:E', 28); ws_fbg.set_column('F:F', 50)
-                ws_fbg.autofilter(0, 0, len(df_fbg), len(df_fbg.columns) - 1)
         
         st.markdown(f'<style>div[data-testid="stDownloadButton"] button {{background-color: {BPS_OREN_UTAMA} !important; color: white !important; border:1px solid #ffffff; height: 3.5rem; font-size: 1.1rem; border-radius: 8px; box-shadow: 0 4px 15px rgba(255, 111, 0, 0.5);}}</style>', unsafe_allow_html=True)
         
         _, col_btn, _ = st.columns([1, 2, 1])
         with col_btn:
             st.download_button(
-                label="⬇️ UNDUH EXCEL MASTER (GABUNGAN)",
+                label="⬇️ UNDUH EXCEL MASTER (3-IN-1)",
                 data=buf.getvalue(),
                 file_name=f"Master_UMKM_BPS_{datetime.date.today()}.xlsx",
                 use_container_width=True
             )
+
 
 
