@@ -622,182 +622,194 @@ elif halaman == "🔵 Facebook FB":
             st.warning(f"**⚠️ Data Diabaikan (Luar Wilayah):** {audit.get('luar',0)} Baris")
 
 # ==============================================================================
-#                             HALAMAN FACEBOOK GROUP (BARU)
+#                             HALAMAN FACEBOOK GROUP (MANUAL)
 # ==============================================================================
-elif halaman == "🟣 Facebook Group":
+elif halaman == "🟣 Facebook Group (Manual)":
     st.markdown("""
     <div class="banner-bps">
         <div class="banner-sub-title">🏛️ BADAN PUSAT STATISTIK</div>
-        <h1>Dashboard UMKM - Facebook Group</h1>
-        <p>Ekstraksi Data UMKM dari Postingan Grup Facebook Wilayah Bangka Belitung (tanpa identitas profil)</p>
+        <h1>Dashboard UMKM - Facebook Group (Manual)</h1>
+        <p>Input manual teks postingan FB Group (copy-paste) → parsing harga & ekspor</p>
     </div>
     """, unsafe_allow_html=True)
 
-    with st.sidebar:
-        st.header("📥 Input Data Facebook Group")
-        files_fbg = st.file_uploader("Unggah CSV Facebook Group", type=["csv"], accept_multiple_files=True, key="file_fbg")
+    st.info(
+        "Cara pakai: buka FB Group → copy teks postingan (bisa banyak) → "
+        "paste di bawah. Pisahkan antar postingan pakai garis:  ---  "
+        "(3 strip) lalu klik Proses."
+    )
 
-        if st.button("🚀 Proses Data FB Group", type="primary", use_container_width=True):
-            if not files_fbg:
-                st.error("⚠️ Silakan unggah file CSV Facebook Group terlebih dahulu.")
-            else:
-                with st.spinner("Sedang membaca file CSV..."):
-                    try:
-                        total_semua_baris = 0
-                        for f in files_fbg:
-                            df_temp = pd.read_csv(f, dtype=str, on_bad_lines="skip")
-                            total_semua_baris += len(df_temp)
-                            f.seek(0)
+    contoh = (
+        "Promo hari ini\n"
+        "Speaker Bluetooth Fleco 8 Inch + 1 Mic Wireless\n"
+        "Barang baru harga cuma Rp 350.000 saja\n"
+        "Minat wa 0882-8632-3682\n"
+        "---\n"
+        "Jual motor beat 2017\n"
+        "Harga 7jt nego\n"
+        "Lokasi Pangkalpinang\n"
+        "---\n"
+        "Baju anak murah\n"
+        "25rb minat wa 0831xxxxxxx\n"
+    )
 
-                        hasil, total_baris, err_h, luar_wilayah = [], 0, 0, 0
-                        baris_diproses = 0
-                        status_text = st.empty()
-                        progress_bar = st.progress(0)
+    teks = st.text_area(
+        "📋 Paste teks postingan FB Group (pisahkan dengan '---')",
+        value=contoh,
+        height=260
+    )
 
-                        for idx, file in enumerate(files_fbg):
-                            df_raw = pd.read_csv(file, dtype=str, on_bad_lines="skip")
-                            total_baris += len(df_raw)
+    col1, col2 = st.columns([1, 1])
+    with col1:
+        wilayah_default = st.text_input("📍 Wilayah default (jika tidak terdeteksi)", value="Pangkalpinang")
+    with col2:
+        tipe_default = st.selectbox("🏢 Tipe usaha", ["Perorangan (Facebook Group)"], index=0)
 
-                            if "Link" in df_raw.columns and "Nama Produk" in df_raw.columns:
-                                col_link, col_nama, col_harga, col_wilayah, col_toko = "Link", "Nama Produk", "Harga", "Wilayah", "Nama Toko"
-                            else:
-                                # fallback kasar
-                                col_toko, col_nama, col_wilayah, col_harga, col_link = df_raw.columns[0], df_raw.columns[1], df_raw.columns[2], df_raw.columns[4], df_raw.columns[5]
+    # --- helper: buang nomor/email biar aman privasi ---
+    def mask_sensitive(text: str) -> str:
+        t = text or ""
+        t = re.sub(r"\b08\d{8,13}\b", "[REDACTED_HP]", t)  # no hp indo sederhana
+        t = re.sub(r"[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}", "[REDACTED_EMAIL]", t, flags=re.I)
+        return t
 
-                            for i in range(len(df_raw)):
-                                row = df_raw.iloc[i]
-                                link = str(row.get(col_link, ""))
-                                nama = str(row.get(col_nama, ""))
-                                harga_str = str(row.get(col_harga, ""))
-                                wilayah = str(row.get(col_wilayah, "")).title()
-                                toko = str(row.get(col_toko, "Privasi (Anggota Grup)"))
+    def parse_rupiah(text: str) -> int:
+        if not text:
+            return 0
+        t = str(text).lower()
 
-                                # Filter wilayah Babel (kalau Wilayah kamu berupa nama grup, pastikan nama grup ada keyword babel)
-                                if not any(k in wilayah.lower() for k in babel_keys):
-                                    luar_wilayah += 1
-                                    baris_diproses += 1
-                                    continue
+        # Rp 350.000 / rp350000
+        m = re.search(r"rp\.?\s*([0-9][0-9\.\s,]{2,})", t)
+        if m:
+            digits = re.sub(r"[^\d]", "", m.group(1))
+            try:
+                return int(digits)
+            except:
+                pass
 
-                                try:
-                                    harga_bersih = harga_str.replace('.', '').replace(',', '')
-                                    angka_list = re.findall(r'\d+', harga_bersih)
-                                    if angka_list:
-                                        val_h = int(angka_list[0])
-                                        if val_h > 1000000000: val_h = 0
-                                    else:
-                                        val_h = 0
-                                except:
-                                    val_h, err_h = 0, err_h + 1
+        # 7jt / 7.5jt / 7 juta
+        m = re.search(r"(\d+(?:[.,]\d+)?)\s*(jt|juta)\b", t)
+        if m:
+            try:
+                val = float(m.group(1).replace(",", "."))
+                return int(round(val * 1_000_000))
+            except:
+                pass
 
-                                if val_h > 0 and link and nama:
-                                    hasil.append({
-                                        "Nama Toko": toko,
-                                        "Nama Produk": nama,
-                                        "Harga": val_h,
-                                        "Wilayah": wilayah,
-                                        "Tipe Usaha": "Perorangan (Facebook Group)",
-                                        "Link": link
-                                    })
+        # 350rb / 350 ribu
+        m = re.search(r"(\d+(?:[.,]\d+)?)\s*(rb|ribu)\b", t)
+        if m:
+            try:
+                val = float(m.group(1).replace(",", "."))
+                return int(round(val * 1_000))
+            except:
+                pass
 
-                                baris_diproses += 1
-                                if baris_diproses % 5 == 0 or baris_diproses == total_semua_baris:
-                                    pct = min(baris_diproses / total_semua_baris, 1.0)
-                                    progress_bar.progress(pct)
-                                    status_text.markdown(f"**⏳ Mengekstrak:** {baris_diproses} / {total_semua_baris} baris ({int(pct*100)}%)")
+        # 25k / 1.5k / A1k
+        m = re.search(r"\b[a]?\s*(\d+(?:[.,]\d+)?)\s*k\b", t)
+        if m:
+            try:
+                val = float(m.group(1).replace(",", "."))
+                return int(round(val * 1_000))
+            except:
+                pass
 
-                        status_text.empty()
-                        progress_bar.empty()
+        return 0
 
-                        df_final = pd.DataFrame(hasil).drop_duplicates()
-                        st.session_state.data_fb_group = df_final
-                        st.session_state.audit_fb_group = {
-                            "total": total_baris,
-                            "valid": len(df_final),
-                            "file_count": len(files_fbg),
-                            "error_harga": err_h,
-                            "luar": luar_wilayah
-                        }
-                        st.success(f"✅ Berhasil! {len(df_final)} data FB Group diekstrak.")
-                    except Exception as e:
-                        st.error(f"Error Sistem FB Group: {e}")
+    def detect_wilayah(text: str, default: str) -> str:
+        t = (text or "").lower()
+        for k in babel_keys:
+            if k in t:
+                return k.title()
+        return default
+
+    def pick_nama_produk(block: str) -> str:
+        lines = [ln.strip() for ln in block.splitlines() if ln.strip()]
+        # ambil baris pertama yg bukan cuma harga/wa/email
+        for ln in lines:
+            ln_low = ln.lower()
+            if "http" in ln_low or "www" in ln_low:
+                continue
+            if "wa" in ln_low or "whatsapp" in ln_low:
+                continue
+            if parse_rupiah(ln) > 0 and len(ln) <= 14:
+                continue
+            if len(ln) >= 4:
+                return ln
+        return "Posting Grup"
+
+    if st.button("🚀 Proses Postingan FB Group", type="primary", use_container_width=True):
+        blocks = [b.strip() for b in teks.split("---") if b.strip()]
+        hasil = []
+
+        for b in blocks:
+            clean = mask_sensitive(b)
+            harga = parse_rupiah(clean)
+            if harga <= 0:
+                continue
+
+            nama_produk = pick_nama_produk(clean)
+            wil = detect_wilayah(clean, wilayah_default)
+
+            hasil.append({
+                "Nama Toko": "Privasi (Anggota Grup)",
+                "Nama Produk": nama_produk,
+                "Harga": harga,
+                "Wilayah": wil,
+                "Tipe Usaha": tipe_default,
+                "Link": ""
+            })
+
+        df_final = pd.DataFrame(hasil).drop_duplicates()
+        st.session_state.data_fb_group = df_final
+        st.session_state.audit_fb_group = {
+            "total": len(blocks),
+            "valid": len(df_final),
+            "file_count": 0,
+            "error_harga": 0,
+            "luar": 0
+        }
+
+        if df_final.empty:
+            st.warning("⚠️ Tidak ada data terdeteksi. Pastikan di teks ada harga (Rp / rb / jt / k / A1k).")
+        else:
+            st.success(f"✅ Berhasil! {len(df_final)} postingan terdeteksi memiliki harga.")
 
     df_fbg = st.session_state.data_fb_group
     if df_fbg is not None and not df_fbg.empty:
         with st.container(border=True):
-            st.markdown("#### 🔎 Filter Data Pintar")
-            col_f1, col_f2, col_f3 = st.columns([1, 1, 1.5])
-            with col_f1:
-                f_wil = st.multiselect("📍 Wilayah/Grup:", options=sorted(df_fbg["Wilayah"].unique()),
-                                      default=sorted(df_fbg["Wilayah"].unique()), key="f_wil_fbg")
-            with col_f2:
-                f_tipe = st.multiselect("🏢 Tipe Usaha:", options=sorted(df_fbg["Tipe Usaha"].unique()),
-                                       default=sorted(df_fbg["Tipe Usaha"].unique()), key="f_tipe_fbg")
-            with col_f3:
-                max_h = int(df_fbg["Harga"].max()) if df_fbg["Harga"].max() > 0 else 1000000
-                f_hrg = st.slider("💰 Rentang Harga (Rp)", 0, max_h, (0, max_h), key="f_hrg_fbg")
+            st.markdown("#### 🗄️ Database FB Group (Manual)")
 
-        df_f = df_fbg[
-            df_fbg["Wilayah"].isin(f_wil) &
-            df_fbg["Tipe Usaha"].isin(f_tipe) &
-            (df_fbg["Harga"] >= f_hrg[0]) & (df_fbg["Harga"] <= f_hrg[1])
-        ]
-
-        tab1, tab2, tab3 = st.tabs(["📊 Executive Dashboard", "🗄️ Database Siap Ekspor", "📑 Log Audit"])
-        with tab1:
-            st.markdown("<br>", unsafe_allow_html=True)
-            c1, c2, c3 = st.columns(3)
-            c1.metric("📌 Total Data Ditampilkan", f"{len(df_f):,}".replace(",", "."))
-            c2.metric("🟣 Post FB Group", f"{len(df_f):,}".replace(",", "."))
-            c3.metric("🗺️ Sebaran Wilayah/Grup", f"{df_f['Wilayah'].nunique()}")
-
-            st.markdown("<br>", unsafe_allow_html=True)
-            if not df_f.empty:
-                g1, g2 = st.columns(2)
-                with g1:
-                    fig_pie = px.pie(df_f, names="Tipe Usaha", title="Komposisi Postingan FB Group",
-                                    hole=0.4, color_discrete_sequence=BPS_PALETTE)
-                    fig_pie.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font=dict(color='white'))
-                    st.plotly_chart(fig_pie, use_container_width=True)
-                with g2:
-                    fig_bar = px.bar(df_f.groupby("Wilayah").size().reset_index(name='Jumlah'),
-                                    x="Wilayah", y="Jumlah", title="Jumlah Post Berdasarkan Wilayah/Grup",
-                                    color="Wilayah", color_discrete_sequence=BPS_PALETTE)
-                    fig_bar.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font=dict(color='white'))
-                    st.plotly_chart(fig_bar, use_container_width=True)
-
-        with tab2:
-            st.markdown("<br>", unsafe_allow_html=True)
-            df_view = df_f.copy()
+            df_view = df_fbg.copy()
             df_view["Harga"] = df_view["Harga"].apply(lambda x: f"Rp {x:,.0f}".replace(",", "."))
-            st.dataframe(df_view, use_container_width=True, hide_index=True, height=400)
+            st.dataframe(df_view, use_container_width=True, hide_index=True, height=420)
 
-            if not df_f.empty:
-                buf = io.BytesIO()
-                with pd.ExcelWriter(buf, engine="xlsxwriter") as writer:
-                    df_f.to_excel(writer, index=False, sheet_name="Data FB Group")
-                    wb, ws = writer.book, writer.sheets["Data FB Group"]
-                    header_fmt = wb.add_format({'bold': True, 'bg_color': BPS_OREN_UTAMA, 'font_color': 'white'})
-                    for col_num, value in enumerate(df_f.columns.values):
-                        ws.write(0, col_num, value, header_fmt)
+            buf = io.BytesIO()
+            with pd.ExcelWriter(buf, engine="xlsxwriter") as writer:
+                df_fbg.to_excel(writer, index=False, sheet_name="FB Group")
+                wb, ws = writer.book, writer.sheets["FB Group"]
+                header_fmt = wb.add_format({'bold': True, 'bg_color': BPS_OREN_UTAMA, 'font_color': 'white'})
+                for col_num, value in enumerate(df_fbg.columns.values):
+                    ws.write(0, col_num, value, header_fmt)
+                ws.set_column('A:A', 28)
+                ws.set_column('B:B', 55)
+                ws.set_column('C:C', 18, wb.add_format({'num_format': '#,##0'}))
+                ws.set_column('D:D', 22)
+                ws.set_column('E:E', 28)
+                ws.set_column('F:F', 55)
+                ws.autofilter(0, 0, len(df_fbg), len(df_fbg.columns) - 1)
 
-                    ws.set_column('A:A', 25)
-                    ws.set_column('B:B', 50)
-                    ws.set_column('C:C', 18, wb.add_format({'num_format': '#,##0'}))
-                    ws.set_column('D:D', 25)
-                    ws.set_column('E:E', 28)
-                    ws.set_column('F:F', 50)
-                    ws.autofilter(0, 0, len(df_f), len(df_f.columns) - 1)
-
-                st.markdown(f'<style>div[data-testid="stDownloadButton"] button {{background-color: {BPS_OREN_UTAMA} !important; color: white !important; border:none;}}</style>', unsafe_allow_html=True)
-                st.download_button("⬇️ Unduh Excel Database FB Group", data=buf.getvalue(),
-                                  file_name=f"UMKM_FB_Group_{datetime.date.today()}.xlsx")
-
-        with tab3:
-            st.markdown("<br>", unsafe_allow_html=True)
-            audit = st.session_state.audit_fb_group
-            st.info(f"**📂 Dokumen Diproses:** {audit.get('file_count',0)} File CSV")
-            st.success(f"**📥 Data Baris Terekstrak Bersih:** {audit.get('valid',0)} Baris")
-            st.warning(f"**⚠️ Data Diabaikan (Luar Wilayah):** {audit.get('luar',0)} Baris")
+            st.markdown(
+                f'<style>div[data-testid="stDownloadButton"] button {{background-color: {BPS_OREN_UTAMA} !important; color: white !important; border:none;}}</style>',
+                unsafe_allow_html=True
+            )
+            st.download_button(
+                "⬇️ Unduh Excel FB Group (Manual)",
+                data=buf.getvalue(),
+                file_name=f"UMKM_FBGroup_{datetime.date.today()}.xlsx",
+                type="primary"
+            )
+    else:
+        st.warning("Belum ada data. Paste postingan dan klik Proses.")
 
 # ==============================================================================
 #                             HALAMAN EXPORT GABUNGAN (UPDATE)
@@ -883,4 +895,5 @@ elif halaman == "📊 Export Gabungan":
                 file_name=f"Master_UMKM_BPS_{datetime.date.today()}.xlsx",
                 use_container_width=True
             )
+
 
