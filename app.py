@@ -88,10 +88,8 @@ def deteksi_tipe_usaha(nama_toko):
         if kata in nama_lower: return "Ada Toko Fisik"
     return "Murni Online (Rumahan)"
 
-# Fungsi khusus Maps untuk mengekstrak nomor telepon dari deskripsi
 def ekstrak_no_hp(teks):
     if pd.isna(teks): return "-"
-    # Regex ini nyari pola angka yang panjangnya 9-14 digit, bisa diawali '0' atau '+62'
     pola = re.search(r'(\+62|0)\s*[-]*\d{2,4}\s*[-]*\d{3,4}\s*[-]*\d{3,4}', str(teks))
     if pola: return pola.group(0)
     return "-"
@@ -114,7 +112,7 @@ if halaman == "📍 Google Maps":
     <div class="banner-maps">
         <div style="font-size: 0.85rem; font-weight: bold; letter-spacing: 1px; margin-bottom: 5px;">🏛️ BADAN PUSAT STATISTIK</div>
         <h1>Dashboard Usaha - Google Maps</h1>
-        <p>Data Spasial, Koordinat, dan Kontak Usaha Fisik Wilayah Bangka Belitung</p>
+        <p>Data Spasial, Koordinat, dan Kontak Usaha Fisik</p>
     </div>
     """, unsafe_allow_html=True)
 
@@ -143,7 +141,6 @@ if halaman == "📍 Google Maps":
                             df_raw = pd.read_csv(file, dtype=str, on_bad_lines="skip")
                             total_baris += len(df_raw)
                             
-                            # Kolom CSV Maps dari Ekstensi: Nama Toko, Alamat, Titik Koordinat, Deskripsi, Foto, Link
                             for i in range(len(df_raw)):
                                 row = df_raw.iloc[i]
                                 nama = str(row.get("Nama Toko", "Tanpa Nama"))
@@ -152,29 +149,26 @@ if halaman == "📍 Google Maps":
                                 deskripsi = str(row.get("Deskripsi", "-"))
                                 foto = str(row.get("Foto", "-"))
                                 link = str(row.get("Link", "-"))
+                                no_telp = str(row.get("Nomor Telepon", "-"))
                                 
-                                # Filter wilayah Babel dari kolom alamat
-                                # Catatan: Jika ingin memasukkan semua data walau tanpa kata bangka/belitung, hapus 3 baris di bawah ini
-                                if not any(k in alamat.lower() for k in babel_keys) and alamat != "-" and "Cek di Link" not in alamat:
-                                    luar_wilayah += 1
-                                    baris_diproses += 1
-                                    continue
+                                # FILTER WILAYAH SENGAJA DIMATIKAN AGAR TIDAK MENGHASILKAN 0 DATA
+                                # Karena alamat Google Maps kadang hanya mencantumkan nama jalan
                                 
-                                # Ekstrak No Telepon dari Deskripsi
-                                no_telp = ekstrak_no_hp(deskripsi)
+                                if no_telp == "-":
+                                    no_telp = ekstrak_no_hp(deskripsi)
                                 
-                                # Pembersihan Deskripsi (Membuang sisa no telp atau tulisan Ulasan biar bersih)
                                 deskripsi_bersih = re.sub(r'(\+62|0)\s*[-]*\d{2,4}\s*[-]*\d{3,4}\s*[-]*\d{3,4}', '', deskripsi)
                                 deskripsi_bersih = re.sub(r'\d+\s*Ulasan', '', deskripsi_bersih).replace('·', '').strip()
+                                if deskripsi_bersih == "": deskripsi_bersih = "-"
                                 
                                 hasil.append({
-                                    "Nama Toko/Usaha": nama, 
-                                    "Kategori Bisnis": deskripsi_bersih if deskripsi_bersih else "Lainnya", 
-                                    "Alamat Lengkap": alamat, 
-                                    "Koordinat": koordinat,
-                                    "No Telepon": no_telp,
-                                    "Foto Lokasi": foto, 
-                                    "Link Gmaps": link
+                                    "Nama Toko": nama, 
+                                    "Nomor Telepon": no_telp,
+                                    "Alamat": alamat, 
+                                    "Titik Koordinat": koordinat,
+                                    "Deskripsi": deskripsi_bersih,
+                                    "Link": link,
+                                    "Foto": foto
                                 })
                                 
                                 baris_diproses += 1
@@ -198,25 +192,25 @@ if halaman == "📍 Google Maps":
         with st.container(border=True):
             st.markdown("#### 🔎 Filter Data Pintar")
             col_f1, col_f2 = st.columns([1, 1])
-            with col_f1: f_kat = st.multiselect("🏷️ Kategori Bisnis:", options=sorted(df_maps["Kategori Bisnis"].unique()), default=sorted(df_maps["Kategori Bisnis"].unique())[:5], key="f_kat_maps")
+            with col_f1: f_kat = st.multiselect("🏷️ Deskripsi Usaha:", options=sorted(df_maps["Deskripsi"].unique()), default=sorted(df_maps["Deskripsi"].unique())[:5], key="f_kat_maps")
             with col_f2: 
                 punya_telp = st.checkbox("📞 Tampilkan hanya yang memiliki No Telepon")
 
-            df_f = df_maps[df_maps["Kategori Bisnis"].isin(f_kat)]
-            if punya_telp: df_f = df_f[df_f["No Telepon"] != "-"]
+            df_f = df_maps[df_maps["Deskripsi"].isin(f_kat)]
+            if punya_telp: df_f = df_f[df_f["Nomor Telepon"] != "-"]
             
             tab1, tab2, tab3 = st.tabs(["📊 Executive Dashboard", "🗄️ Database Siap Ekspor", "📑 Log Audit"])
             with tab1:
                 st.markdown("<br>", unsafe_allow_html=True)
                 c1, c2, c3 = st.columns(3)
                 c1.metric("📌 Total Usaha Terdata", f"{len(df_f):,}".replace(",", "."))
-                c2.metric("📍 Memiliki Titik Koordinat", f"{len(df_f[df_f['Koordinat'] != 'N/A']):,}".replace(",", "."))
-                c3.metric("📞 Memiliki Kontak", f"{len(df_f[df_f['No Telepon'] != '-']):,}".replace(",", "."))
+                c2.metric("📍 Memiliki Titik Koordinat", f"{len(df_f[df_f['Titik Koordinat'] != 'N/A']):,}".replace(",", "."))
+                c3.metric("📞 Memiliki Kontak", f"{len(df_f[df_f['Nomor Telepon'] != '-']):,}".replace(",", "."))
                 
                 st.markdown("<br>", unsafe_allow_html=True)
                 if not df_f.empty:
-                    top_kategori = df_f.groupby("Kategori Bisnis").size().reset_index(name='Jumlah').sort_values('Jumlah', ascending=False).head(10)
-                    st.plotly_chart(px.bar(top_kategori, x="Kategori Bisnis", y="Jumlah", title="Top 10 Kategori Usaha Terbanyak", color="Kategori Bisnis", color_discrete_sequence=px.colors.sequential.Oranges_r), use_container_width=True)
+                    top_kategori = df_f.groupby("Deskripsi").size().reset_index(name='Jumlah').sort_values('Jumlah', ascending=False).head(10)
+                    st.plotly_chart(px.bar(top_kategori, x="Deskripsi", y="Jumlah", title="Top 10 Deskripsi Usaha Terbanyak", color="Deskripsi", color_discrete_sequence=px.colors.sequential.Oranges_r), use_container_width=True)
             with tab2:
                 st.markdown("<br>", unsafe_allow_html=True)
                 st.dataframe(df_f, use_container_width=True, hide_index=True, height=400)
@@ -227,7 +221,7 @@ if halaman == "📍 Google Maps":
                         df_f.to_excel(writer, index=False, sheet_name="Data Maps")
                         wb, ws = writer.book, writer.sheets["Data Maps"]
                         for col_num, value in enumerate(df_f.columns.values): ws.write(0, col_num, value, wb.add_format({'bold': True, 'bg_color': '#ea580c', 'font_color': 'white'}))
-                        ws.set_column('A:A', 35); ws.set_column('B:B', 20); ws.set_column('C:C', 45); ws.set_column('D:D', 25); ws.set_column('E:E', 18); ws.set_column('F:G', 40)
+                        ws.set_column('A:A', 35); ws.set_column('B:B', 20); ws.set_column('C:C', 45); ws.set_column('D:D', 25); ws.set_column('E:E', 25); ws.set_column('F:G', 40)
                     st.markdown('<style>div[data-testid="stDownloadButton"] button {background-color: #f97316; color: white; border:none;}</style>', unsafe_allow_html=True)
                     st.download_button("⬇️ Unduh Excel Database Maps", data=buf.getvalue(), file_name=f"UMKM_Maps_{datetime.date.today()}.xlsx")
             with tab3:
@@ -235,7 +229,7 @@ if halaman == "📍 Google Maps":
                 audit = st.session_state.audit_maps
                 st.info(f"**📂 Dokumen Diproses:** {audit.get('file_count',0)} File CSV")
                 st.success(f"**📥 Data Baris Dibersihkan:** {audit.get('valid',0)} Baris")
-                st.warning(f"**⚠️ Data Luar Wilayah:** {audit.get('luar',0)} Baris")
+                st.warning(f"**⚠️ Filter Wilayah Dimatikan:** Agar semua hasil ekstensi terbaca tanpa terbuang.")
 
 # ==============================================================================
 #                             HALAMAN SHOPEE
@@ -742,7 +736,7 @@ elif halaman == "📊 Export Gabungan (4-in-1)":
                 ws_maps = writer.sheets["Data Maps"]
                 header_fmt_maps = wb.add_format({'bold': True, 'bg_color': '#ea580c', 'font_color': 'white'})
                 for col_num, value in enumerate(df_maps.columns.values): ws_maps.write(0, col_num, value, header_fmt_maps)
-                ws_maps.set_column('A:A', 35); ws_maps.set_column('B:B', 20); ws_maps.set_column('C:C', 45); ws_maps.set_column('D:D', 25); ws_maps.set_column('E:E', 18); ws_maps.set_column('F:G', 40)
+                ws_maps.set_column('A:A', 35); ws_maps.set_column('B:B', 20); ws_maps.set_column('C:C', 45); ws_maps.set_column('D:D', 25); ws_maps.set_column('E:E', 25); ws_maps.set_column('F:G', 40)
                 ws_maps.autofilter(0, 0, len(df_maps), len(df_maps.columns) - 1)
                 
         st.markdown('<style>div[data-testid="stDownloadButton"] button {background-color: #ea580c; color: white; border:none; height: 3.5rem; font-size: 1.1rem; border-radius: 8px; box-shadow: 0 4px 6px rgba(234,88,12,0.3); transition: all 0.3s ease;}</style>', unsafe_allow_html=True)
