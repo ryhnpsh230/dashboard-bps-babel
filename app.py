@@ -149,7 +149,13 @@ with st.sidebar:
         st.markdown(f"<h2 style='color:{BPS_OREN_UTAMA} !important; text-align:center;'>🏛️ BPS UMKM</h2>", unsafe_allow_html=True)
         
     st.markdown("### 🧭 Menu Navigasi")
-    halaman = st.radio("Pilih Fitur:", ["🟠 Shopee", "🟢 Tokopedia", "🔵 Facebook FB", "🟣 Facebook Group", "📊 Export Gabungan"])
+    halaman = st.radio("Pilih Fitur:", [
+    "🟠 Shopee",
+    "🟢 Tokopedia",
+    "🔵 Facebook FB",
+    "🟣 Facebook Group (Manual)",
+    "📊 Export Gabungan"
+])
     st.divider()
 
 babel_keys = ["pangkal", "bangka", "belitung", "sungailiat", "mentok", "muntok", "koba", "toboali", "manggar", "tanjung pandan", "tanjungpandan"]
@@ -877,3 +883,4 @@ elif halaman == "📊 Export Gabungan":
                 file_name=f"Master_UMKM_BPS_{datetime.date.today()}.xlsx",
                 use_container_width=True
             )
+
