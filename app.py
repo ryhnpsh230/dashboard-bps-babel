@@ -16,94 +16,109 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# --- DEFINISI PALET WARNA BPS (OREN & HITAM) ---
-# Palet ini akan digunakan untuk grafik agar seragam
+# --- DEFINISI PALET WARNA BPS ---
 BPS_PALETTE = ['#FF6F00', '#FFA000', '#FFB300', '#FFC107', '#263238', '#37474F', '#455A64']
 BPS_OREN_UTAMA = '#FF6F00'
 
-# --- 2. CSS CUSTOM (TEMA BPS DARK MODE: OREN & HITAM) ---
+# --- 2. CSS CUSTOM (TEMA OREN-HITAM KEKINIAN / GLASSMORPHISM) ---
 st.markdown(f"""
     <style>
-    /* Mengatur jarak aman */
-    .block-container {{ padding-top: 2rem; padding-bottom: 2rem; }}
-    
-    /* --- UNIFIED BPS BANNER STYLE (Semua banner seragam) --- */
-    /* Latar belakang hitam gradasi, dengan border kiri OREN tebal */
-    .banner-bps {{ 
-        background: linear-gradient(to right, #1a1a1a 0%, #2d2d2d 100%); 
-        padding: 25px 35px; 
-        border-radius: 12px; 
-        margin-bottom: 25px; 
-        box-shadow: 0 4px 15px rgba(0,0,0,0.3); 
-        color: white; 
-        border-left: 8px solid {BPS_OREN_UTAMA}; 
+    /* Hilangkan header putih bawaan Streamlit agar warna tidak belang */
+    [data-testid="stHeader"] {{
+        background: transparent !important;
     }}
-    .banner-bps h1 {{ color: white !important; font-weight: 800; margin-bottom: 5px; font-size: 2.2rem; letter-spacing: 0.5px; }}
-    .banner-bps p {{ color: #e0e0e0 !important; font-size: 1.05rem; margin: 0; opacity: 0.9; }}
-    .banner-sub-title {{ font-size: 0.85rem; font-weight: bold; letter-spacing: 2px; color: {BPS_OREN_UTAMA}; margin-bottom: 5px; text-transform: uppercase; }}
 
-    /* --- TEMA DARK MODE UNTUK CONTAINER & CARDS --- */
+    /* --- BACKGROUND UTAMA APLIKASI: OREN CAMPUR HITAM --- */
+    [data-testid="stAppViewContainer"] {{
+        background: linear-gradient(135deg, #FF6F00 0%, #7A3400 35%, #0f0f0f 100%) !important;
+        background-attachment: fixed !important;
+    }}
     
-    /* Mengubah warna latar belakang aplikasi utama menjadi agak gelap agar kontras dengan oren */
+    /* Warna teks dasar jadi putih agar terbaca di atas oren/hitam */
     .stApp {{
-        background-color: #0e0e0e; /* Latar belakang sangat gelap */
         color: #ffffff;
     }}
 
-    /* Style untuk Container Filter (kotak bergaris) di mode gelap */
+    /* Mengatur jarak aman */
+    .block-container {{ padding-top: 1rem; padding-bottom: 2rem; }}
+    
+    /* --- UNIFIED BPS BANNER (Efek Kaca Gelap) --- */
+    .banner-bps {{ 
+        background: rgba(15, 15, 15, 0.75); /* Hitam semi transparan */
+        backdrop-filter: blur(12px); /* Efek blur ala Apple/Glassmorphism */
+        -webkit-backdrop-filter: blur(12px);
+        padding: 25px 35px; 
+        border-radius: 12px; 
+        margin-bottom: 25px; 
+        box-shadow: 0 8px 32px rgba(0,0,0,0.5); 
+        color: white; 
+        border-left: 8px solid #FFC107; /* Aksen kuning/oren terang */
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }}
+    .banner-bps h1 {{ color: white !important; font-weight: 800; margin-bottom: 5px; font-size: 2.2rem; letter-spacing: 0.5px; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); }}
+    .banner-bps p {{ color: #e0e0e0 !important; font-size: 1.05rem; margin: 0; }}
+    .banner-sub-title {{ font-size: 0.85rem; font-weight: bold; letter-spacing: 2px; color: #FFC107; margin-bottom: 5px; text-transform: uppercase; }}
+
+    /* --- TEMA UNTUK CONTAINER FILTER --- */
     [data-testid="stVerticalBlockBorderWrapper"] {{
-        background-color: #1e1e1e;
-        border: 1px solid #FF6F0050 !important; /* Border oren transparan */
+        background: rgba(20, 20, 20, 0.6);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 111, 0, 0.4) !important;
         border-radius: 10px;
         padding: 20px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.3);
     }}
 
-    /* Mempercantik Card Metrik (Angka) agar Dark Mode & Keren */
+    /* --- MEMPERCANTIK CARD METRIK (ANGKA) --- */
     div[data-testid="metric-container"] {{
-        background-color: #1e1e1e; /* Card gelap */
-        border-left: 4px solid {BPS_OREN_UTAMA} !important; /* Aksen oren di kiri */
-        border: 1px solid #333;
+        background: rgba(25, 25, 25, 0.8);
+        backdrop-filter: blur(10px);
+        border-left: 5px solid {BPS_OREN_UTAMA} !important;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        border-right: 1px solid rgba(255, 255, 255, 0.1);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         padding: 15px 20px;
         border-radius: 8px;
-        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.4);
         transition: transform 0.2s ease, border-color 0.2s ease;
     }}
     div[data-testid="metric-container"]:hover {{
-        transform: translateY(-3px);
-        border-color: {BPS_OREN_UTAMA}; /* Border jadi oren saat di-hover */
-        box-shadow: 0 6px 12px rgba(255, 111, 0, 0.15); /* Glow oren */
+        transform: translateY(-4px);
+        border-color: #FFC107;
+        box-shadow: 0 8px 20px rgba(255, 111, 0, 0.5);
     }}
-    /* Warna teks label metrik */
-    div[data-testid="metric-container"] label {{ color: #b0b0b0 !important; }}
-    /* Warna teks angka metrik */
-    div[data-testid="metric-container"] div[data-testid="stMetricValue"] {{ color: white !important; font-weight: 700; }}
+    div[data-testid="metric-container"] label {{ color: #cccccc !important; font-weight: 600; letter-spacing: 0.5px; }}
+    div[data-testid="metric-container"] div[data-testid="stMetricValue"] {{ color: #ffffff !important; font-weight: 800; text-shadow: 1px 1px 2px rgba(0,0,0,0.8); }}
     
     /* --- MEMPERCANTIK TABS --- */
-    .stTabs [data-baseweb="tab-list"] {{ gap: 10px; background-color: #121212; padding: 10px; border-radius: 10px; }}
+    .stTabs [data-baseweb="tab-list"] {{ gap: 10px; background-color: rgba(10, 10, 10, 0.6); padding: 10px; border-radius: 10px; backdrop-filter: blur(8px); }}
     .stTabs [data-baseweb="tab"] {{
         height: 50px;
         white-space: pre-wrap;
         background-color: transparent;
-        color: #b0b0b0;
-        border-radius: 5px;
+        color: #d0d0d0;
+        border-radius: 6px;
         padding: 0 20px;
         border: none;
     }}
-    /* Tab yang aktif berwarna Oren */
     .stTabs [aria-selected="true"] {{
         background-color: {BPS_OREN_UTAMA} !important;
         color: white !important;
         font-weight: bold;
+        box-shadow: 0 4px 10px rgba(255, 111, 0, 0.6);
     }}
 
-    /* Mengubah warna teks sidebar agar terbaca di dark mode */
+    /* --- SIDEBAR: DIBIKIN GELAP BIAR KONTRAS DENGAN KANAN YANG OREN --- */
     [data-testid="stSidebar"] {{
-         background-color: #121212;
-         border-right: 1px solid #333;
+         background-color: #0d0d0d !important;
+         border-right: 2px solid {BPS_OREN_UTAMA};
     }}
-    [data-testid="stSidebar"] h1, [data-testid="stSidebar"] h2, [data-testid="stSidebar"] h3 {{
-        color: {BPS_OREN_UTAMA} !important;
+    [data-testid="stSidebar"] * {{
+        color: #ffffff !important;
     }}
+    
+    /* Teks dan judul di luar kontainer */
+    h1, h2, h3, h4, p {{ text-shadow: 1px 1px 3px rgba(0,0,0,0.5); }}
     </style>
 """, unsafe_allow_html=True)
 
@@ -139,8 +154,7 @@ with st.sidebar:
     if os.path.exists("logo.png"):
         st.image("logo.png", use_container_width=True)
     else:
-        # Placeholder jika logo tidak ada, biar kelihatan BPS nya
-        st.markdown(f"<h2 style='color:{BPS_OREN_UTAMA}; text-align:center;'>🏛️ BPS UMKM</h2>", unsafe_allow_html=True)
+        st.markdown(f"<h2 style='color:{BPS_OREN_UTAMA} !important; text-align:center;'>🏛️ BPS UMKM</h2>", unsafe_allow_html=True)
         
     st.markdown("### 🧭 Menu Navigasi")
     halaman = st.radio("Pilih Fitur:", ["🟠 Shopee", "🟢 Tokopedia", "🔵 Facebook FB", "📊 Export Gabungan"])
@@ -152,7 +166,6 @@ babel_keys = ["pangkal", "bangka", "belitung", "sungailiat", "mentok", "muntok",
 #                             HALAMAN SHOPEE
 # ==============================================================================
 if halaman == "🟠 Shopee":
-    # Menggunakan class banner-bps yang baru (seragam oren hitam)
     st.markdown("""
     <div class="banner-bps">
         <div class="banner-sub-title">🏛️ BADAN PUSAT STATISTIK</div>
@@ -166,7 +179,6 @@ if halaman == "🟠 Shopee":
         files_shopee = st.file_uploader("Unggah CSV Shopee", type=["csv"], accept_multiple_files=True, key="file_shp")
         mode_api_shp = st.checkbox("🔍 Deteksi Nama Toko (API)", key="api_shp", value=True, help="Wajib dicentang agar sistem bisa mendeteksi Tipe Usaha!")
         
-        # Ubah warna tombol sidebar jadi oren
         if st.button("🚀 Proses Data Shopee", type="primary", use_container_width=True):
             if not files_shopee:
                 st.error("⚠️ Silakan unggah file CSV Shopee terlebih dahulu.")
@@ -183,7 +195,6 @@ if halaman == "🟠 Shopee":
                             
                         hasil, total_baris, err_h, luar_wilayah = [], 0, 0, 0
                         baris_diproses = 0
-                        
                         status_text = st.empty()
                         progress_bar = st.progress(0)
                         
@@ -277,11 +288,14 @@ if halaman == "🟠 Shopee":
             st.markdown("<br>", unsafe_allow_html=True)
             if not df_f.empty:
                 g1, g2 = st.columns(2)
-                # MENGUBAH WARNA GRAFIK MENJADI PALET BPS OREN/HITAM
                 with g1: 
-                    st.plotly_chart(px.pie(df_f, names="Tipe Usaha", title="Komposisi Model Bisnis UMKM", hole=0.4, color_discrete_sequence=BPS_PALETTE), use_container_width=True)
+                    fig_pie = px.pie(df_f, names="Tipe Usaha", title="Komposisi Model Bisnis UMKM", hole=0.4, color_discrete_sequence=BPS_PALETTE)
+                    fig_pie.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font=dict(color='white'))
+                    st.plotly_chart(fig_pie, use_container_width=True)
                 with g2: 
-                    st.plotly_chart(px.bar(df_f.groupby("Wilayah").size().reset_index(name='Jumlah'), x="Wilayah", y="Jumlah", title="Total Usaha Berdasarkan Wilayah", color="Wilayah", color_discrete_sequence=BPS_PALETTE), use_container_width=True)
+                    fig_bar = px.bar(df_f.groupby("Wilayah").size().reset_index(name='Jumlah'), x="Wilayah", y="Jumlah", title="Total Usaha Berdasarkan Wilayah", color="Wilayah", color_discrete_sequence=BPS_PALETTE)
+                    fig_bar.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font=dict(color='white'))
+                    st.plotly_chart(fig_bar, use_container_width=True)
         with tab2:
             st.markdown("<br>", unsafe_allow_html=True)
             df_view = df_f.copy()
@@ -293,11 +307,9 @@ if halaman == "🟠 Shopee":
                 with pd.ExcelWriter(buf, engine="xlsxwriter") as writer:
                     df_f.to_excel(writer, index=False, sheet_name="Data Shopee")
                     wb, ws = writer.book, writer.sheets["Data Shopee"]
-                    # Header Excel Oren BPS
                     for col_num, value in enumerate(df_f.columns.values): ws.write(0, col_num, value, wb.add_format({'bold': True, 'bg_color': BPS_OREN_UTAMA, 'font_color': 'white'}))
                     ws.set_column('A:A', 25); ws.set_column('B:B', 50); ws.set_column('C:C', 18, wb.add_format({'num_format': '#,##0'})); ws.set_column('D:D', 20); ws.set_column('E:E', 25); ws.set_column('F:F', 50)
                 
-                # Styling Tombol Download agar Oren
                 st.markdown(f'<style>div[data-testid="stDownloadButton"] button {{background-color: {BPS_OREN_UTAMA} !important; color: white !important; border:none;}}</style>', unsafe_allow_html=True)
                 st.download_button("⬇️ Unduh Excel Database Shopee", data=buf.getvalue(), file_name=f"UMKM_Shopee_{datetime.date.today()}.xlsx", type="primary")
         with tab3:
@@ -311,7 +323,6 @@ if halaman == "🟠 Shopee":
 #                             HALAMAN TOKOPEDIA
 # ==============================================================================
 elif halaman == "🟢 Tokopedia":
-    # Menggunakan class banner-bps yang baru (seragam oren hitam)
     st.markdown("""
     <div class="banner-bps">
         <div class="banner-sub-title">🏛️ BADAN PUSAT STATISTIK</div>
@@ -338,7 +349,6 @@ elif halaman == "🟢 Tokopedia":
                             
                         hasil, total_baris, err_h, luar_wilayah = [], 0, 0, 0
                         baris_diproses = 0
-                        
                         status_text = st.empty()
                         progress_bar = st.progress(0)
                         
@@ -434,11 +444,14 @@ elif halaman == "🟢 Tokopedia":
             st.markdown("<br>", unsafe_allow_html=True)
             if not df_f.empty:
                 g1, g2 = st.columns(2)
-                # MENGUBAH WARNA GRAFIK MENJADI PALET BPS OREN/HITAM
                 with g1: 
-                    st.plotly_chart(px.pie(df_f, names="Tipe Usaha", title="Komposisi Model Bisnis UMKM", hole=0.4, color_discrete_sequence=BPS_PALETTE), use_container_width=True)
+                    fig_pie = px.pie(df_f, names="Tipe Usaha", title="Komposisi Model Bisnis UMKM", hole=0.4, color_discrete_sequence=BPS_PALETTE)
+                    fig_pie.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font=dict(color='white'))
+                    st.plotly_chart(fig_pie, use_container_width=True)
                 with g2: 
-                    st.plotly_chart(px.bar(df_f.groupby("Wilayah").size().reset_index(name='Jumlah'), x="Wilayah", y="Jumlah", title="Total Usaha Berdasarkan Wilayah", color="Wilayah", color_discrete_sequence=BPS_PALETTE), use_container_width=True)
+                    fig_bar = px.bar(df_f.groupby("Wilayah").size().reset_index(name='Jumlah'), x="Wilayah", y="Jumlah", title="Total Usaha Berdasarkan Wilayah", color="Wilayah", color_discrete_sequence=BPS_PALETTE)
+                    fig_bar.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font=dict(color='white'))
+                    st.plotly_chart(fig_bar, use_container_width=True)
         with tab2:
             st.markdown("<br>", unsafe_allow_html=True)
             df_view = df_f.copy()
@@ -450,11 +463,9 @@ elif halaman == "🟢 Tokopedia":
                 with pd.ExcelWriter(buf, engine="xlsxwriter") as writer:
                     df_f.to_excel(writer, index=False, sheet_name="Data Tokopedia")
                     wb, ws = writer.book, writer.sheets["Data Tokopedia"]
-                    # Header Excel Oren BPS
                     for col_num, value in enumerate(df_f.columns.values): ws.write(0, col_num, value, wb.add_format({'bold': True, 'bg_color': BPS_OREN_UTAMA, 'font_color': 'white'}))
                     ws.set_column('A:A', 25); ws.set_column('B:B', 50); ws.set_column('C:C', 18, wb.add_format({'num_format': '#,##0'})); ws.set_column('D:D', 20); ws.set_column('E:E', 25); ws.set_column('F:F', 50)
                 
-                # Styling Tombol Download agar Oren
                 st.markdown(f'<style>div[data-testid="stDownloadButton"] button {{background-color: {BPS_OREN_UTAMA} !important; color: white !important; border:none;}}</style>', unsafe_allow_html=True)
                 st.download_button("⬇️ Unduh Excel Database Tokopedia", data=buf.getvalue(), file_name=f"UMKM_Tokopedia_{datetime.date.today()}.xlsx")
         with tab3:
@@ -468,7 +479,6 @@ elif halaman == "🟢 Tokopedia":
 #                             HALAMAN FACEBOOK MARKETPLACE
 # ==============================================================================
 elif halaman == "🔵 Facebook FB":
-    # Menggunakan class banner-bps yang baru (seragam oren hitam)
     st.markdown("""
     <div class="banner-bps">
         <div class="banner-sub-title">🏛️ BADAN PUSAT STATISTIK</div>
@@ -575,11 +585,14 @@ elif halaman == "🔵 Facebook FB":
             st.markdown("<br>", unsafe_allow_html=True)
             if not df_f.empty:
                 g1, g2 = st.columns(2)
-                # MENGUBAH WARNA GRAFIK MENJADI PALET BPS OREN/HITAM
                 with g1: 
-                    st.plotly_chart(px.pie(df_f, names="Tipe Usaha", title="Komposisi Model Bisnis FB", hole=0.4, color_discrete_sequence=BPS_PALETTE), use_container_width=True)
+                    fig_pie = px.pie(df_f, names="Tipe Usaha", title="Komposisi Model Bisnis FB", hole=0.4, color_discrete_sequence=BPS_PALETTE)
+                    fig_pie.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font=dict(color='white'))
+                    st.plotly_chart(fig_pie, use_container_width=True)
                 with g2: 
-                    st.plotly_chart(px.bar(df_f.groupby("Wilayah").size().reset_index(name='Jumlah'), x="Wilayah", y="Jumlah", title="Total Usaha Berdasarkan Wilayah FB", color="Wilayah", color_discrete_sequence=BPS_PALETTE), use_container_width=True)
+                    fig_bar = px.bar(df_f.groupby("Wilayah").size().reset_index(name='Jumlah'), x="Wilayah", y="Jumlah", title="Total Usaha Berdasarkan Wilayah FB", color="Wilayah", color_discrete_sequence=BPS_PALETTE)
+                    fig_bar.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font=dict(color='white'))
+                    st.plotly_chart(fig_bar, use_container_width=True)
         with tab2:
             st.markdown("<br>", unsafe_allow_html=True)
             df_view = df_f.copy()
@@ -591,11 +604,9 @@ elif halaman == "🔵 Facebook FB":
                 with pd.ExcelWriter(buf, engine="xlsxwriter") as writer:
                     df_f.to_excel(writer, index=False, sheet_name="Data FB")
                     wb, ws = writer.book, writer.sheets["Data FB"]
-                    # Header Excel Oren BPS
                     for col_num, value in enumerate(df_f.columns.values): ws.write(0, col_num, value, wb.add_format({'bold': True, 'bg_color': BPS_OREN_UTAMA, 'font_color': 'white'}))
                     ws.set_column('A:A', 25); ws.set_column('B:B', 50); ws.set_column('C:C', 18, wb.add_format({'num_format': '#,##0'})); ws.set_column('D:D', 20); ws.set_column('E:E', 25); ws.set_column('F:F', 50)
                 
-                # Styling Tombol Download agar Oren
                 st.markdown(f'<style>div[data-testid="stDownloadButton"] button {{background-color: {BPS_OREN_UTAMA} !important; color: white !important; border:none;}}</style>', unsafe_allow_html=True)
                 st.download_button("⬇️ Unduh Excel Database Facebook", data=buf.getvalue(), file_name=f"UMKM_Facebook_{datetime.date.today()}.xlsx")
         with tab3:
@@ -609,7 +620,6 @@ elif halaman == "🔵 Facebook FB":
 #                             HALAMAN EXPORT GABUNGAN
 # ==============================================================================
 elif halaman == "📊 Export Gabungan":
-    # Menggunakan class banner-bps yang baru (seragam oren hitam)
     st.markdown("""
     <div class="banner-bps">
         <div class="banner-sub-title">🏛️ BADAN PUSAT STATISTIK</div>
@@ -646,7 +656,6 @@ elif halaman == "📊 Export Gabungan":
                 df_shp = st.session_state.data_shopee
                 df_shp.to_excel(writer, index=False, sheet_name="Data Shopee")
                 ws_shp = writer.sheets["Data Shopee"]
-                # Header Excel Oren BPS
                 header_fmt_shp = wb.add_format({'bold': True, 'bg_color': BPS_OREN_UTAMA, 'font_color': 'white'})
                 for col_num, value in enumerate(df_shp.columns.values): ws_shp.write(0, col_num, value, header_fmt_shp)
                 ws_shp.set_column('A:A', 25); ws_shp.set_column('B:B', 50); ws_shp.set_column('C:C', 18, currency_fmt); ws_shp.set_column('D:D', 20); ws_shp.set_column('E:E', 25); ws_shp.set_column('F:F', 50)
@@ -656,7 +665,6 @@ elif halaman == "📊 Export Gabungan":
                 df_tkp = st.session_state.data_tokped
                 df_tkp.to_excel(writer, index=False, sheet_name="Data Tokopedia")
                 ws_tkp = writer.sheets["Data Tokopedia"]
-                # Header Excel Oren BPS
                 header_fmt_tkp = wb.add_format({'bold': True, 'bg_color': BPS_OREN_UTAMA, 'font_color': 'white'})
                 for col_num, value in enumerate(df_tkp.columns.values): ws_tkp.write(0, col_num, value, header_fmt_tkp)
                 ws_tkp.set_column('A:A', 25); ws_tkp.set_column('B:B', 50); ws_tkp.set_column('C:C', 18, currency_fmt); ws_tkp.set_column('D:D', 20); ws_tkp.set_column('E:E', 25); ws_tkp.set_column('F:F', 50)
@@ -666,14 +674,12 @@ elif halaman == "📊 Export Gabungan":
                 df_fb = st.session_state.data_fb
                 df_fb.to_excel(writer, index=False, sheet_name="Data Facebook")
                 ws_fb = writer.sheets["Data Facebook"]
-                # Header Excel Oren BPS
                 header_fmt_fb = wb.add_format({'bold': True, 'bg_color': BPS_OREN_UTAMA, 'font_color': 'white'})
                 for col_num, value in enumerate(df_fb.columns.values): ws_fb.write(0, col_num, value, header_fmt_fb)
                 ws_fb.set_column('A:A', 25); ws_fb.set_column('B:B', 50); ws_fb.set_column('C:C', 18, currency_fmt); ws_fb.set_column('D:D', 20); ws_fb.set_column('E:E', 25); ws_fb.set_column('F:F', 50)
                 ws_fb.autofilter(0, 0, len(df_fb), len(df_fb.columns) - 1)
         
-        # Styling Tombol Download Besar agar Oren dan Keren
-        st.markdown(f'<style>div[data-testid="stDownloadButton"] button {{background-color: {BPS_OREN_UTAMA} !important; color: white !important; border:none; height: 3.5rem; font-size: 1.1rem; border-radius: 8px; box-shadow: 0 4px 10px rgba(255, 111, 0, 0.3);}}</style>', unsafe_allow_html=True)
+        st.markdown(f'<style>div[data-testid="stDownloadButton"] button {{background-color: {BPS_OREN_UTAMA} !important; color: white !important; border:1px solid #ffffff; height: 3.5rem; font-size: 1.1rem; border-radius: 8px; box-shadow: 0 4px 15px rgba(255, 111, 0, 0.5);}}</style>', unsafe_allow_html=True)
         
         _, col_btn, _ = st.columns([1, 2, 1])
         with col_btn:
