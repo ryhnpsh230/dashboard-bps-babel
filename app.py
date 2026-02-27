@@ -301,6 +301,111 @@ def to_float_safe(x: str):
         return None
 
 # ======================================================================================
+# MAP (PRETTY) — Upgrade biar ga kaku
+# ======================================================================================
+def build_pretty_map(df_maps: pd.DataFrame):
+    """
+    Map aesthetic:
+    - auto-fit bounds
+    - marker size by data completeness
+    - color by quality (Telp+Link / Telp / Link / Minimal)
+    - hover rapi
+    """
+    df_plot = df_maps.dropna(subset=["Latitude", "Longitude"]).copy()
+    if df_plot.empty:
+        return None
+
+    # flags
+    df_plot["has_phone"] = df_plot["No Telepon"].astype(str).str.strip().fillna("").str.len() > 0
+    df_plot["has_link"] = df_plot["Link"].astype(str).str.strip().fillna("").str.len() > 0
+
+    def quality(row):
+        if row["has_phone"] and row["has_link"]:
+            return "Lengkap (Telp+Link)"
+        if row["has_phone"]:
+            return "Ada Telp"
+        if row["has_link"]:
+            return "Ada Link"
+        return "Minimal"
+
+    df_plot["quality"] = df_plot.apply(quality, axis=1)
+
+    # marker size biar lebih “hidup”
+    df_plot["marker_size"] = 10
+    df_plot.loc[df_plot["has_link"], "marker_size"] = 12
+    df_plot.loc[df_plot["has_phone"], "marker_size"] = 14
+    df_plot.loc[df_plot["has_phone"] & df_plot["has_link"], "marker_size"] = 16
+
+    # bounds untuk auto-fit
+    lat_min = float(df_plot["Latitude"].min())
+    lat_max = float(df_plot["Latitude"].max())
+    lon_min = float(df_plot["Longitude"].min())
+    lon_max = float(df_plot["Longitude"].max())
+
+    # padding bounds biar ga mepet
+    lat_pad = max((lat_max - lat_min) * 0.12, 0.02)
+    lon_pad = max((lon_max - lon_min) * 0.12, 0.02)
+
+    fig = px.scatter_mapbox(
+        df_plot,
+        lat="Latitude",
+        lon="Longitude",
+        hover_name="Nama Usaha",
+        hover_data={
+            "Alamat": True,
+            "No Telepon": True,
+            "Link": True,
+            "Latitude": ":.6f",
+            "Longitude": ":.6f",
+            "quality": True,
+            "marker_size": False,
+            "has_phone": False,
+            "has_link": False,
+        },
+        color="quality",
+        size="marker_size",
+        size_max=18,
+        height=580,
+        color_discrete_sequence=BPS_PALETTE,  # tetap konsisten tema
+    )
+
+    # style modern
+    fig.update_layout(
+        mapbox_style="open-street-map",
+        margin=dict(l=0, r=0, t=0, b=0),
+        paper_bgcolor=BPS_PAPER,
+        plot_bgcolor=BPS_PAPER,
+        font=dict(color="white"),
+        legend=dict(
+            title="Kualitas Data",
+            bgcolor="rgba(0,0,0,0.35)",
+            bordercolor="rgba(255,255,255,0.15)",
+            borderwidth=1,
+            yanchor="top",
+            y=0.98,
+            xanchor="left",
+            x=0.02,
+        ),
+    )
+
+    # marker outline biar pop
+    fig.update_traces(marker=dict(opacity=0.92, line=dict(width=1)))
+
+    # auto fit bounds (yang bikin map “ngikut data”)
+    fig.update_layout(
+        mapbox=dict(
+            bounds=dict(
+                west=lon_min - lon_pad,
+                east=lon_max + lon_pad,
+                south=lat_min - lat_pad,
+                north=lat_max + lat_pad,
+            )
+        )
+    )
+
+    return fig
+
+# ======================================================================================
 # BUSINESS LOGIC
 # ======================================================================================
 def deteksi_tipe_usaha(nama_toko):
@@ -985,7 +1090,6 @@ elif menu == "🔵 Facebook":
                         if "Link" in df_raw.columns and "Nama Produk" in df_raw.columns:
                             col_link, col_nama, col_harga, col_wilayah, col_toko = "Link", "Nama Produk", "Harga", "Wilayah", "Nama Toko"
                         else:
-                            # fallback posisi kolom
                             col_toko = df_raw.columns[0]
                             col_nama = df_raw.columns[1] if len(df_raw.columns) > 1 else df_raw.columns[0]
                             col_wilayah = df_raw.columns[2] if len(df_raw.columns) > 2 else df_raw.columns[0]
@@ -1150,8 +1254,6 @@ elif menu == "📍 Google Maps":
             with st.status("Memproses data Google Maps…", expanded=True) as status:
                 try:
                     df_raw, total_rows = read_csv_files(files)
-
-                    # tetap rapihin minimal walau do_clean off (biar output konsisten)
                     df_clean, audit = clean_maps_dataframe(df_raw)
 
                     st.session_state.data_maps = df_clean
@@ -1184,23 +1286,14 @@ elif menu == "📍 Google Maps":
             m4.metric("☎️ No Telp Valid", fmt_int_id((df_maps["No Telepon"].astype(str).str.len() > 0).sum()))
 
             if not st.session_state.get("fast_mode"):
-                df_plot = df_maps.dropna(subset=["Latitude", "Longitude"]).copy()
-                if not df_plot.empty:
-                    try:
-                        fig = px.scatter_mapbox(
-                            df_plot,
-                            lat="Latitude",
-                            lon="Longitude",
-                            hover_name="Nama Usaha",
-                            hover_data={"Alamat": True, "No Telepon": True, "Link": True},
-                            zoom=7,
-                            height=540,
-                        )
-                        fig.update_layout(mapbox_style="open-street-map")
-                        fig.update_layout(paper_bgcolor=BPS_PAPER, plot_bgcolor=BPS_PAPER, font=dict(color="white"))
+                try:
+                    fig = build_pretty_map(df_maps)
+                    if fig is None:
+                        st.info("Tidak ada koordinat valid untuk ditampilkan.")
+                    else:
                         st.plotly_chart(fig, use_container_width=True)
-                    except Exception:
-                        st.info("Peta tidak bisa dirender. Data koordinat tetap siap diekspor.")
+                except Exception:
+                    st.info("Peta tidak bisa dirender. Data koordinat tetap siap diekspor.")
 
         with tab2:
             st.dataframe(df_maps, use_container_width=True, hide_index=True, height=440)
