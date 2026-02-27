@@ -1050,3 +1050,4 @@ elif halaman == "📊 Export Gabungan":
                 file_name=f"Master_UMKM_BPS_{datetime.date.today()}.xlsx",
                 use_container_width=True
             )
+
