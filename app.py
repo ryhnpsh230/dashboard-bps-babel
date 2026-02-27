@@ -150,6 +150,58 @@ def deteksi_tipe_usaha(nama_toko):
             
     return "Murni Online (Rumahan)"
 
+
+def gabung_per_toko(df: pd.DataFrame) -> pd.DataFrame:
+    """Gabungkan baris yang Nama Toko-nya sama (1 toko 1 baris).
+    Produk tetap beda-beda: dikumpulkan jadi satu kolom (unik).
+    Harga diringkas: min–max (kalau cuma 1 harga, tampil 1).
+    Link digabung unik.
+    """
+    if df is None or df.empty:
+        return df
+
+    dfx = df.copy()
+
+    # Pastikan kolom harga numerik (kalau ada)
+    if "Harga" in dfx.columns:
+        dfx["Harga"] = pd.to_numeric(dfx["Harga"], errors="coerce").fillna(0).astype(int)
+
+    group_cols = []
+    for c in ["Nama Toko", "Wilayah", "Tipe Usaha"]:
+        if c in dfx.columns:
+            group_cols.append(c)
+
+    def uniq_join(series, sep=" | "):
+        vals = [str(x).strip() for x in series.dropna().tolist() if str(x).strip() not in ["", "nan", "None"]]
+        seen = set()
+        uniq = []
+        for v in vals:
+            if v not in seen:
+                uniq.append(v)
+                seen.add(v)
+        return sep.join(uniq)
+
+    def harga_ringkas(series):
+        s = pd.to_numeric(series, errors="coerce").dropna()
+        if len(s) == 0:
+            return 0
+        mn, mx = int(s.min()), int(s.max())
+        return mn if mn == mx else f"{mn}-{mx}"
+
+    agg_map = {}
+    if "Nama Produk" in dfx.columns:
+        agg_map["Nama Produk"] = lambda s: uniq_join(s, sep=" || ")
+    if "Harga" in dfx.columns:
+        agg_map["Harga"] = harga_ringkas
+    if "Link" in dfx.columns:
+        agg_map["Link"] = lambda s: uniq_join(s, sep=" | ")
+
+    out = (
+        dfx.groupby(group_cols, dropna=False, as_index=False)
+           .agg(agg_map)
+    )
+    return out
+
 # --- 5. SIDEBAR MENU ---
 with st.sidebar:
     if os.path.exists("logo.png"):
@@ -299,20 +351,39 @@ if halaman == "🟠 Shopee":
                     st.plotly_chart(fig_bar, use_container_width=True)
         with tab2:
             st.markdown("<br>", unsafe_allow_html=True)
-            df_view = df_f.copy()
-            df_view["Harga"] = df_view["Harga"].apply(lambda x: f"Rp {x:,.0f}".replace(",", "."))
+
+            gabung = st.checkbox("✅ Gabungkan data per toko (1 toko 1 baris)", value=True, key="gabung_toko_shp")
+            df_output = gabung_per_toko(df_f) if gabung else df_f
+
+            df_view = df_output.copy()
+
+            def fmt_harga(x):
+                if isinstance(x, str) and "-" in x:
+                    a, b = x.split("-", 1)
+                    try:
+                        return f"Rp {int(a):,}".replace(",", ".") + " - " + f"Rp {int(b):,}".replace(",", ".")
+                    except:
+                        return x
+                try:
+                    return f"Rp {int(x):,}".replace(",", ".")
+                except:
+                    return str(x)
+
+            if "Harga" in df_view.columns:
+                df_view["Harga"] = df_view["Harga"].apply(fmt_harga)
+
             st.dataframe(df_view, use_container_width=True, hide_index=True, height=400)
             
-            if not df_f.empty:
+            if not df_output.empty:
                 buf = io.BytesIO()
                 with pd.ExcelWriter(buf, engine="xlsxwriter") as writer:
-                    df_f.to_excel(writer, index=False, sheet_name="Data Shopee")
+                    df_output.to_excel(writer, index=False, sheet_name="Data Shopee")
                     wb, ws = writer.book, writer.sheets["Data Shopee"]
-                    for col_num, value in enumerate(df_f.columns.values): ws.write(0, col_num, value, wb.add_format({'bold': True, 'bg_color': BPS_OREN_UTAMA, 'font_color': 'white'}))
-                    ws.set_column('A:A', 25); ws.set_column('B:B', 50); ws.set_column('C:C', 18, wb.add_format({'num_format': '#,##0'})); ws.set_column('D:D', 20); ws.set_column('E:E', 25); ws.set_column('F:F', 50)
+                    for col_num, value in enumerate(df_output.columns.values): ws.write(0, col_num, value, wb.add_format({'bold': True, 'bg_color': BPS_OREN_UTAMA, 'font_color': 'white'}))
+                    ws.set_column('A:A', 25); ws.set_column('B:B', 50); ws.set_column('C:C', 18); ws.set_column('D:D', 20); ws.set_column('E:E', 25); ws.set_column('F:F', 50)
                 
                 st.markdown(f'<style>div[data-testid="stDownloadButton"] button {{background-color: {BPS_OREN_UTAMA} !important; color: white !important; border:none;}}</style>', unsafe_allow_html=True)
-                st.download_button("⬇️ Unduh Excel Database Shopee", data=buf.getvalue(), file_name=f"UMKM_Shopee_{datetime.date.today()}.xlsx", type="primary")
+                st.download_button("⬇️ Unduh Excel Database Data Shopee", data=buf.getvalue(), file_name=f"UMKM_Shopee_{datetime.date.today()}.xlsx", type="primary")
         with tab3:
             st.markdown("<br>", unsafe_allow_html=True)
             audit = st.session_state.audit_shopee
@@ -358,52 +429,37 @@ elif halaman == "🟢 Tokopedia":
                             total_baris += len(df_raw)
                             
                             if "Link" in df_raw.columns and "Nama Produk" in df_raw.columns:
-                                col_links = ["Link"]
-                                col_namas = ["Nama Produk"]
-                                col_hargas = ["Harga"]
-                                col_lokasis = ["Wilayah"]
-                                col_tokos = ["Nama Toko"]
+                                col_link, col_nama, col_harga, col_wilayah, col_toko = "Link", "Nama Produk", "Harga", "Wilayah", "Nama Toko"
                             else:
-                                col_links = [c for c in df_raw.columns if 'Ui5' in c]
-                                col_namas = [c for c in df_raw.columns if '+tnoqZhn' in c]
-                                col_hargas = [c for c in df_raw.columns if 'urMOIDHH' in c]
-                                col_lokasis = [c for c in df_raw.columns if 'gxi+fs' in c]
-                                col_tokos = [c for c in df_raw.columns if 'si3CN' in c]
-                            
-                            max_items = max(len(col_links), len(col_namas), len(col_hargas), len(col_lokasis), len(col_tokos))
-                            if max_items == 0: max_items = 1
+                                col_link = df_raw.columns[0]
+                                col_nama = df_raw.columns[1]
+                                col_wilayah = df_raw.columns[2]
+                                col_toko = df_raw.columns[3]
+                                col_harga = df_raw.columns[4] if len(df_raw.columns) > 4 else df_raw.columns[-1]
 
                             for i in range(len(df_raw)):
-                                for j in range(max_items):
-                                    try:
-                                        link = str(df_raw.iloc[i][col_links[j]]) if j < len(col_links) else "nan"
-                                        nama = str(df_raw.iloc[i][col_namas[j]]) if j < len(col_namas) else "nan"
-                                        harga_str = str(df_raw.iloc[i][col_hargas[j]]) if j < len(col_hargas) else "0"
-                                        lokasi_tokped = str(df_raw.iloc[i][col_lokasis[j]]).title() if j < len(col_lokasis) else "-"
-                                        toko = str(df_raw.iloc[i][col_tokos[j]]) if j < len(col_tokos) else "Toko CSV"
-                                        
-                                        if link == 'nan' or nama == 'nan': continue
-                                        
-                                        if not any(k in lokasi_tokped.lower() for k in babel_keys):
-                                            luar_wilayah += 1
-                                            continue
-                                            
-                                        try: 
-                                            harga_bersih = harga_str.replace('.', '').replace(',', '')
-                                            angka_list = re.findall(r'\d+', harga_bersih)
-                                            if angka_list:
-                                                val_h = int(angka_list[0])
-                                                if val_h > 1000000000: val_h = 0
-                                            else:
-                                                val_h = 0
-                                        except: 
-                                            val_h, err_h = 0, err_h + 1
-                                        
-                                        if val_h > 0:
-                                            tipe_usaha = deteksi_tipe_usaha(toko)
-                                            hasil.append({"Nama Toko": toko, "Nama Produk": nama, "Harga": val_h, "Wilayah": lokasi_tokped, "Tipe Usaha": tipe_usaha, "Link": link})
-                                            
-                                    except Exception: continue
+                                row = df_raw.iloc[i]
+                                link = str(row[col_link])
+                                nama = str(row[col_nama])
+                                harga_str = str(row[col_harga])
+                                lokasi = str(row[col_wilayah]).title()
+                                toko = str(row[col_toko]).strip() if col_toko in df_raw.columns else "Toko CSV"
+                                
+                                if not any(k in lokasi.lower() for k in babel_keys):
+                                    luar_wilayah += 1
+                                    baris_diproses += 1
+                                    continue
+
+                                try:
+                                    harga_bersih = harga_str.replace('.', '').replace(',', '')
+                                    angka_list = re.findall(r'\d+', harga_bersih)
+                                    val_h = int(angka_list[0]) if angka_list else 0
+                                    if val_h > 1000000000: val_h = 0
+                                except:
+                                    val_h, err_h = 0, err_h + 1
+                                
+                                tipe_usaha = deteksi_tipe_usaha(toko)
+                                hasil.append({"Nama Toko": toko, "Nama Produk": nama, "Harga": val_h, "Wilayah": lokasi, "Tipe Usaha": tipe_usaha, "Link": link})
                                 
                                 baris_diproses += 1
                                 if baris_diproses % 5 == 0 or baris_diproses == total_semua_baris:
@@ -414,12 +470,11 @@ elif halaman == "🟢 Tokopedia":
                         status_text.empty()
                         progress_bar.empty()
                         
-                        df_final = pd.DataFrame(hasil).drop_duplicates()
-                        st.session_state.data_tokped = df_final
-                        st.session_state.audit_tokped = {"total": total_baris, "valid": len(df_final), "file_count": len(files_tokped), "error_harga": err_h, "luar": luar_wilayah}
-                        st.success(f"✅ Berhasil! {len(df_final)} data UMKM Tokopedia diekstrak.")
+                        st.session_state.data_tokped = pd.DataFrame(hasil)
+                        st.session_state.audit_tokped = {"total": total_baris, "valid": len(hasil), "file_count": len(files_tokped), "error_harga": err_h, "luar": luar_wilayah}
+                        st.success(f"✅ Berhasil! {len(hasil)} data UMKM Tokopedia siap dianalisis.")
                     except Exception as e:
-                        st.error(f"Error Sistem Tokopedia: {e}")
+                        st.error(f"Error Sistem: {e}")
 
     df_tkp = st.session_state.data_tokped
     if df_tkp is not None and not df_tkp.empty:
@@ -455,20 +510,39 @@ elif halaman == "🟢 Tokopedia":
                     st.plotly_chart(fig_bar, use_container_width=True)
         with tab2:
             st.markdown("<br>", unsafe_allow_html=True)
-            df_view = df_f.copy()
-            df_view["Harga"] = df_view["Harga"].apply(lambda x: f"Rp {x:,.0f}".replace(",", "."))
+
+            gabung = st.checkbox("✅ Gabungkan data per toko (1 toko 1 baris)", value=True, key="gabung_toko_tkp")
+            df_output = gabung_per_toko(df_f) if gabung else df_f
+
+            df_view = df_output.copy()
+
+            def fmt_harga(x):
+                if isinstance(x, str) and "-" in x:
+                    a, b = x.split("-", 1)
+                    try:
+                        return f"Rp {int(a):,}".replace(",", ".") + " - " + f"Rp {int(b):,}".replace(",", ".")
+                    except:
+                        return x
+                try:
+                    return f"Rp {int(x):,}".replace(",", ".")
+                except:
+                    return str(x)
+
+            if "Harga" in df_view.columns:
+                df_view["Harga"] = df_view["Harga"].apply(fmt_harga)
+
             st.dataframe(df_view, use_container_width=True, hide_index=True, height=400)
             
-            if not df_f.empty:
+            if not df_output.empty:
                 buf = io.BytesIO()
                 with pd.ExcelWriter(buf, engine="xlsxwriter") as writer:
-                    df_f.to_excel(writer, index=False, sheet_name="Data Tokopedia")
+                    df_output.to_excel(writer, index=False, sheet_name="Data Tokopedia")
                     wb, ws = writer.book, writer.sheets["Data Tokopedia"]
-                    for col_num, value in enumerate(df_f.columns.values): ws.write(0, col_num, value, wb.add_format({'bold': True, 'bg_color': BPS_OREN_UTAMA, 'font_color': 'white'}))
-                    ws.set_column('A:A', 25); ws.set_column('B:B', 50); ws.set_column('C:C', 18, wb.add_format({'num_format': '#,##0'})); ws.set_column('D:D', 20); ws.set_column('E:E', 25); ws.set_column('F:F', 50)
+                    for col_num, value in enumerate(df_output.columns.values): ws.write(0, col_num, value, wb.add_format({'bold': True, 'bg_color': BPS_OREN_UTAMA, 'font_color': 'white'}))
+                    ws.set_column('A:A', 25); ws.set_column('B:B', 50); ws.set_column('C:C', 18); ws.set_column('D:D', 20); ws.set_column('E:E', 25); ws.set_column('F:F', 50)
                 
                 st.markdown(f'<style>div[data-testid="stDownloadButton"] button {{background-color: {BPS_OREN_UTAMA} !important; color: white !important; border:none;}}</style>', unsafe_allow_html=True)
-                st.download_button("⬇️ Unduh Excel Database Tokopedia", data=buf.getvalue(), file_name=f"UMKM_Tokopedia_{datetime.date.today()}.xlsx")
+                st.download_button("⬇️ Unduh Excel Database Data Tokopedia", data=buf.getvalue(), file_name=f"UMKM_Tokopedia_{datetime.date.today()}.xlsx", type="primary")
         with tab3:
             st.markdown("<br>", unsafe_allow_html=True)
             audit = st.session_state.audit_tokped
@@ -520,31 +594,27 @@ elif halaman == "🔵 Facebook FB":
 
                             for i in range(len(df_raw)):
                                 row = df_raw.iloc[i]
-                                link = str(row[col_link])
+                                toko = str(row[col_toko]).strip() if col_toko in df_raw.columns else "FB Seller"
                                 nama = str(row[col_nama])
+                                lokasi = str(row[col_wilayah]).title()
                                 harga_str = str(row[col_harga])
-                                lokasi_fb = str(row[col_wilayah]).title()
-                                toko = str(row.get(col_toko, "FB Seller"))
+                                link = str(row[col_link])
                                 
-                                if not any(k in lokasi_fb.lower() for k in babel_keys):
+                                if not any(k in lokasi.lower() for k in babel_keys):
                                     luar_wilayah += 1
                                     baris_diproses += 1
                                     continue
-                                
-                                try: 
+
+                                try:
                                     harga_bersih = harga_str.replace('.', '').replace(',', '')
                                     angka_list = re.findall(r'\d+', harga_bersih)
-                                    if angka_list:
-                                        val_h = int(angka_list[0])
-                                        if val_h > 1000000000: val_h = 0
-                                    else:
-                                        val_h = 0
-                                except: 
+                                    val_h = int(angka_list[0]) if angka_list else 0
+                                    if val_h > 1000000000: val_h = 0
+                                except:
                                     val_h, err_h = 0, err_h + 1
                                 
-                                if val_h > 0:
-                                    tipe_usaha = deteksi_tipe_usaha(toko)
-                                    hasil.append({"Nama Toko": toko, "Nama Produk": nama, "Harga": val_h, "Wilayah": lokasi_fb, "Tipe Usaha": tipe_usaha, "Link": link})
+                                tipe_usaha = deteksi_tipe_usaha(toko)
+                                hasil.append({"Nama Toko": toko, "Nama Produk": nama, "Harga": val_h, "Wilayah": lokasi, "Tipe Usaha": tipe_usaha, "Link": link})
                                 
                                 baris_diproses += 1
                                 if baris_diproses % 5 == 0 or baris_diproses == total_semua_baris:
@@ -555,12 +625,11 @@ elif halaman == "🔵 Facebook FB":
                         status_text.empty()
                         progress_bar.empty()
                         
-                        df_final = pd.DataFrame(hasil).drop_duplicates()
-                        st.session_state.data_fb = df_final
-                        st.session_state.audit_fb = {"total": total_baris, "valid": len(df_final), "file_count": len(files_fb), "error_harga": err_h, "luar": luar_wilayah}
-                        st.success(f"✅ Berhasil! {len(df_final)} data UMKM Facebook FB diekstrak.")
+                        st.session_state.data_fb = pd.DataFrame(hasil)
+                        st.session_state.audit_fb = {"total": total_baris, "valid": len(hasil), "file_count": len(files_fb), "error_harga": err_h, "luar": luar_wilayah}
+                        st.success(f"✅ Berhasil! {len(hasil)} data UMKM Facebook siap dianalisis.")
                     except Exception as e:
-                        st.error(f"Error Sistem FB: {e}")
+                        st.error(f"Error Sistem: {e}")
 
     df_fb = st.session_state.data_fb
     if df_fb is not None and not df_fb.empty:
@@ -580,36 +649,55 @@ elif halaman == "🔵 Facebook FB":
             st.markdown("<br>", unsafe_allow_html=True)
             c1, c2, c3 = st.columns(3)
             c1.metric("📌 Total Data Ditampilkan", f"{len(df_f):,}".replace(",", "."))
-            c2.metric("👤 Usaha Perorangan", f"{len(df_f[df_f['Tipe Usaha'] == 'Perorangan (Facebook)']):,}".replace(",", "."))
+            c2.metric("🏠 Usaha Murni Online", f"{len(df_f[df_f['Tipe Usaha'] == 'Murni Online (Rumahan)']):,}".replace(",", "."))
             c3.metric("🗺️ Sebaran Wilayah", f"{df_f['Wilayah'].nunique()}")
             
             st.markdown("<br>", unsafe_allow_html=True)
             if not df_f.empty:
                 g1, g2 = st.columns(2)
                 with g1: 
-                    fig_pie = px.pie(df_f, names="Tipe Usaha", title="Komposisi Model Bisnis FB", hole=0.4, color_discrete_sequence=BPS_PALETTE)
+                    fig_pie = px.pie(df_f, names="Tipe Usaha", title="Komposisi Model Bisnis UMKM", hole=0.4, color_discrete_sequence=BPS_PALETTE)
                     fig_pie.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font=dict(color='white'))
                     st.plotly_chart(fig_pie, use_container_width=True)
                 with g2: 
-                    fig_bar = px.bar(df_f.groupby("Wilayah").size().reset_index(name='Jumlah'), x="Wilayah", y="Jumlah", title="Total Usaha Berdasarkan Wilayah FB", color="Wilayah", color_discrete_sequence=BPS_PALETTE)
+                    fig_bar = px.bar(df_f.groupby("Wilayah").size().reset_index(name='Jumlah'), x="Wilayah", y="Jumlah", title="Total Usaha Berdasarkan Wilayah", color="Wilayah", color_discrete_sequence=BPS_PALETTE)
                     fig_bar.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font=dict(color='white'))
                     st.plotly_chart(fig_bar, use_container_width=True)
         with tab2:
             st.markdown("<br>", unsafe_allow_html=True)
-            df_view = df_f.copy()
-            df_view["Harga"] = df_view["Harga"].apply(lambda x: f"Rp {x:,.0f}".replace(",", "."))
+
+            gabung = st.checkbox("✅ Gabungkan data per toko (1 toko 1 baris)", value=True, key="gabung_toko_fb")
+            df_output = gabung_per_toko(df_f) if gabung else df_f
+
+            df_view = df_output.copy()
+
+            def fmt_harga(x):
+                if isinstance(x, str) and "-" in x:
+                    a, b = x.split("-", 1)
+                    try:
+                        return f"Rp {int(a):,}".replace(",", ".") + " - " + f"Rp {int(b):,}".replace(",", ".")
+                    except:
+                        return x
+                try:
+                    return f"Rp {int(x):,}".replace(",", ".")
+                except:
+                    return str(x)
+
+            if "Harga" in df_view.columns:
+                df_view["Harga"] = df_view["Harga"].apply(fmt_harga)
+
             st.dataframe(df_view, use_container_width=True, hide_index=True, height=400)
             
-            if not df_f.empty:
+            if not df_output.empty:
                 buf = io.BytesIO()
                 with pd.ExcelWriter(buf, engine="xlsxwriter") as writer:
-                    df_f.to_excel(writer, index=False, sheet_name="Data FB")
-                    wb, ws = writer.book, writer.sheets["Data FB"]
-                    for col_num, value in enumerate(df_f.columns.values): ws.write(0, col_num, value, wb.add_format({'bold': True, 'bg_color': BPS_OREN_UTAMA, 'font_color': 'white'}))
-                    ws.set_column('A:A', 25); ws.set_column('B:B', 50); ws.set_column('C:C', 18, wb.add_format({'num_format': '#,##0'})); ws.set_column('D:D', 20); ws.set_column('E:E', 25); ws.set_column('F:F', 50)
+                    df_output.to_excel(writer, index=False, sheet_name="Data Facebook")
+                    wb, ws = writer.book, writer.sheets["Data Facebook"]
+                    for col_num, value in enumerate(df_output.columns.values): ws.write(0, col_num, value, wb.add_format({'bold': True, 'bg_color': BPS_OREN_UTAMA, 'font_color': 'white'}))
+                    ws.set_column('A:A', 25); ws.set_column('B:B', 50); ws.set_column('C:C', 18); ws.set_column('D:D', 20); ws.set_column('E:E', 25); ws.set_column('F:F', 50)
                 
                 st.markdown(f'<style>div[data-testid="stDownloadButton"] button {{background-color: {BPS_OREN_UTAMA} !important; color: white !important; border:none;}}</style>', unsafe_allow_html=True)
-                st.download_button("⬇️ Unduh Excel Database Facebook", data=buf.getvalue(), file_name=f"UMKM_Facebook_{datetime.date.today()}.xlsx")
+                st.download_button("⬇️ Unduh Excel Database Data Facebook", data=buf.getvalue(), file_name=f"UMKM_Facebook_{datetime.date.today()}.xlsx", type="primary")
         with tab3:
             st.markdown("<br>", unsafe_allow_html=True)
             audit = st.session_state.audit_fb
@@ -637,6 +725,7 @@ elif halaman == "📊 Export Gabungan":
         st.warning("⚠️ Belum ada data yang diekstrak. Silakan unggah dan proses dokumen di menu Shopee, Tokopedia, atau Facebook pada panel navigasi kiri.")
     else:
         st.success("✅ Seluruh instansi data siap untuk dikonsolidasi menjadi satu file Master Excel (3-in-1)!")
+        gabung_master = st.checkbox("✅ Gabungkan data per toko pada file master (1 toko 1 baris)", value=True, key="gabung_master")
         
         st.markdown("<br>", unsafe_allow_html=True)
         c1, c2, c3 = st.columns(3)
@@ -655,6 +744,8 @@ elif halaman == "📊 Export Gabungan":
             
             if df_shp_ready:
                 df_shp = st.session_state.data_shopee
+                if gabung_master:
+                    df_shp = gabung_per_toko(df_shp)
                 df_shp.to_excel(writer, index=False, sheet_name="Data Shopee")
                 ws_shp = writer.sheets["Data Shopee"]
                 header_fmt_shp = wb.add_format({'bold': True, 'bg_color': BPS_OREN_UTAMA, 'font_color': 'white'})
@@ -664,6 +755,8 @@ elif halaman == "📊 Export Gabungan":
                 
             if df_tkp_ready:
                 df_tkp = st.session_state.data_tokped
+                if gabung_master:
+                    df_tkp = gabung_per_toko(df_tkp)
                 df_tkp.to_excel(writer, index=False, sheet_name="Data Tokopedia")
                 ws_tkp = writer.sheets["Data Tokopedia"]
                 header_fmt_tkp = wb.add_format({'bold': True, 'bg_color': BPS_OREN_UTAMA, 'font_color': 'white'})
@@ -673,6 +766,8 @@ elif halaman == "📊 Export Gabungan":
 
             if df_fb_ready:
                 df_fb = st.session_state.data_fb
+                if gabung_master:
+                    df_fb = gabung_per_toko(df_fb)
                 df_fb.to_excel(writer, index=False, sheet_name="Data Facebook")
                 ws_fb = writer.sheets["Data Facebook"]
                 header_fmt_fb = wb.add_format({'bold': True, 'bg_color': BPS_OREN_UTAMA, 'font_color': 'white'})
@@ -690,6 +785,3 @@ elif halaman == "📊 Export Gabungan":
                 file_name=f"Master_UMKM_BPS_{datetime.date.today()}.xlsx",
                 use_container_width=True
             )
-
-
-
