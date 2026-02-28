@@ -54,214 +54,285 @@ px.defaults.color_discrete_sequence = BPS_PALETTE
 # ======================================================================================
 # THEME / CSS (Orange-heavy modern glass)
 # ======================================================================================
+st.markdown(
+    f"""
+<style>
+/* -------------------- Global background: lebih banyak oren -------------------- */
+[data-testid="stAppViewContainer"] {{
+    background:
+      radial-gradient(1200px 720px at 12% 12%, rgba(255,111,0,.38) 0%, rgba(255,111,0,0) 60%),
+      radial-gradient(900px 650px at 88% 16%, rgba(255,193,7,.28) 0%, rgba(255,193,7,0) 58%),
+      radial-gradient(1000px 600px at 60% 95%, rgba(255,111,0,.16) 0%, rgba(255,111,0,0) 60%),
+      linear-gradient(135deg, #070708 0%, #0c0c10 55%, #060607 100%) !important;
+    background-attachment: fixed !important;
+}}
 
-# ======================================================================================
-# THEME / CSS (Modern International Glass + BPS Accent)
-# - Robust injection (no f-string braces issues)
-# ======================================================================================
-css = """
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+[data-testid="stHeader"] {{
+    background: rgba(0,0,0,0) !important;
+}}
 
-:root{
-  --bg0:#07080B;
-  --bg1:#0B0D12;
-  --surface:rgba(255,255,255,.06);
-  --surface2:rgba(255,255,255,.09);
-  --border:rgba(255,255,255,.10);
-  --border2:rgba(255,255,255,.14);
-  --text:rgba(255,255,255,.92);
-  --muted:rgba(255,255,255,.68);
+/* Top glow bar */
+.block-container {{
+    padding-top: 1.1rem;
+    padding-bottom: 2.1rem;
+}}
+.block-container::before {{
+    content: "";
+    display: block;
+    height: 6px;
+    width: 100%;
+    border-radius: 999px;
+    margin-bottom: 14px;
+    background: linear-gradient(90deg,
+        rgba(255,111,0,0) 0%,
+        rgba(255,111,0,.95) 28%,
+        rgba(255,193,7,.95) 56%,
+        rgba(255,111,0,.95) 80%,
+        rgba(255,111,0,0) 100%);
+    box-shadow: 0 8px 36px rgba(255,111,0,.25);
+}}
 
-  --accent:ACCENT_PRIMARY;
-  --accent2:ACCENT_SECONDARY;
+/* -------------------- Sidebar: oren lebih dominan -------------------- */
+[data-testid="stSidebar"] {{
+    background:
+      radial-gradient(600px 420px at 20% 10%, rgba(255,111,0,.26) 0%, rgba(255,111,0,0) 62%),
+      linear-gradient(180deg, rgba(14,14,16,.98) 0%, rgba(10,10,12,.98) 55%, rgba(8,8,9,.99) 100%) !important;
+    border-right: 1px solid rgba(255,111,0,.45);
+    box-shadow: 10px 0 40px rgba(0,0,0,.45);
+}}
+[data-testid="stSidebar"] * {{
+    color: #f3f3f3 !important;
+}}
 
-  --r-xl:20px;
-  --r-lg:16px;
-  --r-md:12px;
+/* -------------------- Cards (containers) -------------------- */
+div[data-testid="stVerticalBlockBorderWrapper"] {{
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,111,0,0.34) !important;
+    border-radius: 18px;
+    padding: 18px 18px;
+    box-shadow:
+      0 14px 38px rgba(0,0,0,.33),
+      0 0 0 1px rgba(255,111,0,.07) inset;
+    backdrop-filter: blur(12px);
+}}
+div[data-testid="stVerticalBlockBorderWrapper"]:hover {{
+    border-color: rgba(255,193,7,.48) !important;
+    box-shadow:
+      0 18px 46px rgba(0,0,0,.36),
+      0 0 0 1px rgba(255,193,7,.10) inset,
+      0 22px 70px rgba(255,111,0,.10);
+}}
 
-  --shadow-sm:0 8px 22px rgba(0,0,0,.28);
-  --shadow-md:0 14px 40px rgba(0,0,0,.34);
-  --shadow-glow:0 24px 80px rgba(255,111,0,.12);
+/* -------------------- Banner -------------------- */
+.bps-banner {{
+    border-radius: 20px;
+    padding: 24px 28px;
+    margin: 2px 0 18px 0;
+    background:
+      radial-gradient(900px 360px at 15% 0%, rgba(255,111,0,.40) 0%, rgba(255,111,0,0) 62%),
+      radial-gradient(900px 380px at 85% 10%, rgba(255,193,7,.26) 0%, rgba(255,193,7,0) 62%),
+      linear-gradient(135deg, rgba(255,111,0,.18) 0%, rgba(255,193,7,.10) 40%, rgba(255,255,255,.04) 100%);
+    border: 1px solid rgba(255,111,0,.34);
+    box-shadow: 0 18px 55px rgba(0,0,0,.34);
+    backdrop-filter: blur(14px);
+}}
+.bps-kicker {{
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    font-weight: 800;
+    font-size: .78rem;
+    color: rgba(255,193,7,.98);
+    margin-bottom: 8px;
+}}
+.bps-title {{
+    font-size: 2.10rem;
+    font-weight: 950;
+    margin: 0 0 8px 0;
+    color: #ffffff;
+}}
+.bps-subtitle {{
+    margin: 0;
+    color: rgba(240,240,240,.90);
+    font-size: 1.03rem;
+}}
 
-  --ring:0 0 0 4px rgba(255,111,0,.18);
-}
+/* -------------------- Metrics -------------------- */
+div[data-testid="metric-container"] {{
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,111,0,0.30);
+    border-left: 7px solid {BPS_OREN_UTAMA};
+    border-radius: 16px;
+    padding: 14px 16px;
+    box-shadow:
+      0 12px 34px rgba(0,0,0,.26),
+      0 0 0 1px rgba(255,111,0,.06) inset;
+    backdrop-filter: blur(12px);
+    transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
+}}
+div[data-testid="metric-container"]:hover {{
+    transform: translateY(-3px);
+    border-color: rgba(255,193,7,.58);
+    box-shadow:
+      0 18px 46px rgba(0,0,0,.30),
+      0 0 0 1px rgba(255,193,7,.10) inset,
+      0 30px 90px rgba(255,111,0,.12);
+}}
+div[data-testid="metric-container"] label {{
+    color: rgba(240,240,240,.86) !important;
+    font-weight: 800;
+    letter-spacing: .2px;
+}}
 
-/* App background */
-[data-testid="stAppViewContainer"]{
-  font-family:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-  color:var(--text);
-  background:
-    radial-gradient(1100px 700px at 12% 10%, rgba(255,111,0,.22) 0%, rgba(255,111,0,0) 62%),
-    radial-gradient(900px 650px at 88% 16%, rgba(255,193,7,.14) 0%, rgba(255,193,7,0) 58%),
-    radial-gradient(900px 620px at 55% 100%, rgba(59,130,246,.12) 0%, rgba(59,130,246,0) 60%),
-    linear-gradient(160deg, var(--bg0) 0%, var(--bg1) 60%, #05060A 100%) !important;
-  background-attachment: fixed !important;
-}
-[data-testid="stHeader"]{background:transparent !important;}
-.block-container{padding-top:1.1rem;padding-bottom:2.2rem;max-width:1200px;}
-.block-container::before{
-  content:"";
-  display:block;height:5px;width:100%;
-  border-radius:999px;margin:2px 0 16px 0;
-  background:linear-gradient(90deg,rgba(255,111,0,0) 0%,rgba(255,111,0,.70) 26%,rgba(255,193,7,.70) 54%,rgba(255,111,0,.70) 82%,rgba(255,111,0,0) 100%);
-  box-shadow:0 10px 40px rgba(255,111,0,.14);
-}
+/* -------------------- Tabs -------------------- */
+.stTabs [data-baseweb="tab-list"] {{
+    gap: 10px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,111,0,.24);
+    padding: 10px;
+    border-radius: 16px;
+    backdrop-filter: blur(12px);
+}}
+.stTabs [data-baseweb="tab"] {{
+    height: 46px;
+    border-radius: 14px;
+    padding: 0 16px;
+    background: rgba(255,255,255,0.03);
+    color: rgba(245,245,245,.86);
+}}
+.stTabs [aria-selected="true"] {{
+    background: linear-gradient(135deg, rgba(255,111,0,.95) 0%, rgba(255,193,7,.95) 100%) !important;
+    color: #111 !important;
+    font-weight: 950;
+    box-shadow: 0 16px 44px rgba(255,111,0,.26);
+}}
 
-/* Sidebar */
-[data-testid="stSidebar"]{
-  background:
-    radial-gradient(600px 420px at 25% 10%, rgba(255,111,0,.16) 0%, rgba(255,111,0,0) 62%),
-    linear-gradient(180deg, rgba(13,15,20,.98) 0%, rgba(9,10,14,.99) 100%) !important;
-  border-right:1px solid rgba(255,255,255,.10);
-  box-shadow:14px 0 46px rgba(0,0,0,.44);
-}
-[data-testid="stSidebar"] *{color:var(--text) !important;}
-[data-testid="stSidebar"] .stRadio label p{font-weight:700;}
-/* radio highlight */
-[data-testid="stSidebar"] [role="radiogroup"] > label{
-  border-radius:14px;
-  padding:10px 12px;
-  margin:4px 0;
-  border:1px solid rgba(255,255,255,.06);
-  background:rgba(255,255,255,.02);
-}
-[data-testid="stSidebar"] [role="radiogroup"] > label:hover{
-  border-color:rgba(255,255,255,.12);
-  background:rgba(255,255,255,.04);
-}
-
-/* Typography */
-h1,h2,h3,h4{letter-spacing:-0.02em;}
-h1{font-weight:950 !important;}
-h2,h3{font-weight:900 !important;}
-p,li,label,.stMarkdown{color:var(--text);}
-
-/* Containers as cards */
-div[data-testid="stVerticalBlockBorderWrapper"]{
-  background:linear-gradient(180deg,rgba(255,255,255,.07),rgba(255,255,255,.045));
-  border:1px solid var(--border);
-  border-radius:var(--r-xl);
-  padding:18px 18px;
-  box-shadow:var(--shadow-md);
-  backdrop-filter:blur(14px);
-  transition:transform .16s ease,box-shadow .16s ease,border-color .16s ease;
-}
-div[data-testid="stVerticalBlockBorderWrapper"]:hover{
-  border-color:rgba(255,255,255,.16);
-  box-shadow:var(--shadow-md),var(--shadow-glow);
-  transform:translateY(-1px);
-}
-
-/* Metric tiles */
-div[data-testid="metric-container"]{
-  background:linear-gradient(180deg,rgba(255,255,255,.07),rgba(255,255,255,.045));
-  border:1px solid var(--border);
-  border-left:6px solid var(--accent);
-  border-radius:var(--r-lg);
-  padding:14px 16px;
-  box-shadow:var(--shadow-sm);
-  backdrop-filter:blur(14px);
-  transition:transform .16s ease, box-shadow .16s ease, border-color .16s ease;
-}
-div[data-testid="metric-container"]:hover{
-  transform:translateY(-2px);
-  border-color:var(--border2);
-  box-shadow:var(--shadow-sm),var(--shadow-glow);
-}
-div[data-testid="metric-container"] label{color:var(--muted) !important;font-weight:700;letter-spacing:.2px;}
-div[data-testid="metric-container"] [data-testid="stMetricValue"]{font-weight:900;}
-
-/* Tabs */
-.stTabs [data-baseweb="tab-list"]{
-  gap:10px;
-  background:rgba(255,255,255,.04);
-  border:1px solid var(--border);
-  padding:10px;
-  border-radius:var(--r-lg);
-  backdrop-filter:blur(14px);
-}
-.stTabs [data-baseweb="tab"]{
-  height:46px;border-radius:14px;padding:0 16px;
-  background:rgba(255,255,255,.03);
-  color:rgba(255,255,255,.78);
-}
-.stTabs [aria-selected="true"]{
-  background:linear-gradient(135deg, rgba(255,111,0,.92) 0%, rgba(255,193,7,.88) 100%) !important;
-  color:#101113 !important;
-  font-weight:900;
-  box-shadow:0 18px 54px rgba(255,111,0,.20);
-}
-
-/* Buttons */
+/* -------------------- Buttons -------------------- */
 div[data-testid="stDownloadButton"] button,
-.stButton>button{
-  border-radius:14px !important;
-  border:1px solid rgba(255,255,255,.10) !important;
-  background:linear-gradient(135deg, rgba(255,111,0,.92) 0%, rgba(255,193,7,.88) 100%) !important;
-  color:#101113 !important;
-  font-weight:900 !important;
-  height:48px !important;
-  box-shadow:0 16px 44px rgba(255,111,0,.18);
-  transition:transform .15s ease, box-shadow .15s ease, filter .15s ease;
-}
+.stButton > button {{
+    border-radius: 14px !important;
+    border: 1px solid rgba(255,255,255,.10) !important;
+    background: linear-gradient(135deg, rgba(255,111,0,.92) 0%, rgba(255,193,7,.88) 100%) !important;
+    color: #111 !important;
+    font-weight: 950 !important;
+    height: 48px !important;
+    box-shadow: 0 16px 44px rgba(255,111,0,.22);
+    transition: transform .15s ease, box-shadow .15s ease, filter .15s ease;
+}}
 div[data-testid="stDownloadButton"] button:hover,
-.stButton>button:hover{
-  transform:translateY(-1px);
-  filter:brightness(1.04);
-  box-shadow:0 22px 64px rgba(255,111,0,.24);
-}
-button[kind="secondary"]{
-  background:rgba(255,255,255,.08) !important;
-  border:1px solid rgba(255,255,255,.14) !important;
-  color:rgba(255,255,255,.90) !important;
-}
+.stButton > button:hover {{
+    transform: translateY(-1px);
+    filter: brightness(1.04);
+    box-shadow: 0 22px 60px rgba(255,111,0,.28);
+}}
+button[kind="secondary"] {{
+    background: rgba(255,255,255,.08) !important;
+    border: 1px solid rgba(255,111,0,.30) !important;
+    color: #f2f2f2 !important;
+}}
 
-/* Inputs */
-div[data-baseweb="input"] input,
-div[data-baseweb="select"] > div{border-radius:14px !important;}
-div[data-baseweb="input"]{
-  background:rgba(255,255,255,.05) !important;
-  border-radius:14px !important;
-  border:1px solid rgba(255,255,255,.10) !important;
-}
-div[data-baseweb="input"]:focus-within{
-  box-shadow:var(--ring) !important;
-  border-color:rgba(255,111,0,.35) !important;
-}
-div[data-baseweb="select"] > div{
-  background:rgba(255,255,255,.05) !important;
-  border:1px solid rgba(255,255,255,.10) !important;
-}
-div[data-baseweb="select"]:focus-within > div{
-  box-shadow:var(--ring) !important;
-  border-color:rgba(255,111,0,.35) !important;
-}
+/* -------------------- Dataframe -------------------- */
+[data-testid="stDataFrame"] {{
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid rgba(255,111,0,.20);
+}}
+</style>
+""",
+    unsafe_allow_html=True,
+)
 
-/* Dataframe */
-[data-testid="stDataFrame"]{
-  border-radius:var(--r-lg);
-  overflow:hidden;
-  border:1px solid rgba(255,255,255,.12);
-  box-shadow:var(--shadow-sm);
-}
-[data-testid="stDataFrame"] *{font-family:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;}
 
-/* Expanders */
-details{
-  background:rgba(255,255,255,.045);
-  border:1px solid rgba(255,255,255,.10);
-  border-radius:var(--r-lg);
-  padding:6px 10px;
-}
-details[open]{box-shadow:var(--shadow-sm);}
 
-/* Small polish */
-hr{border-color:rgba(255,255,255,.10) !important;}
-a{color:rgba(255,193,7,.95) !important;}
-a:hover{color:rgba(255,193,7,1) !important;}
-"""
-css = css.replace("ACCENT_PRIMARY", str(BPS_OREN_UTAMA)).replace("ACCENT_SECONDARY", str(BPS_AMBER))
-st.markdown(f"<style>{css}</style>", unsafe_allow_html=True)
+
+# ======================================================================================
+# UI ADD-ON (keep your original design, add premium components)
+# ======================================================================================
+st.markdown(
+    """
+<style>
+.block-container { max-width: 1180px; }
+
+.bps-hero{
+  display:flex; justify-content:space-between; gap:18px;
+  padding: 22px 24px; border-radius: 22px;
+  background:
+    radial-gradient(900px 420px at 10% 0%, rgba(255,111,0,.22) 0%, rgba(255,111,0,0) 60%),
+    radial-gradient(900px 420px at 92% 10%, rgba(255,193,7,.14) 0%, rgba(255,193,7,0) 62%),
+    linear-gradient(135deg, rgba(255,255,255,.10) 0%, rgba(255,255,255,.05) 65%, rgba(255,255,255,.03) 100%);
+  border: 1px solid rgba(255,255,255,0.12);
+  box-shadow: 0 18px 64px rgba(0,0,0,.34);
+  backdrop-filter: blur(14px);
+  margin: 6px 0 14px 0;
+}
+.bps-pill{
+  display:inline-flex; align-items:center; gap:10px;
+  padding: 8px 12px; border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.14);
+  background: rgba(255,255,255,0.06);
+  font-weight: 800; letter-spacing: .12em; text-transform: uppercase;
+  font-size: .72rem;
+  color: rgba(255,193,7,.92);
+}
+.bps-hero-title{
+  font-size: 2.05rem; font-weight: 950; letter-spacing: -0.03em;
+  margin: 10px 0 8px 0; color: rgba(255,255,255,.98);
+}
+.bps-hero-sub{
+  color: rgba(255,255,255,.72);
+  line-height: 1.55; font-size: 1.02rem; max-width: 58ch;
+}
+.bps-hero-right{ display:flex; flex-direction:column; gap:10px; min-width: 220px; }
+.bps-mini-stat{
+  border-radius: 18px; padding: 14px 16px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.06);
+  box-shadow: 0 10px 30px rgba(0,0,0,.28);
+}
+.bps-mini-label{ color: rgba(255,255,255,.65); font-weight: 700; font-size: .85rem; }
+.bps-mini-value{ font-weight: 950; font-size: 1.25rem; letter-spacing: -0.02em; }
+
+.bps-grid{ display: grid; grid-template-columns: 1fr; gap: 12px; }
+.bps-card{
+  border-radius: 20px;
+  padding: 16px 16px 14px 16px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.085), rgba(255,255,255,0.045));
+  border: 1px solid rgba(255,255,255,0.12);
+  box-shadow: 0 14px 42px rgba(0,0,0,.32);
+  backdrop-filter: blur(14px);
+  transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease;
+  margin-bottom: 10px;
+}
+.bps-card:hover{
+  transform: translateY(-2px);
+  border-color: rgba(255,255,255,0.18);
+  box-shadow: 0 18px 70px rgba(0,0,0,.40);
+}
+.bps-card-top{ display:flex; align-items:center; justify-content:space-between; margin-bottom: 10px; }
+.bps-card-icon{
+  width: 42px; height: 42px; border-radius: 14px;
+  display:flex; align-items:center; justify-content:center;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.12);
+  font-size: 1.05rem;
+}
+.bps-card-tag{
+  padding: 6px 10px; border-radius: 999px;
+  background: rgba(255,193,7,.12);
+  border: 1px solid rgba(255,193,7,.22);
+  color: rgba(255,193,7,.95);
+  font-weight: 800; font-size: .75rem;
+}
+.bps-card-title{ font-weight: 950; font-size: 1.05rem; letter-spacing: -0.02em; margin-bottom: 6px; }
+.bps-card-desc{ color: rgba(255,255,255,.70); line-height: 1.5; }
+
+.stButton { margin-top: -8px; margin-bottom: 14px; }
+[data-testid="stDataFrame"] thead tr th{ background: rgba(255,255,255,0.06) !important; }
+</style>
+""",
+    unsafe_allow_html=True,
+)
+
+
 # ======================================================================================
 # SESSION STATE
 # ======================================================================================
@@ -649,14 +720,126 @@ with st.sidebar:
 
     menu = st.radio(
         "🧭 Navigasi",
-        ["🟠 Shopee", "🟢 Tokopedia", "🔵 Facebook", "📍 Google Maps", "📊 Export Gabungan"],
+        ["🏠 Overview", "🟠 Shopee", "🟢 Tokopedia", "🔵 Facebook", "📍 Google Maps", "📊 Export Gabungan"],
         index=0,
+        key="menu_nav",
     )
 
     st.divider()
     with st.expander("⚙️ Pengaturan Umum", expanded=False):
         st.checkbox("Tampilkan tips cepat", value=True, key="show_tips")
         st.checkbox("Mode cepat (kurangi rendering chart besar)", value=False, key="fast_mode")
+
+
+# ======================================================================================
+# PAGE: OVERVIEW (Landing)
+# ======================================================================================
+if menu == "🏠 Overview":
+    banner("BPS Babel — Dashboard UMKM", "Ringkasan cepat & akses modul marketplace. Pilih modul di bawah untuk mulai bekerja lebih cepat.")
+
+    st.markdown(
+        """
+        <div class="bps-hero">
+          <div class="bps-hero-left">
+            <div class="bps-pill">INTERNATIONAL • MODERN • PROFESSIONAL</div>
+            <div class="bps-hero-title">Satu Dashboard. Semua Marketplace.</div>
+            <div class="bps-hero-sub">
+              Kelola ekstraksi, pembersihan, pemetaan lokasi, dan ekspor gabungan dalam satu alur kerja yang konsisten.
+              Fokus ke analisis, bukan urusan teknis.
+            </div>
+          </div>
+          <div class="bps-hero-right">
+            <div class="bps-mini-stat">
+              <div class="bps-mini-label">Status</div>
+              <div class="bps-mini-value">Ready</div>
+            </div>
+            <div class="bps-mini-stat">
+              <div class="bps-mini-label">Mode</div>
+              <div class="bps-mini-value">{mode}</div>
+            </div>
+          </div>
+        </div>
+        """.format(mode=("Fast" if st.session_state.get("fast_mode") else "Normal")),
+        unsafe_allow_html=True,
+    )
+
+    c1, c2, c3, c4 = st.columns(4, gap="large")
+    c1.metric("Modul Aktif", "5", help="Shopee, Tokopedia, Facebook, Google Maps, Export Gabungan")
+    c2.metric("Tips Cepat", "On" if st.session_state.get("show_tips") else "Off")
+    c3.metric("Rendering", "Ringan" if st.session_state.get("fast_mode") else "Penuh")
+    c4.metric("Versi UI", "International", help="Typography Inter, glass surfaces, consistent components")
+
+    st.divider()
+
+    left, right = st.columns([1.15, 0.85], gap="large")
+
+    with left:
+        st.subheader("🚀 Mulai dari sini")
+        st.markdown('<div class="bps-grid">', unsafe_allow_html=True)
+
+        def _card(icon, title, desc, tag):
+            st.markdown(
+                f"""
+                <div class="bps-card">
+                  <div class="bps-card-top">
+                    <div class="bps-card-icon">{icon}</div>
+                    <div class="bps-card-tag">{tag}</div>
+                  </div>
+                  <div class="bps-card-title">{title}</div>
+                  <div class="bps-card-desc">{desc}</div>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+
+        _card("🟠", "Shopee", "Unggah CSV, deteksi nama toko, bersihkan & siapkan untuk analisis.", "Marketplace")
+        if st.button("Buka Shopee", use_container_width=True):
+            st.session_state["menu_nav"] = "🟠 Shopee"
+            st.rerun()
+
+        _card("🟢", "Tokopedia", "Proses data Tokopedia dengan format yang konsisten dan hasil rapi.", "Marketplace")
+        if st.button("Buka Tokopedia", use_container_width=True):
+            st.session_state["menu_nav"] = "🟢 Tokopedia"
+            st.rerun()
+
+        _card("🔵", "Facebook", "Kompilasi data dari Facebook Page/Marketplace, normalisasi kolom.", "Marketplace")
+        if st.button("Buka Facebook", use_container_width=True):
+            st.session_state["menu_nav"] = "🔵 Facebook"
+            st.rerun()
+
+        _card("📍", "Google Maps", "Geocoding & pemetaan lokasi UMKM, cluster marker untuk eksplorasi.", "Geo")
+        if st.button("Buka Google Maps", use_container_width=True):
+            st.session_state["menu_nav"] = "📍 Google Maps"
+            st.rerun()
+
+        _card("📊", "Export Gabungan", "Gabungkan hasil lintas marketplace, ekspor final (CSV/Excel).", "Output")
+        if st.button("Buka Export Gabungan", use_container_width=True):
+            st.session_state["menu_nav"] = "📊 Export Gabungan"
+            st.rerun()
+
+        st.markdown("</div>", unsafe_allow_html=True)
+
+    with right:
+        st.subheader("✅ Checklist kualitas data")
+        with st.container(border=True):
+            st.markdown(
+                """
+                - Pastikan **CSV sesuai template** (delimiter, encoding).
+                - Cek kolom penting: **nama, alamat, kategori, link**.
+                - Gunakan **Mode cepat** jika file besar.
+                - Untuk peta, isi alamat sedetail mungkin (kecamatan/desa).
+                """
+            )
+
+        st.subheader("💡 Tips singkat")
+        with st.container(border=True):
+            st.markdown(
+                """
+                - Gunakan **Export Gabungan** setelah tiap modul selesai diproses.
+                - Saat API lookup lambat, turunkan *timeout* atau matikan sementara.
+                - Simpan output per batch untuk memudahkan audit.
+                """
+            )
 
 
 # ======================================================================================
