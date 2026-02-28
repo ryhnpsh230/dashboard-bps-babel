@@ -9,16 +9,16 @@ import os
 import time
 
 import plotly.express as px
+import plotly.graph_objects as go
 
 import folium
 from folium.plugins import MarkerCluster, HeatMap, Fullscreen, LocateControl, MiniMap
 from streamlit_folium import st_folium
 
-
 # ======================================================================================
 # CONFIG
 # ======================================================================================
-APP_TITLE = "Dashboard UMKM BPS Babel"
+APP_TITLE = "Dashboard UMKM BPS"
 APP_ICON = "🏛️"
 
 BPS_OREN_UTAMA = "#FF6F00"
@@ -26,10 +26,9 @@ BPS_OREN_2 = "#FF8F00"
 BPS_AMBER = "#FFC107"
 BPS_DARK = "#0b0b0c"
 BPS_BG_2 = "#07070a"
-BPS_CARD_1 = "rgba(255,255,255,0.07)"
-BPS_CARD_2 = "rgba(255,255,255,0.04)"
-BPS_BORDER = "rgba(255,111,0,0.28)"
-BPS_BORDER_SOFT = "rgba(255,111,0,0.18)"
+BPS_CARD = "rgba(255,255,255,0.065)"
+BPS_BORDER = "rgba(255,111,0,0.34)"
+BPS_BORDER_SOFT = "rgba(255,111,0,0.20)"
 BPS_TEXT_MUTED = "rgba(245,245,245,0.78)"
 BPS_TEXT_DIM = "rgba(245,245,245,0.66)"
 BPS_PAPER = "rgba(0,0,0,0)"
@@ -43,7 +42,6 @@ BABEL_KEYS = [
 
 PLACEHOLDER = "Pemilik tidak mencantumkan"
 PHONE_EMPTY = "Pemilik belum meletakkan nomor"
-
 
 # ======================================================================================
 # PAGE SETUP
@@ -60,12 +58,12 @@ px.defaults.color_discrete_sequence = BPS_PALETTE
 
 
 # ======================================================================================
-# THEME / CSS (Modern Orange Glass — no kaku)
+# THEME / CSS (Premium Orange Glass — refined, less kaku)
 # ======================================================================================
 st.markdown(
     f"""
 <style>
-/* --- Fonts --- */
+/* --- Base --- */
 html, body, [class*="css"] {{
     font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
 }}
@@ -79,18 +77,11 @@ a:hover {{ text-decoration: underline; }}
   --o1: {BPS_OREN_UTAMA};
   --o2: {BPS_OREN_2};
   --a1: {BPS_AMBER};
-  --card1: {BPS_CARD_1};
-  --card2: {BPS_CARD_2};
+  --card: {BPS_CARD};
   --bd: {BPS_BORDER};
   --bd2: {BPS_BORDER_SOFT};
   --muted: {BPS_TEXT_MUTED};
   --dim: {BPS_TEXT_DIM};
-}}
-
-@keyframes floaty {{
-  0% {{ transform: translateY(0); }}
-  50% {{ transform: translateY(-2px); }}
-  100% {{ transform: translateY(0); }}
 }}
 
 [data-testid="stAppViewContainer"] {{
@@ -112,7 +103,7 @@ a:hover {{ text-decoration: underline; }}
     max-width: 1460px;
 }}
 
-/* top glow bar */
+/* Top glow line */
 .block-container::before {{
     content: "";
     display: block;
@@ -129,7 +120,7 @@ a:hover {{ text-decoration: underline; }}
     box-shadow: 0 12px 52px rgba(255,111,0,.22);
 }}
 
-/* Sidebar */
+/* --- Sidebar --- */
 [data-testid="stSidebar"] {{
     background:
       radial-gradient(680px 420px at 15% 8%, rgba(255,111,0,.30) 0%, rgba(255,111,0,0) 62%),
@@ -147,8 +138,8 @@ a:hover {{ text-decoration: underline; }}
     margin-bottom: 2px;
 }}
 .sidebar-sub {{
-    opacity: .84;
-    font-size: .88rem;
+    opacity: .82;
+    font-size: .86rem;
     margin-bottom: 10px;
 }}
 .sidebar-chip {{
@@ -164,23 +155,28 @@ a:hover {{ text-decoration: underline; }}
     opacity: .95;
 }}
 
-/* Cards */
+/* --- Cards --- */
 div[data-testid="stVerticalBlockBorderWrapper"] {{
-    background: linear-gradient(135deg, var(--card1) 0%, var(--card2) 100%);
+    background: var(--card);
     border: 1px solid var(--bd) !important;
     border-radius: 22px;
     padding: 18px 18px;
-    box-shadow: 0 16px 44px rgba(0,0,0,.30);
+    box-shadow:
+      0 16px 44px rgba(0,0,0,.30),
+      0 0 0 1px rgba(255,111,0,.06) inset;
     backdrop-filter: blur(14px);
     transition: transform .16s ease, border-color .16s ease, box-shadow .16s ease;
 }}
 div[data-testid="stVerticalBlockBorderWrapper"]:hover {{
     transform: translateY(-2px);
     border-color: rgba(255,193,7,.55) !important;
-    box-shadow: 0 22px 62px rgba(0,0,0,.36), 0 30px 110px rgba(255,111,0,.12);
+    box-shadow:
+      0 22px 62px rgba(0,0,0,.36),
+      0 0 0 1px rgba(255,193,7,.10) inset,
+      0 30px 110px rgba(255,111,0,.12);
 }}
 
-/* Hero */
+/* --- Hero --- */
 .bps-hero {{
     border-radius: 24px;
     padding: 26px 28px;
@@ -195,6 +191,16 @@ div[data-testid="stVerticalBlockBorderWrapper"]:hover {{
     box-shadow: 0 22px 70px rgba(0,0,0,.38);
     backdrop-filter: blur(16px);
 }}
+.bps-hero::after {{
+    content:"";
+    position:absolute;
+    inset:-2px;
+    background: conic-gradient(from 180deg at 50% 50%,
+      rgba(255,111,0,.0), rgba(255,111,0,.22), rgba(255,193,7,.18), rgba(255,111,0,.0));
+    filter: blur(26px);
+    opacity: .55;
+    pointer-events:none;
+}}
 .hero-kicker {{
     letter-spacing: 2.2px;
     text-transform: uppercase;
@@ -202,6 +208,7 @@ div[data-testid="stVerticalBlockBorderWrapper"]:hover {{
     font-size: .78rem;
     color: rgba(255,193,7,.98);
     margin-bottom: 8px;
+    position: relative;
 }}
 .hero-title {{
     font-size: 2.28rem;
@@ -209,17 +216,20 @@ div[data-testid="stVerticalBlockBorderWrapper"]:hover {{
     margin: 0 0 8px 0;
     color: #ffffff;
     line-height: 1.12;
+    position: relative;
 }}
 .hero-sub {{
     margin: 0;
     color: rgba(240,240,240,.92);
     font-size: 1.02rem;
+    position: relative;
 }}
 .hero-badges {{
     margin-top: 14px;
     display: flex;
     flex-wrap: wrap;
     gap: 10px;
+    position: relative;
 }}
 .badge {{
     display: inline-flex;
@@ -232,11 +242,10 @@ div[data-testid="stVerticalBlockBorderWrapper"]:hover {{
     box-shadow: 0 10px 34px rgba(0,0,0,.24);
     font-size: .88rem;
     color: rgba(248,248,248,.92);
-    animation: floaty 3.6s ease-in-out infinite;
 }}
 .badge i {{ opacity: .92; }}
 
-/* Section */
+/* --- Section titles --- */
 .section-title {{
     font-size: 1.18rem;
     font-weight: 950;
@@ -254,10 +263,10 @@ div[data-testid="stVerticalBlockBorderWrapper"]:hover {{
     background: linear-gradient(90deg, rgba(255,111,0,0), rgba(255,111,0,.60), rgba(255,193,7,.40), rgba(255,111,0,0));
 }}
 
-/* Metrics */
+/* --- Metrics --- */
 div[data-testid="metric-container"] {{
     background: rgba(255,255,255,0.055);
-    border: 1px solid rgba(255,111,0,0.26);
+    border: 1px solid rgba(255,111,0,0.28);
     border-left: 8px solid var(--o1);
     border-radius: 18px;
     padding: 14px 16px;
@@ -276,7 +285,7 @@ div[data-testid="metric-container"] label {{
     letter-spacing: .2px;
 }}
 
-/* Tabs */
+/* --- Tabs --- */
 .stTabs [data-baseweb="tab-list"] {{
     gap: 10px;
     background: rgba(255,255,255,0.04);
@@ -299,7 +308,7 @@ div[data-testid="metric-container"] label {{
     box-shadow: 0 16px 52px rgba(255,111,0,.24);
 }}
 
-/* Buttons */
+/* --- Buttons --- */
 div[data-testid="stDownloadButton"] button,
 .stButton > button {{
     border-radius: 16px !important;
@@ -323,12 +332,12 @@ button[kind="secondary"] {{
     color: #f2f2f2 !important;
 }}
 
-/* Inputs */
+/* --- Inputs --- */
 [data-baseweb="input"] > div, [data-baseweb="select"] > div, textarea {{
     border-radius: 14px !important;
 }}
 
-/* Dataframe */
+/* --- Dataframe --- */
 [data-testid="stDataFrame"] {{
     border-radius: 18px;
     overflow: hidden;
@@ -346,6 +355,7 @@ button[kind="secondary"] {{
     border-radius: 999px;
 }}
 
+/* Footer */
 .footer {{
     margin-top: 22px;
     padding: 14px 16px;
@@ -382,7 +392,7 @@ ensure_state()
 
 
 # ======================================================================================
-# UI HELPERS
+# HELPERS (UI)
 # ======================================================================================
 def hero(title: str, subtitle: str, badges=None):
     badges = badges or []
@@ -419,7 +429,7 @@ def safe_title(x: str) -> str:
 
 
 # ======================================================================================
-# CLEANERS
+# HELPERS (CLEANERS)
 # ======================================================================================
 def _to_str(x):
     if pd.isna(x):
@@ -493,7 +503,7 @@ def to_float_safe(x: str):
 # ======================================================================================
 def deteksi_tipe_usaha(nama_toko):
     if pd.isna(nama_toko) or nama_toko in ["Tidak Dilacak", "Toko CSV", "Anonim", ""]:
-        return "Tidak Terdeteksi"
+        return "Tidak Terdeteksi (Butuh Nama Toko)"
 
     if str(nama_toko) == "FB Seller":
         return "Perorangan (Facebook)"
@@ -655,20 +665,45 @@ def df_to_excel_bytes(sheets: dict) -> bytes:
 
 
 # ======================================================================================
-# MAP RENDER (Folium) — cluster + heatmap + fullscreen + locate + minimap
+# EXECUTIVE INSIGHT (narrative)
 # ======================================================================================
-def render_real_map_folium(df_maps: pd.DataFrame, height: int = 620):
+def executive_insight(title: str, df: pd.DataFrame, wilayah_col="Wilayah", tipe_col="Tipe Usaha") -> str:
+    if df is None or df.empty:
+        return f"Belum ada data untuk **{title}**."
+
+    total = len(df)
+    wilayah_top = "-"
+    if wilayah_col in df.columns and df[wilayah_col].notna().any():
+        wilayah_top = df[wilayah_col].value_counts().idxmax()
+
+    tipe_top = "-"
+    if tipe_col in df.columns and df[tipe_col].notna().any():
+        tipe_top = df[tipe_col].value_counts().idxmax()
+
+    return (
+        f"**{title}** mendeteksi **{fmt_int_id(total)}** entitas. "
+        f"Wilayah dengan konsentrasi tertinggi: **{wilayah_top}**. "
+        f"Pola dominan: **{tipe_top}**. "
+        f"Rekomendasi: fokus pembinaan & verifikasi lapangan di wilayah teratas."
+    )
+
+
+# ======================================================================================
+# REAL MAP (FOLIUM) - upgraded: heatmap, fullscreen, locate, minimap
+# ======================================================================================
+def render_real_map_folium(df_maps: pd.DataFrame, height: int = 600):
     df_plot = df_maps.dropna(subset=["Latitude", "Longitude"]).copy()
     df_plot = df_plot[(df_plot["Latitude"].between(-90, 90)) & (df_plot["Longitude"].between(-180, 180))].copy()
     if df_plot.empty:
         st.info("Tidak ada koordinat valid untuk ditampilkan.")
         return
 
+    # controls
     c1, c2, c3, c4 = st.columns([1.2, 1.0, 1.0, 1.2])
     with c1:
         tile_choice = st.selectbox(
             "🗺️ Provider Peta",
-            ["CartoDB DarkMatter", "CartoDB Positron", "OpenStreetMap"],
+            ["CartoDB DarkMatter (recommended)", "CartoDB Positron", "OpenStreetMap"],
             index=0,
             key="maps_tile_provider",
         )
@@ -682,7 +717,7 @@ def render_real_map_folium(df_maps: pd.DataFrame, height: int = 620):
     tiles_map = {
         "OpenStreetMap": "OpenStreetMap",
         "CartoDB Positron": "CartoDB positron",
-        "CartoDB DarkMatter": "CartoDB dark_matter",
+        "CartoDB DarkMatter (recommended)": "CartoDB dark_matter",
     }
 
     center_lat = float(df_plot["Latitude"].mean())
@@ -697,6 +732,7 @@ def render_real_map_folium(df_maps: pd.DataFrame, height: int = 620):
             prefer_canvas=True,
         )
 
+        # Plugins
         Fullscreen(position="topleft").add_to(m)
         LocateControl(position="topleft", flyTo=True, keepCurrentZoomLevel=True).add_to(m)
         try:
@@ -704,6 +740,7 @@ def render_real_map_folium(df_maps: pd.DataFrame, height: int = 620):
         except Exception:
             pass
 
+        # Layers
         if use_cluster:
             layer = MarkerCluster(name="UMKM (Cluster)", disableClusteringAtZoom=16)
         else:
@@ -734,7 +771,7 @@ def render_real_map_folium(df_maps: pd.DataFrame, height: int = 620):
             </div>
             """
 
-            # glow outer
+            # glow effect via outer circle
             folium.CircleMarker(
                 location=[float(r["Latitude"]), float(r["Longitude"])],
                 radius=11,
@@ -746,7 +783,6 @@ def render_real_map_folium(df_maps: pd.DataFrame, height: int = 620):
                 opacity=0.0,
             ).add_to(layer)
 
-            # main dot
             folium.CircleMarker(
                 location=[float(r["Latitude"]), float(r["Longitude"])],
                 radius=6,
@@ -763,12 +799,13 @@ def render_real_map_folium(df_maps: pd.DataFrame, height: int = 620):
             HeatMap(points, radius=radius, blur=16, min_opacity=0.25, name="Heatmap").add_to(m)
 
         folium.LayerControl(collapsed=True).add_to(m)
+
         st_folium(m, width=None, height=height)
-        st.caption("Kalau peta blank/403, coba ganti provider. Kalau masih, peta aman (Plotly) otomatis tampil.")
+        st.caption("Jika peta blank/403: ganti Provider Peta. Jika tetap, gunakan fallback 'Mode Aman' (Plotly) di bawah.")
         return
 
     except Exception:
-        st.warning("Tile/provider diblok (403) atau jaringan membatasi. Menampilkan peta aman (tanpa tile).")
+        st.warning("Tile/Provider diblok (403) atau lingkungan membatasi fetch tile. Menampilkan Mode Aman (tanpa tile).")
         fig = px.scatter_geo(
             df_plot,
             lat="Latitude",
@@ -801,25 +838,28 @@ with st.sidebar:
 
     menu = st.radio(
         "🧭 Navigasi",
-        ["⭐ Executive", "🟠 Shopee", "🟢 Tokopedia", "🔵 Facebook", "📍 Google Maps", "📊 Export Gabungan"],
+        ["⭐ Executive Summary", "🟠 Shopee", "🟢 Tokopedia", "🔵 Facebook", "📍 Google Maps", "📊 Export Gabungan"],
         index=0,
     )
 
     st.divider()
-    with st.expander("⚙️ Pengaturan", expanded=False):
-        st.checkbox("Mode cepat (kurangi chart besar)", value=False, key="fast_mode")
+    with st.expander("⚙️ Pengaturan Umum", expanded=False):
+        st.checkbox("Tampilkan tips cepat", value=True, key="show_tips")
+        st.checkbox("Mode cepat (kurangi rendering chart besar)", value=False, key="fast_mode")
+        st.checkbox("Animasi halus (UI)", value=True, key="ui_anim")
 
 
 # ======================================================================================
-# PAGE: EXECUTIVE (NO auto-insight, NO template text)
+# PAGE: EXECUTIVE SUMMARY
 # ======================================================================================
-if menu == "⭐ Executive":
+if menu == "⭐ Executive Summary":
     hero(
-        "Executive — Ringkas & Visual",
-        "Isinya cuma KPI + grafik (buat screenshot juga enak).",
-        badges=["KPI ringkas", "Top wilayah", "Hotspot", "Export master"]
+        "Executive Summary — UMKM Babel",
+        "Ringkasan paling penting dari semua sumber (Shopee, Tokopedia, Facebook, Google Maps). Enak dibaca, enak dipresentasiin.",
+        badges=["Narasi otomatis", "Top wilayah", "KPI ringkas", "Export Master"]
     )
 
+    # Build overview dataset counts
     shp = st.session_state.data_shopee
     tkp = st.session_state.data_tokped
     fb  = st.session_state.data_fb
@@ -832,11 +872,12 @@ if menu == "⭐ Executive":
     c4.metric("📍 Google Maps", fmt_int_id(len(mp)) if isinstance(mp, pd.DataFrame) else "0")
 
     with st.container(border=True):
-        section("📊 Grafik Ringkas", "Auto muncul kalau datanya ada.")
-        left, right = st.columns(2, gap="large")
+        section("🧠 Insight Otomatis", "Kalimat ringkas yang bisa langsung kamu pakai (buat laporan, WA grup, atau slide).")
+        colA, colB = st.columns(2, gap="large")
 
-        with left:
-            st.markdown("**Top Wilayah (Marketplace)**")
+        with colA:
+            st.markdown("**Marketplace (Shopee/Tokopedia/Facebook)**")
+            # merge minimal marketplace summary if available
             frames = []
             if isinstance(shp, pd.DataFrame) and not shp.empty:
                 frames.append(shp.assign(Sumber="Shopee"))
@@ -847,32 +888,44 @@ if menu == "⭐ Executive":
 
             if frames:
                 mk = pd.concat(frames, ignore_index=True)
-                if "Wilayah" in mk.columns and mk["Wilayah"].notna().any():
-                    top_wil = mk["Wilayah"].value_counts().head(8).reset_index()
-                    top_wil.columns = ["Wilayah", "Jumlah"]
-                    fig = px.bar(top_wil, x="Wilayah", y="Jumlah", title="Top Wilayah (Marketplace)")
-                    fig.update_layout(paper_bgcolor=BPS_PAPER, plot_bgcolor=BPS_PAPER, margin=dict(l=0, r=0, t=50, b=0))
-                    st.plotly_chart(fig, use_container_width=True)
-                else:
-                    st.info("Kolom 'Wilayah' belum ada di data marketplace.")
+                st.success(
+                    executive_insight("Marketplace", mk, wilayah_col="Wilayah", tipe_col="Tipe Usaha")
+                )
+                top_wil = mk["Wilayah"].value_counts().head(6).reset_index()
+                top_wil.columns = ["Wilayah", "Jumlah"]
+                fig = px.bar(top_wil, x="Wilayah", y="Jumlah", title="Top Wilayah (Marketplace)")
+                fig.update_layout(paper_bgcolor=BPS_PAPER, plot_bgcolor=BPS_PAPER, margin=dict(l=0,r=0,t=50,b=0))
+                st.plotly_chart(fig, use_container_width=True)
             else:
                 st.info("Belum ada data marketplace. Proses dulu di menu Shopee/Tokopedia/Facebook.")
 
-        with right:
-            st.markdown("**Hotspot (Google Maps)**")
-            if isinstance(mp, pd.DataFrame) and not mp.empty and {"Latitude","Longitude"}.issubset(mp.columns):
+        with colB:
+            st.markdown("**Google Maps (Usaha berbasis lokasi)**")
+            if isinstance(mp, pd.DataFrame) and not mp.empty:
+                st.success(executive_insight("Google Maps", mp, wilayah_col="Alamat", tipe_col="Nama Usaha"))
+                # show simple map density by rounding coords
                 dfp = mp.dropna(subset=["Latitude","Longitude"]).copy()
                 if not dfp.empty:
                     dfp["LatR"] = dfp["Latitude"].round(2)
                     dfp["LngR"] = dfp["Longitude"].round(2)
-                    dens = dfp.groupby(["LatR","LngR"]).size().reset_index(name="Jumlah").sort_values("Jumlah", ascending=False).head(12)
+                    dens = dfp.groupby(["LatR","LngR"]).size().reset_index(name="Jumlah").sort_values("Jumlah", ascending=False).head(10)
                     fig = px.scatter_geo(dens, lat="LatR", lon="LngR", size="Jumlah", hover_data={"Jumlah": True}, title="Hotspot (approx)")
-                    fig.update_layout(paper_bgcolor=BPS_PAPER, plot_bgcolor=BPS_PAPER, margin=dict(l=0, r=0, t=50, b=0))
+                    fig.update_layout(paper_bgcolor=BPS_PAPER, plot_bgcolor=BPS_PAPER, margin=dict(l=0,r=0,t=50,b=0))
                     st.plotly_chart(fig, use_container_width=True)
-                else:
-                    st.info("Belum ada koordinat valid di Google Maps.")
             else:
                 st.info("Belum ada data Google Maps. Proses dulu di menu Google Maps.")
+
+    with st.container(border=True):
+        section("📌 Aksi Cepat", "Export master + audit ringkas.")
+        a1, a2, a3 = st.columns([1.3, 1.2, 1.5])
+        with a1:
+            st.markdown("<div class='small-muted'>Kalau mau file gabungan, tinggal buka menu **Export Gabungan** — sekali klik beres.</div>", unsafe_allow_html=True)
+            st.markdown("Tips cepat: buat presentasi, cukup ambil screenshot **KPI** + **Top Wilayah** (udah cakep).")
+        with a2:
+            st.markdown("<div class='small-muted'>Kalau mau naik level lagi:</div>", unsafe_allow_html=True)
+            st.markdown("- Tambah boundary Babel (GeoJSON)\n- PDF report otomatis\n- Dedup lintas platform")
+        with a3:
+            st.info("Kalau peta nge-blank/403, coba ganti provider ke **OpenStreetMap**. Kalau masih bandel, pakai **Mode Aman** (fallback).")
 
 
 # ======================================================================================
@@ -880,22 +933,22 @@ if menu == "⭐ Executive":
 # ======================================================================================
 elif menu == "🟠 Shopee":
     hero(
-        "Shopee",
-        "Upload CSV hasil scraping Shopee → filter Babel → chart + export.",
-        badges=["Filter Babel", "Tipe usaha", "Export Excel", "UI orange"]
+        "Dashboard UMKM — Shopee",
+        "Ekstraksi data UMKM dari Shopee Marketplace (Bangka Belitung). UI premium + export rapi.",
+        badges=["Filter Babel otomatis", "Klasifikasi Tipe Usaha", "Export Excel 1 klik", "Tema Oren BPS"]
     )
 
     with st.container(border=True):
-        section("📥 Input", "Upload CSV lalu proses.")
+        section("📥 Input Data", "Upload CSV hasil scraping, lalu proses otomatis.")
         left, right = st.columns([1.2, 1.0], gap="large")
 
         with left:
             files = st.file_uploader("Unggah CSV Shopee", type=["csv"], accept_multiple_files=True, key="file_shp")
 
             mode_api = st.toggle(
-                "🔎 Ambil Nama Toko via API Shopee (opsional)",
+                "🔎 Deteksi Nama Toko via API Shopee",
                 value=True,
-                help="Kalau ON: sistem coba ambil nama toko dari shopid di link produk.",
+                help="Jika ON: sistem mencoba mengambil nama toko dari API shopid di link produk.",
                 key="api_shp",
             )
 
@@ -905,22 +958,26 @@ elif menu == "🟠 Shopee":
             with colB:
                 api_sleep = st.number_input("Jeda per request (detik)", min_value=0.0, max_value=2.0, value=0.0, step=0.1)
             with colC:
-                max_api_calls = st.number_input("Maks API call", min_value=0, max_value=50000, value=8000, step=500)
+                max_api_calls = st.number_input("Maks panggilan API", min_value=0, max_value=50000, value=8000, step=500)
 
-            run = st.button("🚀 Proses Shopee", type="primary", use_container_width=True)
+            st.caption("Tips: kalau scraping kamu “terdeteksi robot”, naikkan jeda request.")
+            run = st.button("🚀 Proses Data Shopee", type="primary", use_container_width=True)
 
         with right:
-            section("🧾 Catatan", "Biar stabil kalau scraping besar.")
-            st.markdown(
-                "<div class='small-muted'>Kalau Shopee mulai rewel, naikin jeda request. Data luar Babel otomatis dibuang.</div>",
-                unsafe_allow_html=True
+            section("🧾 Ringkasan", "Aturan pembersihan & output yang dihasilkan.")
+            st.info(
+                "• Data otomatis difilter **Bangka Belitung**.\n"
+                "• Harga dibersihkan jadi integer.\n"
+                "• Tipe Usaha dihitung pakai heuristik (kata kunci nama toko)."
             )
+            if st.session_state.get("show_tips"):
+                st.success("Kalau CSV beda struktur, sistem akan coba tebak kolom link/nama/harga/wilayah.")
 
     if run:
         if not files:
-            st.error("Upload dulu CSV-nya bro 🙏")
+            st.error("⚠️ Silakan unggah file CSV Shopee terlebih dahulu.")
         else:
-            with st.status("Memproses Shopee…", expanded=True) as status:
+            with st.status("Memproses data Shopee…", expanded=True) as status:
                 try:
                     total_semua_baris = 0
                     for f in files:
@@ -1012,8 +1069,8 @@ elif menu == "🟠 Shopee":
                                 pct = min(baris_diproses / max(total_semua_baris, 1), 1.0)
                                 progress.progress(pct)
                                 info.markdown(
-                                    f"**Progress:** {fmt_int_id(baris_diproses)} / {fmt_int_id(total_semua_baris)} "
-                                    f"({int(pct * 100)}%) • API: {fmt_int_id(api_calls)}"
+                                    f"**⏳ Progress:** {fmt_int_id(baris_diproses)} / {fmt_int_id(total_semua_baris)} "
+                                    f"({int(pct * 100)}%) • API calls: {fmt_int_id(api_calls)}"
                                 )
 
                     progress.empty()
@@ -1030,26 +1087,26 @@ elif menu == "🟠 Shopee":
                         "api_calls": api_calls,
                     }
 
-                    status.update(label="✅ Shopee beres", state="complete", expanded=False)
-                    st.toast(f"Shopee: {fmt_int_id(len(df))} baris", icon="✅")
+                    status.update(label="✅ Selesai memproses Shopee", state="complete", expanded=False)
+                    st.toast(f"Shopee: {fmt_int_id(len(df))} baris siap dianalisis", icon="✅")
 
                 except Exception as e:
-                    status.update(label="❌ Gagal", state="error", expanded=True)
-                    st.error(f"Error Shopee: {e}")
+                    status.update(label="❌ Gagal memproses Shopee", state="error", expanded=True)
+                    st.error(f"Error Sistem Shopee: {e}")
 
     df_shp = st.session_state.data_shopee
     if isinstance(df_shp, pd.DataFrame) and not df_shp.empty:
         with st.container(border=True):
-            section("🔎 Filter", "Biar gampang nyari & ngolah.")
+            section("🔎 Filter Pintar", "Cari cepat dan saring data untuk analisis yang presisi.")
             c1, c2, c3, c4 = st.columns([1.2, 1.2, 1.6, 1.2], gap="medium")
             with c1:
                 f_wil = st.multiselect("📍 Wilayah", options=sorted(df_shp["Wilayah"].unique()),
                                        default=sorted(df_shp["Wilayah"].unique()), key="f_wil_shp")
             with c2:
-                f_tipe = st.multiselect("🏢 Tipe", options=sorted(df_shp["Tipe Usaha"].unique()),
+                f_tipe = st.multiselect("🏢 Tipe Usaha", options=sorted(df_shp["Tipe Usaha"].unique()),
                                         default=sorted(df_shp["Tipe Usaha"].unique()), key="f_tipe_shp")
             with c3:
-                q = st.text_input("🔎 Cari (toko/produk)", value="", key="q_shp")
+                q = st.text_input("🔎 Cari (nama toko / produk)", value="", key="q_shp")
             with c4:
                 max_h = int(df_shp["Harga"].max()) if df_shp["Harga"].max() > 0 else 1_000_000
                 f_hrg = st.slider("💰 Harga (Rp)", 0, max_h, (0, max_h), key="f_hrg_shp")
@@ -1068,23 +1125,26 @@ elif menu == "🟠 Shopee":
                 | df_f["Nama Produk"].astype(str).str.lower().str.contains(qq, na=False)
             ]
 
-        tab1, tab2, tab3 = st.tabs(["📊 Chart", "🗄️ Data", "📑 Audit"])
+        tab1, tab2, tab3 = st.tabs(["📊 Executive Dashboard", "🗄️ Database", "📑 Audit"])
         with tab1:
             m1, m2, m3, m4 = st.columns(4)
-            m1.metric("Total", fmt_int_id(len(df_f)))
-            m2.metric("Online", fmt_int_id((df_f["Tipe Usaha"] == "Murni Online (Rumahan)").sum()))
-            m3.metric("Fisik", fmt_int_id((df_f["Tipe Usaha"] == "Ada Toko Fisik").sum()))
-            m4.metric("Wilayah", fmt_int_id(df_f["Wilayah"].nunique()))
+            m1.metric("📌 Total Ditampilkan", fmt_int_id(len(df_f)))
+            m2.metric("🏠 Murni Online", fmt_int_id((df_f["Tipe Usaha"] == "Murni Online (Rumahan)").sum()))
+            m3.metric("🏬 Ada Toko Fisik", fmt_int_id((df_f["Tipe Usaha"] == "Ada Toko Fisik").sum()))
+            m4.metric("🗺️ Jumlah Wilayah", fmt_int_id(df_f["Wilayah"].nunique()))
 
             if not st.session_state.get("fast_mode") and not df_f.empty:
                 g1, g2 = st.columns(2, gap="large")
                 with g1:
-                    fig = px.pie(df_f, names="Tipe Usaha", hole=0.46, title="Komposisi Tipe Usaha")
+                    fig = px.pie(df_f, names="Tipe Usaha", hole=0.46,
+                                 title="Komposisi Model Bisnis UMKM (Shopee)")
                     fig.update_layout(paper_bgcolor=BPS_PAPER, plot_bgcolor=BPS_PAPER)
                     st.plotly_chart(fig, use_container_width=True)
                 with g2:
                     grp = df_f.groupby("Wilayah").size().reset_index(name="Jumlah")
-                    fig = px.bar(grp, x="Wilayah", y="Jumlah", title="Jumlah per Wilayah", color="Wilayah")
+                    fig = px.bar(grp, x="Wilayah", y="Jumlah",
+                                 title="Total Usaha per Wilayah (Shopee)",
+                                 color="Wilayah")
                     fig.update_layout(paper_bgcolor=BPS_PAPER, plot_bgcolor=BPS_PAPER)
                     st.plotly_chart(fig, use_container_width=True)
 
@@ -1092,9 +1152,10 @@ elif menu == "🟠 Shopee":
             df_view = df_f.copy()
             df_view["Harga"] = df_view["Harga"].apply(lambda x: f"Rp {int(x):,}".replace(",", ".") if str(x).isdigit() else f"Rp {x}")
             st.dataframe(df_view, use_container_width=True, hide_index=True, height=420)
+
             excel_bytes = df_to_excel_bytes({"Data Shopee": df_f})
             st.download_button(
-                "⬇️ Download Excel (Shopee)",
+                "⬇️ Unduh Excel — Shopee",
                 data=excel_bytes,
                 file_name=f"UMKM_Shopee_{datetime.date.today()}.xlsx",
                 use_container_width=True,
@@ -1103,8 +1164,10 @@ elif menu == "🟠 Shopee":
 
         with tab3:
             a = st.session_state.audit_shopee or {}
-            st.info(f"File: **{fmt_int_id(a.get('file_count', 0))}** • Valid: **{fmt_int_id(a.get('valid_rows', 0))}**")
-            st.warning(f"Luar wilayah: **{fmt_int_id(a.get('luar_wilayah', 0))}** • Error harga: **{fmt_int_id(a.get('error_harga', 0))}**")
+            st.info(f"📂 File diproses: **{fmt_int_id(a.get('file_count', 0))}**")
+            st.success(f"✅ Baris valid: **{fmt_int_id(a.get('valid_rows', 0))}**")
+            st.warning(f"⚠️ Diabaikan (luar wilayah): **{fmt_int_id(a.get('luar_wilayah', 0))}**")
+            st.warning(f"⚠️ Error parsing harga: **{fmt_int_id(a.get('error_harga', 0))}**")
             st.caption(f"API calls: {fmt_int_id(a.get('api_calls', 0))}")
 
 
@@ -1112,23 +1175,27 @@ elif menu == "🟠 Shopee":
 # PAGE: TOKOPEDIA
 # ======================================================================================
 elif menu == "🟢 Tokopedia":
-    hero("Tokopedia", "Upload CSV Tokopedia → filter Babel → chart + export.",
-         badges=["Filter Babel", "Ringkas", "Export Excel", "UI orange"])
+    hero(
+        "Dashboard UMKM — Tokopedia",
+        "Ekstraksi data UMKM dari Tokopedia (Bangka Belitung).",
+        badges=["Filter Babel otomatis", "Dashboard ringkas", "Export Excel rapi"]
+    )
 
     with st.container(border=True):
-        section("📥 Input", "Upload CSV lalu proses.")
+        section("📥 Input Data", "Upload CSV Tokopedia lalu proses.")
         col1, col2 = st.columns([1.15, 0.85], gap="large")
         with col1:
             files = st.file_uploader("Unggah CSV Tokopedia", type=["csv"], accept_multiple_files=True, key="file_tkp")
-            run = st.button("🚀 Proses Tokopedia", type="primary", use_container_width=True)
+            run = st.button("🚀 Proses Data Tokopedia", type="primary", use_container_width=True)
         with col2:
-            st.markdown("<div class='small-muted'>Struktur CSV beda-beda? aman, sistem coba nebak kolom.</div>", unsafe_allow_html=True)
+            section("🧾 Catatan", "Sistem toleran walau kolom CSV berubah.")
+            st.info("• Sistem akan menebak kolom bila struktur CSV berbeda.\n• Data difilter otomatis hanya Babel.")
 
     if run:
         if not files:
-            st.error("Upload dulu CSV-nya bro 🙏")
+            st.error("⚠️ Silakan unggah file CSV Tokopedia terlebih dahulu.")
         else:
-            with st.status("Memproses Tokopedia…", expanded=True) as status:
+            with st.status("Memproses data Tokopedia…", expanded=True) as status:
                 try:
                     total_semua_baris = 0
                     for f in files:
@@ -1204,7 +1271,7 @@ elif menu == "🟢 Tokopedia":
                             if baris_diproses % 25 == 0 or baris_diproses == total_semua_baris:
                                 pct = min(baris_diproses / max(total_semua_baris, 1), 1.0)
                                 progress.progress(pct)
-                                info.markdown(f"**Progress:** {fmt_int_id(baris_diproses)} / {fmt_int_id(total_semua_baris)} ({int(pct*100)}%)")
+                                info.markdown(f"**⏳ Progress:** {fmt_int_id(baris_diproses)} / {fmt_int_id(total_semua_baris)} ({int(pct*100)}%)")
 
                     progress.empty()
                     info.empty()
@@ -1219,26 +1286,26 @@ elif menu == "🟢 Tokopedia":
                         "error_harga": err_h,
                     }
 
-                    status.update(label="✅ Tokopedia beres", state="complete", expanded=False)
-                    st.toast(f"Tokopedia: {fmt_int_id(len(df_final))} baris", icon="✅")
+                    status.update(label="✅ Selesai memproses Tokopedia", state="complete", expanded=False)
+                    st.toast(f"Tokopedia: {fmt_int_id(len(df_final))} baris siap dianalisis", icon="✅")
 
                 except Exception as e:
-                    status.update(label="❌ Gagal", state="error", expanded=True)
-                    st.error(f"Error Tokopedia: {e}")
+                    status.update(label="❌ Gagal memproses Tokopedia", state="error", expanded=True)
+                    st.error(f"Error Sistem Tokopedia: {e}")
 
     df_tkp = st.session_state.data_tokped
     if isinstance(df_tkp, pd.DataFrame) and not df_tkp.empty:
         with st.container(border=True):
-            section("🔎 Filter", "Biar gampang nyari & ngolah.")
+            section("🔎 Filter Pintar", "Cari cepat dan saring data untuk analisis.")
             c1, c2, c3 = st.columns([1.2, 1.2, 1.6], gap="medium")
             with c1:
                 f_wil = st.multiselect("📍 Wilayah", options=sorted(df_tkp["Wilayah"].unique()),
                                        default=sorted(df_tkp["Wilayah"].unique()), key="f_wil_tkp")
             with c2:
-                f_tipe = st.multiselect("🏢 Tipe", options=sorted(df_tkp["Tipe Usaha"].unique()),
+                f_tipe = st.multiselect("🏢 Tipe Usaha", options=sorted(df_tkp["Tipe Usaha"].unique()),
                                         default=sorted(df_tkp["Tipe Usaha"].unique()), key="f_tipe_tkp")
             with c3:
-                q = st.text_input("🔎 Cari (toko/produk)", value="", key="q_tkp")
+                q = st.text_input("🔎 Cari (nama toko / produk)", value="", key="q_tkp")
 
             max_h = int(df_tkp["Harga"].max()) if df_tkp["Harga"].max() > 0 else 1_000_000
             f_hrg = st.slider("💰 Harga (Rp)", 0, max_h, (0, max_h), key="f_hrg_tkp")
@@ -1257,22 +1324,25 @@ elif menu == "🟢 Tokopedia":
                 | df_f["Nama Produk"].astype(str).str.lower().str.contains(qq, na=False)
             ]
 
-        tab1, tab2, tab3 = st.tabs(["📊 Chart", "🗄️ Data", "📑 Audit"])
+        tab1, tab2, tab3 = st.tabs(["📊 Executive Dashboard", "🗄️ Database", "📑 Audit"])
         with tab1:
             m1, m2, m3 = st.columns(3)
-            m1.metric("Total", fmt_int_id(len(df_f)))
-            m2.metric("Online", fmt_int_id((df_f["Tipe Usaha"] == "Murni Online (Rumahan)").sum()))
-            m3.metric("Wilayah", fmt_int_id(df_f["Wilayah"].nunique()))
+            m1.metric("📌 Total Ditampilkan", fmt_int_id(len(df_f)))
+            m2.metric("🏠 Murni Online", fmt_int_id((df_f["Tipe Usaha"] == "Murni Online (Rumahan)").sum()))
+            m3.metric("🗺️ Jumlah Wilayah", fmt_int_id(df_f["Wilayah"].nunique()))
 
             if not st.session_state.get("fast_mode") and not df_f.empty:
                 g1, g2 = st.columns(2, gap="large")
                 with g1:
-                    fig = px.pie(df_f, names="Tipe Usaha", hole=0.46, title="Komposisi Tipe Usaha")
+                    fig = px.pie(df_f, names="Tipe Usaha", hole=0.46,
+                                 title="Komposisi Model Bisnis UMKM (Tokopedia)")
                     fig.update_layout(paper_bgcolor=BPS_PAPER, plot_bgcolor=BPS_PAPER)
                     st.plotly_chart(fig, use_container_width=True)
                 with g2:
                     grp = df_f.groupby("Wilayah").size().reset_index(name="Jumlah")
-                    fig = px.bar(grp, x="Wilayah", y="Jumlah", title="Jumlah per Wilayah", color="Wilayah")
+                    fig = px.bar(grp, x="Wilayah", y="Jumlah",
+                                 title="Total Usaha per Wilayah (Tokopedia)",
+                                 color="Wilayah")
                     fig.update_layout(paper_bgcolor=BPS_PAPER, plot_bgcolor=BPS_PAPER)
                     st.plotly_chart(fig, use_container_width=True)
 
@@ -1280,10 +1350,9 @@ elif menu == "🟢 Tokopedia":
             df_view = df_f.copy()
             df_view["Harga"] = df_view["Harga"].apply(lambda x: f"Rp {int(x):,}".replace(",", ".") if str(x).isdigit() else f"Rp {x}")
             st.dataframe(df_view, use_container_width=True, hide_index=True, height=420)
-
             excel_bytes = df_to_excel_bytes({"Data Tokopedia": df_f})
             st.download_button(
-                "⬇️ Download Excel (Tokopedia)",
+                "⬇️ Unduh Excel — Tokopedia",
                 data=excel_bytes,
                 file_name=f"UMKM_Tokopedia_{datetime.date.today()}.xlsx",
                 use_container_width=True,
@@ -1292,31 +1361,37 @@ elif menu == "🟢 Tokopedia":
 
         with tab3:
             a = st.session_state.audit_tokped or {}
-            st.info(f"File: **{fmt_int_id(a.get('file_count', 0))}** • Valid: **{fmt_int_id(a.get('valid_rows', 0))}**")
-            st.warning(f"Luar wilayah: **{fmt_int_id(a.get('luar_wilayah', 0))}** • Error harga: **{fmt_int_id(a.get('error_harga', 0))}**")
+            st.info(f"📂 File diproses: **{fmt_int_id(a.get('file_count', 0))}**")
+            st.success(f"✅ Baris valid: **{fmt_int_id(a.get('valid_rows', 0))}**")
+            st.warning(f"⚠️ Diabaikan (luar wilayah): **{fmt_int_id(a.get('luar_wilayah', 0))}**")
+            st.warning(f"⚠️ Error parsing harga: **{fmt_int_id(a.get('error_harga', 0))}**")
 
 
 # ======================================================================================
 # PAGE: FACEBOOK
 # ======================================================================================
 elif menu == "🔵 Facebook":
-    hero("Facebook Marketplace", "Upload CSV Facebook → filter Babel → chart + export.",
-         badges=["Filter Babel", "Deteksi perorangan", "Export Excel", "UI orange"])
+    hero(
+        "Dashboard UMKM — Facebook Marketplace",
+        "Ekstraksi data UMKM dari Facebook Marketplace (Bangka Belitung).",
+        badges=["Filter Babel otomatis", "Deteksi perorangan", "Export Excel rapi"]
+    )
 
     with st.container(border=True):
-        section("📥 Input", "Upload CSV lalu proses.")
+        section("📥 Input Data", "Upload CSV Facebook lalu proses.")
         col1, col2 = st.columns([1.15, 0.85], gap="large")
         with col1:
             files = st.file_uploader("Unggah CSV Facebook", type=["csv"], accept_multiple_files=True, key="file_fb")
-            run = st.button("🚀 Proses Facebook", type="primary", use_container_width=True)
+            run = st.button("🚀 Proses Data Facebook", type="primary", use_container_width=True)
         with col2:
-            st.markdown("<div class='small-muted'>Nama toko kadang kosong — sistem isi default aman.</div>", unsafe_allow_html=True)
+            section("🧾 Catatan", "Nama toko sering kosong; sistem mengisi default dengan aman.")
+            st.info("• Nama toko sering kosong → akan diisi default.\n• Tipe Usaha perorangan otomatis bila terdeteksi.")
 
     if run:
         if not files:
-            st.error("Upload dulu CSV-nya bro 🙏")
+            st.error("⚠️ Silakan unggah file CSV Facebook terlebih dahulu.")
         else:
-            with st.status("Memproses Facebook…", expanded=True) as status:
+            with st.status("Memproses data Facebook…", expanded=True) as status:
                 try:
                     total_semua_baris = 0
                     for f in files:
@@ -1380,7 +1455,7 @@ elif menu == "🔵 Facebook":
                             if baris_diproses % 25 == 0 or baris_diproses == total_semua_baris:
                                 pct = min(baris_diproses / max(total_semua_baris, 1), 1.0)
                                 progress.progress(pct)
-                                info.markdown(f"**Progress:** {fmt_int_id(baris_diproses)} / {fmt_int_id(total_semua_baris)} ({int(pct*100)}%)")
+                                info.markdown(f"**⏳ Progress:** {fmt_int_id(baris_diproses)} / {fmt_int_id(total_semua_baris)} ({int(pct*100)}%)")
 
                     progress.empty()
                     info.empty()
@@ -1395,26 +1470,26 @@ elif menu == "🔵 Facebook":
                         "error_harga": err_h,
                     }
 
-                    status.update(label="✅ Facebook beres", state="complete", expanded=False)
-                    st.toast(f"Facebook: {fmt_int_id(len(df_final))} baris", icon="✅")
+                    status.update(label="✅ Selesai memproses Facebook", state="complete", expanded=False)
+                    st.toast(f"Facebook: {fmt_int_id(len(df_final))} baris siap dianalisis", icon="✅")
 
                 except Exception as e:
-                    status.update(label="❌ Gagal", state="error", expanded=True)
-                    st.error(f"Error Facebook: {e}")
+                    status.update(label="❌ Gagal memproses Facebook", state="error", expanded=True)
+                    st.error(f"Error Sistem FB: {e}")
 
     df_fb = st.session_state.data_fb
     if isinstance(df_fb, pd.DataFrame) and not df_fb.empty:
         with st.container(border=True):
-            section("🔎 Filter", "Biar gampang nyari & ngolah.")
+            section("🔎 Filter Pintar", "Cari cepat dan saring data untuk analisis.")
             c1, c2, c3 = st.columns([1.2, 1.2, 1.6], gap="medium")
             with c1:
                 f_wil = st.multiselect("📍 Wilayah", options=sorted(df_fb["Wilayah"].unique()),
                                        default=sorted(df_fb["Wilayah"].unique()), key="f_wil_fb")
             with c2:
-                f_tipe = st.multiselect("🏢 Tipe", options=sorted(df_fb["Tipe Usaha"].unique()),
+                f_tipe = st.multiselect("🏢 Tipe Usaha", options=sorted(df_fb["Tipe Usaha"].unique()),
                                         default=sorted(df_fb["Tipe Usaha"].unique()), key="f_tipe_fb")
             with c3:
-                q = st.text_input("🔎 Cari (toko/produk)", value="", key="q_fb")
+                q = st.text_input("🔎 Cari (nama toko / produk)", value="", key="q_fb")
 
             max_h = int(df_fb["Harga"].max()) if df_fb["Harga"].max() > 0 else 1_000_000
             f_hrg = st.slider("💰 Harga (Rp)", 0, max_h, (0, max_h), key="f_hrg_fb")
@@ -1433,22 +1508,25 @@ elif menu == "🔵 Facebook":
                 | df_f["Nama Produk"].astype(str).str.lower().str.contains(qq, na=False)
             ]
 
-        tab1, tab2, tab3 = st.tabs(["📊 Chart", "🗄️ Data", "📑 Audit"])
+        tab1, tab2, tab3 = st.tabs(["📊 Executive Dashboard", "🗄️ Database", "📑 Audit"])
         with tab1:
             m1, m2, m3 = st.columns(3)
-            m1.metric("Total", fmt_int_id(len(df_f)))
-            m2.metric("Perorangan", fmt_int_id((df_f["Tipe Usaha"] == "Perorangan (Facebook)").sum()))
-            m3.metric("Wilayah", fmt_int_id(df_f["Wilayah"].nunique()))
+            m1.metric("📌 Total Ditampilkan", fmt_int_id(len(df_f)))
+            m2.metric("👤 Perorangan", fmt_int_id((df_f["Tipe Usaha"] == "Perorangan (Facebook)").sum()))
+            m3.metric("🗺️ Jumlah Wilayah", fmt_int_id(df_f["Wilayah"].nunique()))
 
             if not st.session_state.get("fast_mode") and not df_f.empty:
                 g1, g2 = st.columns(2, gap="large")
                 with g1:
-                    fig = px.pie(df_f, names="Tipe Usaha", hole=0.46, title="Komposisi Tipe Usaha")
+                    fig = px.pie(df_f, names="Tipe Usaha", hole=0.46,
+                                 title="Komposisi Model Bisnis (Facebook)")
                     fig.update_layout(paper_bgcolor=BPS_PAPER, plot_bgcolor=BPS_PAPER)
                     st.plotly_chart(fig, use_container_width=True)
                 with g2:
                     grp = df_f.groupby("Wilayah").size().reset_index(name="Jumlah")
-                    fig = px.bar(grp, x="Wilayah", y="Jumlah", title="Jumlah per Wilayah", color="Wilayah")
+                    fig = px.bar(grp, x="Wilayah", y="Jumlah",
+                                 title="Total Usaha per Wilayah (Facebook)",
+                                 color="Wilayah")
                     fig.update_layout(paper_bgcolor=BPS_PAPER, plot_bgcolor=BPS_PAPER)
                     st.plotly_chart(fig, use_container_width=True)
 
@@ -1456,10 +1534,9 @@ elif menu == "🔵 Facebook":
             df_view = df_f.copy()
             df_view["Harga"] = df_view["Harga"].apply(lambda x: f"Rp {int(x):,}".replace(",", ".") if str(x).isdigit() else f"Rp {x}")
             st.dataframe(df_view, use_container_width=True, hide_index=True, height=420)
-
             excel_bytes = df_to_excel_bytes({"Data Facebook": df_f})
             st.download_button(
-                "⬇️ Download Excel (Facebook)",
+                "⬇️ Unduh Excel — Facebook",
                 data=excel_bytes,
                 file_name=f"UMKM_Facebook_{datetime.date.today()}.xlsx",
                 use_container_width=True,
@@ -1468,8 +1545,10 @@ elif menu == "🔵 Facebook":
 
         with tab3:
             a = st.session_state.audit_fb or {}
-            st.info(f"File: **{fmt_int_id(a.get('file_count', 0))}** • Valid: **{fmt_int_id(a.get('valid_rows', 0))}**")
-            st.warning(f"Luar wilayah: **{fmt_int_id(a.get('luar_wilayah', 0))}** • Error harga: **{fmt_int_id(a.get('error_harga', 0))}**")
+            st.info(f"📂 File diproses: **{fmt_int_id(a.get('file_count', 0))}**")
+            st.success(f"✅ Baris valid: **{fmt_int_id(a.get('valid_rows', 0))}**")
+            st.warning(f"⚠️ Diabaikan (luar wilayah): **{fmt_int_id(a.get('luar_wilayah', 0))}**")
+            st.warning(f"⚠️ Error parsing harga: **{fmt_int_id(a.get('error_harga', 0))}**")
 
 
 # ======================================================================================
@@ -1477,27 +1556,29 @@ elif menu == "🔵 Facebook":
 # ======================================================================================
 elif menu == "📍 Google Maps":
     hero(
-        "Google Maps",
-        "Upload CSV hasil ekstensi → auto-clean → peta interaktif + export.",
-        badges=["Cluster", "Heatmap", "Fullscreen", "Export Excel/CSV"]
+        "Dashboard UMKM — Google Maps",
+        "Upload CSV hasil ekstensi → auto-clean → MAP interaktif (cluster + heatmap) + export Excel/CSV.",
+        badges=["Real Map (Leaflet)", "Cluster + Heatmap", "Fullscreen + Locate", "Export Excel/CSV"]
     )
 
     with st.container(border=True):
-        section("📥 Input", "Unggah CSV hasil scraping Google Maps.")
+        section("📥 Input Data", "Unggah CSV hasil scraping Google Maps.")
         col1, col2 = st.columns([1.15, 0.85], gap="large")
         with col1:
             files = st.file_uploader("Unggah CSV Google Maps", type=["csv"], accept_multiple_files=True, key="file_maps")
-            run = st.button("🚀 Proses Google Maps", type="primary", use_container_width=True)
+            _ = st.toggle("✨ Auto-clean (disarankan)", value=True, key="clean_maps")
+            run = st.button("🚀 Proses Data Google Maps", type="primary", use_container_width=True)
 
         with col2:
+            section("🧾 Format Kolom", "Sistem toleran walau nama kolom beda.")
             st.code("foto_url, nama_usaha, alamat, no_telepon, latitude, longitude, link", language="text")
-            st.markdown("<div class='small-muted'>Nama kolom beda? santai, sistem tetap coba mapping.</div>", unsafe_allow_html=True)
+            st.caption("Kalau beda nama kolom, sistem tetap coba map otomatis (toleran).")
 
     if run:
         if not files:
-            st.error("Upload dulu CSV-nya bro 🙏")
+            st.error("⚠️ Silakan unggah file CSV Google Maps terlebih dahulu.")
         else:
-            with st.status("Memproses Google Maps…", expanded=True) as status:
+            with st.status("Memproses data Google Maps…", expanded=True) as status:
                 try:
                     df_raw, _total_rows = read_csv_files(files)
                     df_clean, audit = clean_maps_dataframe(df_raw)
@@ -1514,22 +1595,22 @@ elif menu == "📍 Google Maps":
                         "missing_cols": audit.get("missing_cols", []),
                     }
 
-                    status.update(label="✅ Google Maps beres", state="complete", expanded=False)
-                    st.toast(f"Google Maps: {fmt_int_id(len(df_clean))} baris", icon="✅")
+                    status.update(label="✅ Selesai memproses Google Maps", state="complete", expanded=False)
+                    st.toast(f"Google Maps: {fmt_int_id(len(df_clean))} baris siap dianalisis", icon="✅")
 
                 except Exception as e:
-                    status.update(label="❌ Gagal", state="error", expanded=True)
-                    st.error(f"Error Google Maps: {e}")
+                    status.update(label="❌ Gagal memproses Google Maps", state="error", expanded=True)
+                    st.error(f"Error Sistem Google Maps: {e}")
 
     df_maps = st.session_state.data_maps
     if isinstance(df_maps, pd.DataFrame) and not df_maps.empty:
-        tab1, tab2, tab3 = st.tabs(["🗺️ Peta", "🧹 Data", "📑 Audit"])
+        tab1, tab2, tab3 = st.tabs(["🗺️ Peta Interaktif", "🧹 Data Bersih", "📑 Audit"])
         with tab1:
             m1, m2, m3, m4 = st.columns(4)
-            m1.metric("Total", fmt_int_id(len(df_maps)))
-            m2.metric("Koordinat", fmt_int_id(df_maps["Latitude"].notna().sum()))
-            m3.metric("Link", fmt_int_id((df_maps["Link"].astype(str).str.len() > 0).sum()))
-            m4.metric("No HP", fmt_int_id((df_maps["No Telepon"].astype(str).str.len() > 0).sum()))
+            m1.metric("📌 Total Data", fmt_int_id(len(df_maps)))
+            m2.metric("📍 Koordinat Valid", fmt_int_id(df_maps["Latitude"].notna().sum()))
+            m3.metric("🔗 Link Valid", fmt_int_id((df_maps["Link"].astype(str).str.len() > 0).sum()))
+            m4.metric("☎️ No Telp Valid", fmt_int_id((df_maps["No Telepon"].astype(str).str.len() > 0).sum()))
 
             if not st.session_state.get("fast_mode"):
                 render_real_map_folium(df_maps, height=620)
@@ -1539,7 +1620,7 @@ elif menu == "📍 Google Maps":
 
             excel_bytes = df_to_excel_bytes({"Data Google Maps": df_maps})
             st.download_button(
-                "⬇️ Download Excel (Maps)",
+                "⬇️ Unduh Excel — Google Maps (Bersih)",
                 data=excel_bytes,
                 file_name=f"UMKM_GoogleMaps_Bersih_{datetime.date.today()}.xlsx",
                 use_container_width=True,
@@ -1548,7 +1629,7 @@ elif menu == "📍 Google Maps":
 
             csv_bytes = df_maps.to_csv(index=False).encode("utf-8")
             st.download_button(
-                "⬇️ Download CSV (Maps)",
+                "⬇️ Unduh CSV — Google Maps (Bersih)",
                 data=csv_bytes,
                 file_name=f"UMKM_GoogleMaps_Bersih_{datetime.date.today()}.csv",
                 use_container_width=True,
@@ -1556,10 +1637,15 @@ elif menu == "📍 Google Maps":
 
         with tab3:
             a = st.session_state.audit_maps or {}
-            st.info(f"File: **{fmt_int_id(a.get('file_count', 0))}** • Masuk: **{fmt_int_id(a.get('rows_in', 0))}** • Keluar: **{fmt_int_id(a.get('rows_out', 0))}**")
-            st.warning(f"Duplikat: **{fmt_int_id(a.get('dedup_removed', 0))}** • Koordinat invalid: **{fmt_int_id(a.get('invalid_coord', 0))}**")
+            st.info(f"📂 File diproses: **{fmt_int_id(a.get('file_count', 0))}**")
+            st.success(f"📥 Baris masuk: **{fmt_int_id(a.get('rows_in', 0))}**")
+            st.success(f"✅ Baris keluar: **{fmt_int_id(a.get('rows_out', 0))}**")
+            st.warning(f"🧽 Duplikat dihapus: **{fmt_int_id(a.get('dedup_removed', 0))}**")
+            st.warning(f"📍 Koordinat invalid: **{fmt_int_id(a.get('invalid_coord', 0))}**")
+            st.warning(f"🔗 Link invalid: **{fmt_int_id(a.get('invalid_link', 0))}**")
+            st.warning(f"🏷️ Nama usaha kosong: **{fmt_int_id(a.get('empty_name', 0))}**")
             if a.get("missing_cols"):
-                st.caption(f"Kolom gak ketemu (diisi kosong): {', '.join(a['missing_cols'])}")
+                st.warning(f"Kolom tidak ditemukan (diisi kosong): {', '.join(a['missing_cols'])}")
 
 
 # ======================================================================================
@@ -1567,9 +1653,9 @@ elif menu == "📍 Google Maps":
 # ======================================================================================
 elif menu == "📊 Export Gabungan":
     hero(
-        "Export Gabungan",
-        "Gabungin semua sumber jadi 1 Excel (sheet terpisah).",
-        badges=["1 klik", "Sheet terpisah", "Header rapi", "Autofilter"]
+        "Export Master Data Gabungan",
+        "Konsolidasi (Shopee, Tokopedia, Facebook, Google Maps) → 1 Excel, sheet terpisah.",
+        badges=["1 klik export", "Sheet terpisah", "Header rapi", "Autofilter aktif"]
     )
 
     df_shp_ready = isinstance(st.session_state.data_shopee, pd.DataFrame) and not st.session_state.data_shopee.empty
@@ -1578,15 +1664,16 @@ elif menu == "📊 Export Gabungan":
     df_maps_ready= isinstance(st.session_state.data_maps, pd.DataFrame) and not st.session_state.data_maps.empty
 
     if not (df_shp_ready or df_tkp_ready or df_fb_ready or df_maps_ready):
-        st.warning("Belum ada data. Proses dulu di menu yang sesuai.")
+        st.warning("⚠️ Belum ada data. Silakan proses dulu di menu Shopee/Tokopedia/Facebook/Google Maps.")
     else:
         with st.container(border=True):
-            section("✅ Ringkasan", "Biar keliatan datanya udah masuk.")
+            section("✅ Data Siap Dikonsolidasi", "Ringkasan jumlah data per sumber.")
             c1, c2, c3, c4 = st.columns(4)
-            c1.metric("Shopee", fmt_int_id(len(st.session_state.data_shopee)) if df_shp_ready else 0)
-            c2.metric("Tokopedia", fmt_int_id(len(st.session_state.data_tokped)) if df_tkp_ready else 0)
-            c3.metric("Facebook", fmt_int_id(len(st.session_state.data_fb)) if df_fb_ready else 0)
-            c4.metric("Google Maps", fmt_int_id(len(st.session_state.data_maps)) if df_maps_ready else 0)
+            c1.metric("📦 Shopee", fmt_int_id(len(st.session_state.data_shopee)) if df_shp_ready else 0)
+            c2.metric("📦 Tokopedia", fmt_int_id(len(st.session_state.data_tokped)) if df_tkp_ready else 0)
+            c3.metric("📦 Facebook", fmt_int_id(len(st.session_state.data_fb)) if df_fb_ready else 0)
+            c4.metric("📦 Google Maps", fmt_int_id(len(st.session_state.data_maps)) if df_maps_ready else 0)
+            st.caption("Output: 1 file Excel berisi sheet terpisah per sumber + autofilter + header rapi.")
 
         sheets = {}
         if df_shp_ready:
@@ -1601,14 +1688,16 @@ elif menu == "📊 Export Gabungan":
         excel_bytes = df_to_excel_bytes(sheets)
 
         with st.container(border=True):
-            section("⬇️ Download", "Sekali klik langsung dapet excel master.")
-            st.download_button(
-                label="⬇️ DOWNLOAD EXCEL MASTER",
-                data=excel_bytes,
-                file_name=f"Master_UMKM_BPS_Babel_{datetime.date.today()}.xlsx",
-                use_container_width=True,
-                type="primary",
-            )
+            section("⬇️ Unduh File Master", "Klik tombol untuk download Excel gabungan.")
+            _, col_btn, _ = st.columns([1, 2, 1])
+            with col_btn:
+                st.download_button(
+                    label="⬇️ UNDUH EXCEL MASTER (4-IN-1)",
+                    data=excel_bytes,
+                    file_name=f"Master_UMKM_BPS_{datetime.date.today()}.xlsx",
+                    use_container_width=True,
+                    type="primary",
+                )
 
 
 # ======================================================================================
@@ -1617,8 +1706,8 @@ elif menu == "📊 Export Gabungan":
 st.markdown(
     f"""
 <div class="footer">
-  <b>UMKM Toolkit</b> • Streamlit • Orange Glass UI<br/>
-  <span style="opacity:.75;">© {datetime.date.today().year} BPS Babel</span>
+  <b>UMKM Toolkit</b> • Streamlit • Premium Orange Glass • Map Interaktif • Export Excel Bersih<br/>
+  <span style="opacity:.75;">© {datetime.date.today().year} BPS • Dashboard internal</span>
 </div>
 """,
     unsafe_allow_html=True,
