@@ -387,6 +387,165 @@ st.markdown(
 
 .stButton { margin-top: -8px; margin-bottom: 14px; }
 [data-testid="stDataFrame"] thead tr th{ background: rgba(255,255,255,0.06) !important; }
+
+
+/* ============================================================================
+   International polish (v2) — additive layer (keeps original styling)
+   ========================================================================== */
+
+/* Typography */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+html, body, [class*="css"]  { font-family: "Inter", system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; }
+h1,h2,h3,h4 { letter-spacing: -0.02em; }
+h1 { font-weight: 900 !important; }
+h2,h3 { font-weight: 800 !important; }
+
+/* App background (subtle premium) */
+[data-testid="stAppViewContainer"]{
+  background:
+    radial-gradient(1000px 700px at 12% 6%, rgba(255,111,0,.18) 0%, rgba(255,111,0,0) 60%),
+    radial-gradient(900px 650px at 88% 10%, rgba(255,193,7,.10) 0%, rgba(255,193,7,0) 58%),
+    radial-gradient(900px 620px at 52% 100%, rgba(59,130,246,.10) 0%, rgba(59,130,246,0) 62%),
+    linear-gradient(160deg, #07080B 0%, #0B0D12 60%, #05060A 100%) !important;
+  background-attachment: fixed !important;
+  color: rgba(255,255,255,0.92) !important;
+}
+[data-testid="stHeader"]{ background: transparent !important; }
+
+/* Wider, cleaner spacing */
+.block-container{
+  padding-top: 1.05rem !important;
+  padding-bottom: 2.3rem !important;
+}
+.block-container::before{
+  content:"";
+  display:block;
+  height: 5px;
+  width: 100%;
+  border-radius: 999px;
+  margin: 2px 0 16px 0;
+  background: linear-gradient(90deg,
+    rgba(255,111,0,0) 0%,
+    rgba(255,111,0,.70) 26%,
+    rgba(255,193,7,.70) 54%,
+    rgba(255,111,0,.70) 82%,
+    rgba(255,111,0,0) 100%);
+  box-shadow: 0 10px 40px rgba(255,111,0,.12);
+}
+
+/* Streamlit bordered containers -> premium cards */
+div[data-testid="stVerticalBlockBorderWrapper"]{
+  border-radius: 20px !important;
+  border: 1px solid rgba(255,255,255,0.10) !important;
+  background: linear-gradient(180deg, rgba(255,255,255,0.07), rgba(255,255,255,0.045)) !important;
+  box-shadow: 0 14px 42px rgba(0,0,0,0.34);
+  backdrop-filter: blur(14px);
+}
+div[data-testid="stVerticalBlockBorderWrapper"]:hover{
+  border-color: rgba(255,255,255,0.16) !important;
+  box-shadow: 0 14px 42px rgba(0,0,0,0.34), 0 24px 86px rgba(255,111,0,0.10);
+  transform: translateY(-1px);
+}
+
+/* Inputs */
+div[data-baseweb="input"] input,
+div[data-baseweb="select"] > div{
+  border-radius: 14px !important;
+}
+div[data-baseweb="input"], div[data-baseweb="select"] > div{
+  background: rgba(255,255,255,.05) !important;
+  border: 1px solid rgba(255,255,255,.10) !important;
+}
+div[data-baseweb="input"]:focus-within,
+div[data-baseweb="select"]:focus-within > div{
+  box-shadow: 0 0 0 4px rgba(255,111,0,0.18) !important;
+  border-color: rgba(255,111,0,.35) !important;
+}
+
+/* Buttons (keep your orange identity but more premium) */
+.stButton > button, div[data-testid="stDownloadButton"] button{
+  border-radius: 14px !important;
+  border: 1px solid rgba(255,255,255,.10) !important;
+  background: linear-gradient(135deg, rgba(255,111,0,.92) 0%, rgba(255,193,7,.88) 100%) !important;
+  color: #101113 !important;
+  font-weight: 900 !important;
+  height: 48px !important;
+  box-shadow: 0 16px 44px rgba(255,111,0,.18);
+  transition: transform .15s ease, box-shadow .15s ease, filter .15s ease;
+}
+.stButton > button:hover, div[data-testid="stDownloadButton"] button:hover{
+  transform: translateY(-1px);
+  filter: brightness(1.04);
+  box-shadow: 0 22px 64px rgba(255,111,0,.24);
+}
+button[kind="secondary"]{
+  background: rgba(255,255,255,.08) !important;
+  border: 1px solid rgba(255,255,255,.14) !important;
+  color: rgba(255,255,255,.90) !important;
+}
+
+/* Sidebar: premium navigation pills */
+[data-testid="stSidebar"]{
+  background:
+    radial-gradient(600px 420px at 22% 6%, rgba(255,111,0,.16) 0%, rgba(255,111,0,0) 62%),
+    linear-gradient(180deg, rgba(13,15,20,.98) 0%, rgba(9,10,14,.99) 100%) !important;
+  border-right: 1px solid rgba(255,255,255,0.10);
+  box-shadow: 14px 0 46px rgba(0,0,0,.44);
+}
+[data-testid="stSidebar"] *{ color: rgba(255,255,255,0.92) !important; }
+
+/* Radio group (nav) */
+[data-testid="stSidebar"] .stRadio div[role="radiogroup"]{
+  gap: 10px;
+}
+[data-testid="stSidebar"] .stRadio div[role="radiogroup"] > label{
+  border: 1px solid rgba(255,255,255,0.10);
+  background: rgba(255,255,255,0.04);
+  border-radius: 14px;
+  padding: 10px 12px;
+  transition: transform .12s ease, background .12s ease, border-color .12s ease, box-shadow .12s ease;
+  margin: 0 !important;
+}
+[data-testid="stSidebar"] .stRadio div[role="radiogroup"] > label:hover{
+  transform: translateY(-1px);
+  border-color: rgba(255,255,255,0.16);
+  background: rgba(255,255,255,0.06);
+  box-shadow: 0 10px 28px rgba(0,0,0,0.26);
+}
+[data-testid="stSidebar"] .stRadio div[role="radiogroup"] > label[data-checked="true"]{
+  background: linear-gradient(135deg, rgba(255,111,0,.22) 0%, rgba(255,193,7,.14) 100%);
+  border-color: rgba(255,111,0,.35);
+  box-shadow: 0 12px 38px rgba(255,111,0,0.14);
+}
+[data-testid="stSidebar"] .stRadio div[role="radiogroup"] > label p{
+  font-weight: 800;
+  margin: 0 !important;
+}
+
+/* Tables & dataframes */
+[data-testid="stDataFrame"]{
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.12);
+  box-shadow: 0 10px 28px rgba(0,0,0,0.26);
+}
+[data-testid="stDataFrame"] thead tr th{
+  background: rgba(255,255,255,0.06) !important;
+}
+
+/* Expanders */
+details{
+  background: rgba(255,255,255,.045);
+  border: 1px solid rgba(255,255,255,.10);
+  border-radius: 16px;
+  padding: 6px 10px;
+}
+details[open]{ box-shadow: 0 10px 26px rgba(0,0,0,0.22); }
+
+/* Motion (respect user settings) */
+@media (prefers-reduced-motion: reduce){
+  *{ transition: none !important; animation: none !important; }
+}
 </style>
 """,
     unsafe_allow_html=True,
