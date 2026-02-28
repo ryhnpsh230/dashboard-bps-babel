@@ -54,47 +54,42 @@ px.defaults.color_discrete_sequence = BPS_PALETTE
 # ======================================================================================
 # THEME / CSS (Orange-heavy modern glass)
 # ======================================================================================
-st.markdown(
-    f"""
-<style>
-/* ============================================================================
-   Modern International UI (BPS Accent) — Streamlit CSS
-   - Clean typography, subtle glass surfaces, restrained accent usage
-   - Better form controls, tables, tabs, and buttons
-   ========================================================================== */
 
-/* ---- Fonts ---- */
+# ======================================================================================
+# THEME / CSS (Modern International Glass + BPS Accent)
+# - Robust injection (no f-string braces issues)
+# ======================================================================================
+css = """
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
 
-/* ---- Design tokens ---- */
-:root {
-  --bg0: #07080B;
-  --bg1: #0B0D12;
-  --surface: rgba(255,255,255,0.06);
-  --surface2: rgba(255,255,255,0.09);
-  --border: rgba(255,255,255,0.10);
-  --border2: rgba(255,255,255,0.14);
-  --text: rgba(255,255,255,0.92);
-  --muted: rgba(255,255,255,0.68);
+:root{
+  --bg0:#07080B;
+  --bg1:#0B0D12;
+  --surface:rgba(255,255,255,.06);
+  --surface2:rgba(255,255,255,.09);
+  --border:rgba(255,255,255,.10);
+  --border2:rgba(255,255,255,.14);
+  --text:rgba(255,255,255,.92);
+  --muted:rgba(255,255,255,.68);
 
-  --accent: %(BPS_OREN_UTAMA)s;
-  --accent2: %(BPS_AMBER)s;
+  --accent:ACCENT_PRIMARY;
+  --accent2:ACCENT_SECONDARY;
 
-  --radius-xl: 20px;
-  --radius-lg: 16px;
-  --radius-md: 12px;
+  --r-xl:20px;
+  --r-lg:16px;
+  --r-md:12px;
 
-  --shadow-sm: 0 8px 22px rgba(0,0,0,0.28);
-  --shadow-md: 0 14px 40px rgba(0,0,0,0.34);
-  --shadow-glow: 0 24px 80px rgba(255,111,0,0.12);
+  --shadow-sm:0 8px 22px rgba(0,0,0,.28);
+  --shadow-md:0 14px 40px rgba(0,0,0,.34);
+  --shadow-glow:0 24px 80px rgba(255,111,0,.12);
 
-  --ring: 0 0 0 4px rgba(255,111,0,0.18);
+  --ring:0 0 0 4px rgba(255,111,0,.18);
 }
 
-/* ---- App background ---- */
+/* App background */
 [data-testid="stAppViewContainer"]{
-  font-family: "Inter", system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
-  color: var(--text);
+  font-family:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  color:var(--text);
   background:
     radial-gradient(1100px 700px at 12% 10%, rgba(255,111,0,.22) 0%, rgba(255,111,0,0) 62%),
     radial-gradient(900px 650px at 88% 16%, rgba(255,193,7,.14) 0%, rgba(255,193,7,0) 58%),
@@ -102,228 +97,171 @@ st.markdown(
     linear-gradient(160deg, var(--bg0) 0%, var(--bg1) 60%, #05060A 100%) !important;
   background-attachment: fixed !important;
 }
-
-/* Remove default header background */
-[data-testid="stHeader"]{ background: transparent !important; }
-
-/* Better page padding */
-.block-container{
-  padding-top: 1.1rem;
-  padding-bottom: 2.2rem;
-}
-
-/* Top accent line (subtle) */
+[data-testid="stHeader"]{background:transparent !important;}
+.block-container{padding-top:1.1rem;padding-bottom:2.2rem;max-width:1200px;}
 .block-container::before{
   content:"";
-  display:block;
-  height: 5px;
-  width: 100%;
-  border-radius: 999px;
-  margin: 2px 0 16px 0;
-  background: linear-gradient(90deg,
-    rgba(255,111,0,0) 0%,
-    rgba(255,111,0,.70) 26%,
-    rgba(255,193,7,.70) 54%,
-    rgba(255,111,0,.70) 82%,
-    rgba(255,111,0,0) 100%);
-  box-shadow: 0 10px 40px rgba(255,111,0,.14);
+  display:block;height:5px;width:100%;
+  border-radius:999px;margin:2px 0 16px 0;
+  background:linear-gradient(90deg,rgba(255,111,0,0) 0%,rgba(255,111,0,.70) 26%,rgba(255,193,7,.70) 54%,rgba(255,111,0,.70) 82%,rgba(255,111,0,0) 100%);
+  box-shadow:0 10px 40px rgba(255,111,0,.14);
 }
 
-/* ---- Sidebar ---- */
+/* Sidebar */
 [data-testid="stSidebar"]{
   background:
     radial-gradient(600px 420px at 25% 10%, rgba(255,111,0,.16) 0%, rgba(255,111,0,0) 62%),
     linear-gradient(180deg, rgba(13,15,20,.98) 0%, rgba(9,10,14,.99) 100%) !important;
-  border-right: 1px solid rgba(255,255,255,0.10);
-  box-shadow: 14px 0 46px rgba(0,0,0,.44);
+  border-right:1px solid rgba(255,255,255,.10);
+  box-shadow:14px 0 46px rgba(0,0,0,.44);
 }
-[data-testid="stSidebar"] *{ color: var(--text) !important; }
-[data-testid="stSidebar"] .stRadio label p{ font-weight: 600; }
+[data-testid="stSidebar"] *{color:var(--text) !important;}
+[data-testid="stSidebar"] .stRadio label p{font-weight:700;}
+/* radio highlight */
+[data-testid="stSidebar"] [role="radiogroup"] > label{
+  border-radius:14px;
+  padding:10px 12px;
+  margin:4px 0;
+  border:1px solid rgba(255,255,255,.06);
+  background:rgba(255,255,255,.02);
+}
+[data-testid="stSidebar"] [role="radiogroup"] > label:hover{
+  border-color:rgba(255,255,255,.12);
+  background:rgba(255,255,255,.04);
+}
 
-/* ---- Headings & text ---- */
-h1, h2, h3, h4 { letter-spacing: -0.02em; }
-h1 { font-weight: 900 !important; }
-h2, h3 { font-weight: 800 !important; }
-p, li, label, .stMarkdown { color: var(--text); }
+/* Typography */
+h1,h2,h3,h4{letter-spacing:-0.02em;}
+h1{font-weight:950 !important;}
+h2,h3{font-weight:900 !important;}
+p,li,label,.stMarkdown{color:var(--text);}
 
-/* ---- Cards / containers ---- */
+/* Containers as cards */
 div[data-testid="stVerticalBlockBorderWrapper"]{
-  background: linear-gradient(180deg, rgba(255,255,255,0.07), rgba(255,255,255,0.045));
-  border: 1px solid var(--border);
-  border-radius: var(--radius-xl);
-  padding: 18px 18px;
-  box-shadow: var(--shadow-md);
-  backdrop-filter: blur(14px);
+  background:linear-gradient(180deg,rgba(255,255,255,.07),rgba(255,255,255,.045));
+  border:1px solid var(--border);
+  border-radius:var(--r-xl);
+  padding:18px 18px;
+  box-shadow:var(--shadow-md);
+  backdrop-filter:blur(14px);
+  transition:transform .16s ease,box-shadow .16s ease,border-color .16s ease;
 }
 div[data-testid="stVerticalBlockBorderWrapper"]:hover{
-  border-color: rgba(255,255,255,0.16);
-  box-shadow: var(--shadow-md), var(--shadow-glow);
-  transform: translateY(-1px);
+  border-color:rgba(255,255,255,.16);
+  box-shadow:var(--shadow-md),var(--shadow-glow);
+  transform:translateY(-1px);
 }
 
-/* ---- Banner ---- */
-.bps-banner{
-  border-radius: 22px;
-  padding: 24px 28px;
-  margin: 2px 0 18px 0;
-  background:
-    radial-gradient(900px 380px at 12% 0%, rgba(255,111,0,.22) 0%, rgba(255,111,0,0) 62%),
-    radial-gradient(900px 380px at 88% 8%, rgba(255,193,7,.12) 0%, rgba(255,193,7,0) 62%),
-    linear-gradient(135deg, rgba(255,255,255,.09) 0%, rgba(255,255,255,.05) 60%, rgba(255,255,255,.03) 100%);
-  border: 1px solid rgba(255,255,255,0.12);
-  box-shadow: 0 18px 60px rgba(0,0,0,.34);
-  backdrop-filter: blur(16px);
-}
-.bps-kicker{
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-weight: 800;
-  font-size: .78rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: rgba(255,193,7,.92);
-  opacity: .95;
-  margin-bottom: 10px;
-}
-.bps-title{
-  font-size: 2.10rem;
-  font-weight: 950;
-  margin: 0 0 8px 0;
-  color: #fff;
-}
-.bps-subtitle{
-  margin: 0;
-  color: var(--muted);
-  font-size: 1.02rem;
-  line-height: 1.55;
-}
-
-/* ---- Metric tiles ---- */
+/* Metric tiles */
 div[data-testid="metric-container"]{
-  background: linear-gradient(180deg, rgba(255,255,255,0.07), rgba(255,255,255,0.045));
-  border: 1px solid var(--border);
-  border-left: 6px solid var(--accent);
-  border-radius: var(--radius-lg);
-  padding: 14px 16px;
-  box-shadow: var(--shadow-sm);
-  backdrop-filter: blur(14px);
-  transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease;
+  background:linear-gradient(180deg,rgba(255,255,255,.07),rgba(255,255,255,.045));
+  border:1px solid var(--border);
+  border-left:6px solid var(--accent);
+  border-radius:var(--r-lg);
+  padding:14px 16px;
+  box-shadow:var(--shadow-sm);
+  backdrop-filter:blur(14px);
+  transition:transform .16s ease, box-shadow .16s ease, border-color .16s ease;
 }
 div[data-testid="metric-container"]:hover{
-  transform: translateY(-2px);
-  border-color: var(--border2);
-  box-shadow: var(--shadow-sm), var(--shadow-glow);
+  transform:translateY(-2px);
+  border-color:var(--border2);
+  box-shadow:var(--shadow-sm),var(--shadow-glow);
 }
-div[data-testid="metric-container"] label{
-  color: var(--muted) !important;
-  font-weight: 700;
-  letter-spacing: .2px;
-}
-div[data-testid="metric-container"] [data-testid="stMetricValue"]{
-  font-weight: 900;
-}
+div[data-testid="metric-container"] label{color:var(--muted) !important;font-weight:700;letter-spacing:.2px;}
+div[data-testid="metric-container"] [data-testid="stMetricValue"]{font-weight:900;}
 
-/* ---- Tabs ---- */
+/* Tabs */
 .stTabs [data-baseweb="tab-list"]{
-  gap: 10px;
-  background: rgba(255,255,255,0.04);
-  border: 1px solid var(--border);
-  padding: 10px;
-  border-radius: var(--radius-lg);
-  backdrop-filter: blur(14px);
+  gap:10px;
+  background:rgba(255,255,255,.04);
+  border:1px solid var(--border);
+  padding:10px;
+  border-radius:var(--r-lg);
+  backdrop-filter:blur(14px);
 }
 .stTabs [data-baseweb="tab"]{
-  height: 46px;
-  border-radius: 14px;
-  padding: 0 16px;
-  background: rgba(255,255,255,0.03);
-  color: rgba(255,255,255,.78);
+  height:46px;border-radius:14px;padding:0 16px;
+  background:rgba(255,255,255,.03);
+  color:rgba(255,255,255,.78);
 }
 .stTabs [aria-selected="true"]{
-  background: linear-gradient(135deg, rgba(255,111,0,.92) 0%, rgba(255,193,7,.88) 100%) !important;
-  color: #101113 !important;
-  font-weight: 900;
-  box-shadow: 0 18px 54px rgba(255,111,0,.20);
+  background:linear-gradient(135deg, rgba(255,111,0,.92) 0%, rgba(255,193,7,.88) 100%) !important;
+  color:#101113 !important;
+  font-weight:900;
+  box-shadow:0 18px 54px rgba(255,111,0,.20);
 }
 
-/* ---- Buttons ---- */
+/* Buttons */
 div[data-testid="stDownloadButton"] button,
-.stButton > button{
-  border-radius: 14px !important;
-  border: 1px solid rgba(255,255,255,.10) !important;
-  background: linear-gradient(135deg, rgba(255,111,0,.92) 0%, rgba(255,193,7,.88) 100%) !important;
-  color: #101113 !important;
-  font-weight: 900 !important;
-  height: 48px !important;
-  box-shadow: 0 16px 44px rgba(255,111,0,.18);
-  transition: transform .15s ease, box-shadow .15s ease, filter .15s ease;
+.stButton>button{
+  border-radius:14px !important;
+  border:1px solid rgba(255,255,255,.10) !important;
+  background:linear-gradient(135deg, rgba(255,111,0,.92) 0%, rgba(255,193,7,.88) 100%) !important;
+  color:#101113 !important;
+  font-weight:900 !important;
+  height:48px !important;
+  box-shadow:0 16px 44px rgba(255,111,0,.18);
+  transition:transform .15s ease, box-shadow .15s ease, filter .15s ease;
 }
 div[data-testid="stDownloadButton"] button:hover,
-.stButton > button:hover{
-  transform: translateY(-1px);
-  filter: brightness(1.04);
-  box-shadow: 0 22px 64px rgba(255,111,0,.24);
+.stButton>button:hover{
+  transform:translateY(-1px);
+  filter:brightness(1.04);
+  box-shadow:0 22px 64px rgba(255,111,0,.24);
 }
 button[kind="secondary"]{
-  background: rgba(255,255,255,.08) !important;
-  border: 1px solid rgba(255,255,255,.14) !important;
-  color: rgba(255,255,255,.90) !important;
+  background:rgba(255,255,255,.08) !important;
+  border:1px solid rgba(255,255,255,.14) !important;
+  color:rgba(255,255,255,.90) !important;
 }
 
-/* ---- Inputs (text/select/number) ---- */
+/* Inputs */
 div[data-baseweb="input"] input,
-div[data-baseweb="select"] > div{
-  border-radius: 14px !important;
-}
+div[data-baseweb="select"] > div{border-radius:14px !important;}
 div[data-baseweb="input"]{
-  background: rgba(255,255,255,.05) !important;
-  border-radius: 14px !important;
-  border: 1px solid rgba(255,255,255,.10) !important;
+  background:rgba(255,255,255,.05) !important;
+  border-radius:14px !important;
+  border:1px solid rgba(255,255,255,.10) !important;
 }
 div[data-baseweb="input"]:focus-within{
-  box-shadow: var(--ring) !important;
-  border-color: rgba(255,111,0,.35) !important;
+  box-shadow:var(--ring) !important;
+  border-color:rgba(255,111,0,.35) !important;
 }
 div[data-baseweb="select"] > div{
-  background: rgba(255,255,255,.05) !important;
-  border: 1px solid rgba(255,255,255,.10) !important;
+  background:rgba(255,255,255,.05) !important;
+  border:1px solid rgba(255,255,255,.10) !important;
 }
 div[data-baseweb="select"]:focus-within > div{
-  box-shadow: var(--ring) !important;
-  border-color: rgba(255,111,0,.35) !important;
+  box-shadow:var(--ring) !important;
+  border-color:rgba(255,111,0,.35) !important;
 }
 
-/* ---- Dataframe ---- */
+/* Dataframe */
 [data-testid="stDataFrame"]{
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-  border: 1px solid rgba(255,255,255,0.12);
-  box-shadow: var(--shadow-sm);
+  border-radius:var(--r-lg);
+  overflow:hidden;
+  border:1px solid rgba(255,255,255,.12);
+  box-shadow:var(--shadow-sm);
 }
-[data-testid="stDataFrame"] *{
-  font-family: "Inter", system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
-}
+[data-testid="stDataFrame"] *{font-family:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;}
 
-/* ---- Expanders ---- */
+/* Expanders */
 details{
-  background: rgba(255,255,255,.045);
-  border: 1px solid rgba(255,255,255,.10);
-  border-radius: var(--radius-lg);
-  padding: 6px 10px;
+  background:rgba(255,255,255,.045);
+  border:1px solid rgba(255,255,255,.10);
+  border-radius:var(--r-lg);
+  padding:6px 10px;
 }
-details[open]{
-  box-shadow: var(--shadow-sm);
-}
+details[open]{box-shadow:var(--shadow-sm);}
 
-/* ---- Small polish ---- */
-hr { border-color: rgba(255,255,255,0.10) !important; }
-a { color: rgba(255,193,7,.95) !important; }
-a:hover { color: rgba(255,193,7,1) !important; }
-</style>
-""" % {"BPS_OREN_UTAMA": BPS_OREN_UTAMA, "BPS_AMBER": BPS_AMBER},
-    unsafe_allow_html=True,
-)
+/* Small polish */
+hr{border-color:rgba(255,255,255,.10) !important;}
+a{color:rgba(255,193,7,.95) !important;}
+a:hover{color:rgba(255,193,7,1) !important;}
+"""
+css = css.replace("ACCENT_PRIMARY", str(BPS_OREN_UTAMA)).replace("ACCENT_SECONDARY", str(BPS_AMBER))
+st.markdown(f"<style>{css}</style>", unsafe_allow_html=True)
 # ======================================================================================
 # SESSION STATE
 # ======================================================================================
