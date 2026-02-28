@@ -310,170 +310,230 @@ st.markdown("<style>" + CSS_THEME + "</style>", unsafe_allow_html=True)
 st.markdown(
     """
 <style>
-.block-container { max-width: 1180px; }
+/* =============================================================================
+   Dashboard UMKM BPS — International UI v4 (ADD-ON POLISH)
+   - DOES NOT remove your existing look; it enhances consistency, hierarchy, and
+     interactive states.
+   - Safe injection (no f-string), to prevent CSS being parsed as Python.
+   ========================================================================== */
 
+/* ---- Font ---- */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+/* ---- Tokens ---- */
+:root{
+  --bg0:#07080B;
+  --bg1:#0B0D12;
+  --card:rgba(255,255,255,.06);
+  --card2:rgba(255,255,255,.085);
+  --border:rgba(255,255,255,.10);
+  --border2:rgba(255,255,255,.16);
+  --text:rgba(255,255,255,.92);
+  --muted:rgba(255,255,255,.68);
+
+  /* Keep your BPS orange feel, but use it as accent (international style) */
+  --accent: rgba(255,111,0,1);
+  --accent2: rgba(255,193,7,1);
+
+  --r-xl:22px;
+  --r-lg:16px;
+  --r-md:12px;
+
+  --shadow-sm: 0 10px 26px rgba(0,0,0,.30);
+  --shadow-md: 0 18px 64px rgba(0,0,0,.38);
+  --shadow-glow: 0 26px 90px rgba(255,111,0,.14);
+  --ring: 0 0 0 4px rgba(255,111,0,.18);
+}
+
+/* ---- Base ---- */
+[data-testid="stAppViewContainer"]{
+  font-family: "Inter", system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+  color: var(--text);
+  background:
+    radial-gradient(1100px 720px at 12% 12%, rgba(255,111,0,.22) 0%, rgba(255,111,0,0) 62%),
+    radial-gradient(900px 640px at 88% 16%, rgba(255,193,7,.13) 0%, rgba(255,193,7,0) 58%),
+    radial-gradient(920px 700px at 55% 105%, rgba(59,130,246,.12) 0%, rgba(59,130,246,0) 60%),
+    linear-gradient(160deg, var(--bg0) 0%, var(--bg1) 62%, #05060A 100%) !important;
+  background-attachment: fixed !important;
+}
+[data-testid="stHeader"]{ background: transparent !important; }
+.block-container{ max-width: 1180px; padding-top: 1.15rem !important; padding-bottom: 2.2rem !important; }
+
+/* Subtle top accent line */
+.block-container::before{
+  content:"";
+  display:block;
+  height:5px;
+  width:100%;
+  border-radius:999px;
+  margin: 2px 0 16px 0;
+  background: linear-gradient(90deg,
+    rgba(255,111,0,0) 0%,
+    rgba(255,111,0,.72) 26%,
+    rgba(255,193,7,.72) 54%,
+    rgba(255,111,0,.72) 82%,
+    rgba(255,111,0,0) 100%);
+  box-shadow: 0 12px 44px rgba(255,111,0,.14);
+}
+
+/* Typography hierarchy */
+h1,h2,h3,h4{ letter-spacing:-0.02em; }
+h1{ font-weight: 950 !important; }
+h2,h3{ font-weight: 850 !important; }
+p,li,label,.stMarkdown{ color: var(--text); }
+small,.muted{ color: var(--muted); }
+
+/* Scrollbar polish (desktop) */
+::-webkit-scrollbar{ width: 10px; height: 10px; }
+::-webkit-scrollbar-thumb{
+  background: rgba(255,255,255,.12);
+  border: 2px solid rgba(0,0,0,0);
+  background-clip: padding-box;
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover{ background: rgba(255,255,255,.18); background-clip: padding-box; }
+
+/* ---- Cards / containers ---- */
+div[data-testid="stVerticalBlockBorderWrapper"]{
+  background: linear-gradient(180deg, rgba(255,255,255,0.075), rgba(255,255,255,0.045));
+  border: 1px solid var(--border);
+  border-radius: var(--r-xl);
+  padding: 18px 18px;
+  box-shadow: var(--shadow-md);
+  backdrop-filter: blur(14px);
+  transition: transform .16s ease, box-shadow .18s ease, border-color .18s ease;
+}
+div[data-testid="stVerticalBlockBorderWrapper"]:hover{
+  border-color: rgba(255,255,255,0.17);
+  box-shadow: var(--shadow-md), var(--shadow-glow);
+  transform: translateY(-1px);
+}
+
+/* ---- Premium Section Header (helper HTML) ---- */
+.bps-section{
+  display:flex; align-items:flex-end; justify-content:space-between; gap:12px;
+  margin: 4px 0 14px 0;
+}
+.bps-section .left{ display:flex; flex-direction:column; gap:6px; }
+.bps-badge{
+  display:inline-flex; align-items:center; gap:8px;
+  font-size:.76rem; font-weight:900; letter-spacing:.14em;
+  text-transform:uppercase;
+  color: rgba(255,193,7,.92);
+}
+.bps-badge::before{
+  content:"";
+  width:10px; height:10px; border-radius:999px;
+  background: linear-gradient(135deg, rgba(255,111,0,1), rgba(255,193,7,1));
+  box-shadow: 0 10px 28px rgba(255,111,0,.22);
+}
+.bps-h{
+  font-size: 1.55rem;
+  font-weight: 950;
+  margin: 0;
+}
+.bps-sub{
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.45;
+}
+.bps-divider{
+  height:1px;
+  margin-top: 12px;
+  background: linear-gradient(90deg, rgba(255,111,0,0), rgba(255,111,0,.40), rgba(255,193,7,.34), rgba(255,111,0,0));
+}
+
+/* ---- Hero (your style, refined) ---- */
 .bps-hero{
   display:flex; justify-content:space-between; gap:18px;
   padding: 22px 24px; border-radius: 22px;
   background:
     radial-gradient(900px 420px at 10% 0%, rgba(255,111,0,.22) 0%, rgba(255,111,0,0) 60%),
     radial-gradient(900px 420px at 92% 10%, rgba(255,193,7,.14) 0%, rgba(255,193,7,0) 62%),
-    linear-gradient(135deg, rgba(255,255,255,.10) 0%, rgba(255,255,255,.05) 65%, rgba(255,255,255,.03) 100%);
+    linear-gradient(135deg, rgba(255,255,255,.09) 0%, rgba(255,255,255,.05) 60%, rgba(255,255,255,.03) 100%);
   border: 1px solid rgba(255,255,255,0.12);
-  box-shadow: 0 18px 64px rgba(0,0,0,.34);
-  backdrop-filter: blur(14px);
-  margin: 6px 0 14px 0;
+  box-shadow: 0 18px 60px rgba(0,0,0,.34);
+  backdrop-filter: blur(16px);
 }
-.bps-pill{
-  display:inline-flex; align-items:center; gap:10px;
-  padding: 8px 12px; border-radius: 999px;
-  border: 1px solid rgba(255,255,255,0.14);
-  background: rgba(255,255,255,0.06);
-  font-weight: 800; letter-spacing: .12em; text-transform: uppercase;
-  font-size: .72rem;
-  color: rgba(255,193,7,.92);
+.bps-hero h1{
+  font-size: 2.05rem;
+  font-weight: 980;
+  margin: 0 0 8px 0;
+  color: #fff;
 }
-.bps-hero-title{
-  font-size: 2.05rem; font-weight: 950; letter-spacing: -0.03em;
-  margin: 10px 0 8px 0; color: rgba(255,255,255,.98);
+.bps-hero p{ margin:0; color: var(--muted); font-size: 1.02rem; line-height:1.55; }
+.bps-hero .cta-row{ display:flex; gap:10px; flex-wrap:wrap; margin-top:14px; }
+.bps-chip{
+  display:inline-flex; align-items:center; gap:8px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.10);
+  color: rgba(255,255,255,.86);
+  font-weight: 700;
+  font-size: .88rem;
 }
-.bps-hero-sub{
-  color: rgba(255,255,255,.72);
-  line-height: 1.55; font-size: 1.02rem; max-width: 58ch;
-}
-.bps-hero-right{ display:flex; flex-direction:column; gap:10px; min-width: 220px; }
-.bps-mini-stat{
-  border-radius: 18px; padding: 14px 16px;
-  border: 1px solid rgba(255,255,255,0.12);
-  background: rgba(255,255,255,0.06);
-  box-shadow: 0 10px 30px rgba(0,0,0,.28);
-}
-.bps-mini-label{ color: rgba(255,255,255,.65); font-weight: 700; font-size: .85rem; }
-.bps-mini-value{ font-weight: 950; font-size: 1.25rem; letter-spacing: -0.02em; }
 
-.bps-grid{ display: grid; grid-template-columns: 1fr; gap: 12px; }
-.bps-card{
-  border-radius: 20px;
-  padding: 16px 16px 14px 16px;
-  background: linear-gradient(180deg, rgba(255,255,255,0.085), rgba(255,255,255,0.045));
-  border: 1px solid rgba(255,255,255,0.12);
-  box-shadow: 0 14px 42px rgba(0,0,0,.32);
+/* ---- Metrics ---- */
+div[data-testid="metric-container"]{
+  background: linear-gradient(180deg, rgba(255,255,255,0.07), rgba(255,255,255,0.045));
+  border: 1px solid var(--border);
+  border-left: 6px solid rgba(255,111,0,.95);
+  border-radius: var(--r-lg);
+  padding: 14px 16px;
+  box-shadow: var(--shadow-sm);
   backdrop-filter: blur(14px);
   transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease;
-  margin-bottom: 10px;
 }
-.bps-card:hover{
+div[data-testid="metric-container"]:hover{
   transform: translateY(-2px);
   border-color: rgba(255,255,255,0.18);
-  box-shadow: 0 18px 70px rgba(0,0,0,.40);
+  box-shadow: var(--shadow-sm), var(--shadow-glow);
 }
-.bps-card-top{ display:flex; align-items:center; justify-content:space-between; margin-bottom: 10px; }
-.bps-card-icon{
-  width: 42px; height: 42px; border-radius: 14px;
-  display:flex; align-items:center; justify-content:center;
-  background: rgba(255,255,255,0.08);
-  border: 1px solid rgba(255,255,255,0.12);
-  font-size: 1.05rem;
+div[data-testid="metric-container"] label{
+  color: var(--muted) !important;
+  font-weight: 750;
+  letter-spacing: .2px;
 }
-.bps-card-tag{
-  padding: 6px 10px; border-radius: 999px;
-  background: rgba(255,193,7,.12);
-  border: 1px solid rgba(255,193,7,.22);
-  color: rgba(255,193,7,.95);
-  font-weight: 800; font-size: .75rem;
-}
-.bps-card-title{ font-weight: 950; font-size: 1.05rem; letter-spacing: -0.02em; margin-bottom: 6px; }
-.bps-card-desc{ color: rgba(255,255,255,.70); line-height: 1.5; }
+div[data-testid="metric-container"] [data-testid="stMetricValue"]{ font-weight: 950; }
 
-.stButton { margin-top: -8px; margin-bottom: 14px; }
-[data-testid="stDataFrame"] thead tr th{ background: rgba(255,255,255,0.06) !important; }
-
-
-/* ============================================================================
-   International polish (v2) — additive layer (keeps original styling)
-   ========================================================================== */
-
-/* Typography */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
-html, body, [class*="css"]  { font-family: "Inter", system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; }
-h1,h2,h3,h4 { letter-spacing: -0.02em; }
-h1 { font-weight: 900 !important; }
-h2,h3 { font-weight: 800 !important; }
-
-/* App background (subtle premium) */
-[data-testid="stAppViewContainer"]{
-  background:
-    radial-gradient(1000px 700px at 12% 6%, rgba(255,111,0,.18) 0%, rgba(255,111,0,0) 60%),
-    radial-gradient(900px 650px at 88% 10%, rgba(255,193,7,.10) 0%, rgba(255,193,7,0) 58%),
-    radial-gradient(900px 620px at 52% 100%, rgba(59,130,246,.10) 0%, rgba(59,130,246,0) 62%),
-    linear-gradient(160deg, #07080B 0%, #0B0D12 60%, #05060A 100%) !important;
-  background-attachment: fixed !important;
-  color: rgba(255,255,255,0.92) !important;
-}
-[data-testid="stHeader"]{ background: transparent !important; }
-
-/* Wider, cleaner spacing */
-.block-container{
-  padding-top: 1.05rem !important;
-  padding-bottom: 2.3rem !important;
-}
-.block-container::before{
-  content:"";
-  display:block;
-  height: 5px;
-  width: 100%;
-  border-radius: 999px;
-  margin: 2px 0 16px 0;
-  background: linear-gradient(90deg,
-    rgba(255,111,0,0) 0%,
-    rgba(255,111,0,.70) 26%,
-    rgba(255,193,7,.70) 54%,
-    rgba(255,111,0,.70) 82%,
-    rgba(255,111,0,0) 100%);
-  box-shadow: 0 10px 40px rgba(255,111,0,.12);
-}
-
-/* Streamlit bordered containers -> premium cards */
-div[data-testid="stVerticalBlockBorderWrapper"]{
-  border-radius: 20px !important;
-  border: 1px solid rgba(255,255,255,0.10) !important;
-  background: linear-gradient(180deg, rgba(255,255,255,0.07), rgba(255,255,255,0.045)) !important;
-  box-shadow: 0 14px 42px rgba(0,0,0,0.34);
+/* ---- Tabs ---- */
+.stTabs [data-baseweb="tab-list"]{
+  gap: 10px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border);
+  padding: 10px;
+  border-radius: var(--r-lg);
   backdrop-filter: blur(14px);
 }
-div[data-testid="stVerticalBlockBorderWrapper"]:hover{
-  border-color: rgba(255,255,255,0.16) !important;
-  box-shadow: 0 14px 42px rgba(0,0,0,0.34), 0 24px 86px rgba(255,111,0,0.10);
-  transform: translateY(-1px);
+.stTabs [data-baseweb="tab"]{
+  height: 46px;
+  border-radius: 14px;
+  padding: 0 16px;
+  background: rgba(255,255,255,0.03);
+  color: rgba(255,255,255,.78);
+}
+.stTabs [aria-selected="true"]{
+  background: linear-gradient(135deg, rgba(255,111,0,.92) 0%, rgba(255,193,7,.88) 100%) !important;
+  color: #101113 !important;
+  font-weight: 950;
+  box-shadow: 0 18px 54px rgba(255,111,0,.20);
 }
 
-/* Inputs */
-div[data-baseweb="input"] input,
-div[data-baseweb="select"] > div{
-  border-radius: 14px !important;
-}
-div[data-baseweb="input"], div[data-baseweb="select"] > div{
-  background: rgba(255,255,255,.05) !important;
-  border: 1px solid rgba(255,255,255,.10) !important;
-}
-div[data-baseweb="input"]:focus-within,
-div[data-baseweb="select"]:focus-within > div{
-  box-shadow: 0 0 0 4px rgba(255,111,0,0.18) !important;
-  border-color: rgba(255,111,0,.35) !important;
-}
-
-/* Buttons (keep your orange identity but more premium) */
-.stButton > button, div[data-testid="stDownloadButton"] button{
+/* ---- Buttons ---- */
+div[data-testid="stDownloadButton"] button,
+.stButton > button{
   border-radius: 14px !important;
   border: 1px solid rgba(255,255,255,.10) !important;
   background: linear-gradient(135deg, rgba(255,111,0,.92) 0%, rgba(255,193,7,.88) 100%) !important;
   color: #101113 !important;
-  font-weight: 900 !important;
+  font-weight: 950 !important;
   height: 48px !important;
   box-shadow: 0 16px 44px rgba(255,111,0,.18);
   transition: transform .15s ease, box-shadow .15s ease, filter .15s ease;
 }
-.stButton > button:hover, div[data-testid="stDownloadButton"] button:hover{
+div[data-testid="stDownloadButton"] button:hover,
+.stButton > button:hover{
   transform: translateY(-1px);
   filter: brightness(1.04);
   box-shadow: 0 22px 64px rgba(255,111,0,.24);
@@ -481,77 +541,141 @@ div[data-baseweb="select"]:focus-within > div{
 button[kind="secondary"]{
   background: rgba(255,255,255,.08) !important;
   border: 1px solid rgba(255,255,255,.14) !important;
-  color: rgba(255,255,255,.90) !important;
+  color: rgba(255,255,255,.92) !important;
 }
 
-/* Sidebar: premium navigation pills */
+/* ---- Inputs ---- */
+div[data-baseweb="input"] input,
+div[data-baseweb="select"] > div{
+  border-radius: 14px !important;
+}
+div[data-baseweb="input"]{
+  background: rgba(255,255,255,.05) !important;
+  border-radius: 14px !important;
+  border: 1px solid rgba(255,255,255,.10) !important;
+}
+div[data-baseweb="input"]:focus-within{
+  box-shadow: var(--ring) !important;
+  border-color: rgba(255,111,0,.35) !important;
+}
+div[data-baseweb="select"] > div{
+  background: rgba(255,255,255,.05) !important;
+  border: 1px solid rgba(255,255,255,.10) !important;
+}
+div[data-baseweb="select"]:focus-within > div{
+  box-shadow: var(--ring) !important;
+  border-color: rgba(255,111,0,.35) !important;
+}
+
+/* ---- Dataframe ---- */
+[data-testid="stDataFrame"]{
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.12);
+  box-shadow: var(--shadow-sm);
+}
+
+/* ---- Expanders ---- */
+details{
+  background: rgba(255,255,255,.045);
+  border: 1px solid rgba(255,255,255,.10);
+  border-radius: var(--r-lg);
+  padding: 6px 10px;
+}
+details[open]{ box-shadow: var(--shadow-sm); }
+
+/* ---- Sidebar (major polish) ---- */
 [data-testid="stSidebar"]{
   background:
-    radial-gradient(600px 420px at 22% 6%, rgba(255,111,0,.16) 0%, rgba(255,111,0,0) 62%),
+    radial-gradient(600px 460px at 25% 10%, rgba(255,111,0,.16) 0%, rgba(255,111,0,0) 62%),
     linear-gradient(180deg, rgba(13,15,20,.98) 0%, rgba(9,10,14,.99) 100%) !important;
   border-right: 1px solid rgba(255,255,255,0.10);
   box-shadow: 14px 0 46px rgba(0,0,0,.44);
 }
-[data-testid="stSidebar"] *{ color: rgba(255,255,255,0.92) !important; }
+[data-testid="stSidebar"] *{ color: rgba(255,255,255,.92) !important; }
+[data-testid="stSidebar"] .stMarkdown p{ color: rgba(255,255,255,.74) !important; }
+[data-testid="stSidebar"] hr{ border-color: rgba(255,255,255,.10) !important; }
 
-/* Radio group (nav) */
-[data-testid="stSidebar"] .stRadio div[role="radiogroup"]{
+/* Radio menu -> pill navigation */
+[data-testid="stSidebar"] div[role="radiogroup"]{
   gap: 10px;
 }
-[data-testid="stSidebar"] .stRadio div[role="radiogroup"] > label{
-  border: 1px solid rgba(255,255,255,0.10);
-  background: rgba(255,255,255,0.04);
+[data-testid="stSidebar"] div[role="radiogroup"] label{
   border-radius: 14px;
-  padding: 10px 12px;
-  transition: transform .12s ease, background .12s ease, border-color .12s ease, box-shadow .12s ease;
-  margin: 0 !important;
-}
-[data-testid="stSidebar"] .stRadio div[role="radiogroup"] > label:hover{
-  transform: translateY(-1px);
-  border-color: rgba(255,255,255,0.16);
-  background: rgba(255,255,255,0.06);
-  box-shadow: 0 10px 28px rgba(0,0,0,0.26);
-}
-[data-testid="stSidebar"] .stRadio div[role="radiogroup"] > label[data-checked="true"]{
-  background: linear-gradient(135deg, rgba(255,111,0,.22) 0%, rgba(255,193,7,.14) 100%);
-  border-color: rgba(255,111,0,.35);
-  box-shadow: 0 12px 38px rgba(255,111,0,0.14);
-}
-[data-testid="stSidebar"] .stRadio div[role="radiogroup"] > label p{
-  font-weight: 800;
-  margin: 0 !important;
-}
-
-/* Tables & dataframes */
-[data-testid="stDataFrame"]{
-  border-radius: 16px;
-  overflow: hidden;
-  border: 1px solid rgba(255,255,255,0.12);
-  box-shadow: 0 10px 28px rgba(0,0,0,0.26);
-}
-[data-testid="stDataFrame"] thead tr th{
-  background: rgba(255,255,255,0.06) !important;
-}
-
-/* Expanders */
-details{
-  background: rgba(255,255,255,.045);
   border: 1px solid rgba(255,255,255,.10);
-  border-radius: 16px;
-  padding: 6px 10px;
+  background: rgba(255,255,255,.05);
+  padding: 10px 12px;
+  transition: transform .14s ease, border-color .14s ease, box-shadow .14s ease, background .14s ease;
 }
-details[open]{ box-shadow: 0 10px 26px rgba(0,0,0,0.22); }
+[data-testid="stSidebar"] div[role="radiogroup"] label:hover{
+  transform: translateY(-1px);
+  border-color: rgba(255,255,255,.18);
+  background: rgba(255,255,255,.07);
+  box-shadow: 0 16px 38px rgba(0,0,0,.26);
+}
+[data-testid="stSidebar"] div[role="radiogroup"] label:has(input:checked){
+  background: linear-gradient(135deg, rgba(255,111,0,.95) 0%, rgba(255,193,7,.88) 100%);
+  border-color: rgba(255,255,255,.12);
+  box-shadow: 0 18px 54px rgba(255,111,0,.18);
+}
+[data-testid="stSidebar"] div[role="radiogroup"] label:has(input:checked) p{
+  color: #101113 !important;
+  font-weight: 950 !important;
+}
 
-/* Motion (respect user settings) */
-@media (prefers-reduced-motion: reduce){
-  *{ transition: none !important; animation: none !important; }
+/* ---- Link ---- */
+a{ color: rgba(255,193,7,.95) !important; }
+a:hover{ color: rgba(255,193,7,1) !important; }
+
+/* ---- Splash screen polish (keep) ---- */
+.splash-wrap{
+  border-radius: 26px;
+  padding: 26px 28px;
+  margin: 8px 0 10px 0;
+  background:
+    radial-gradient(900px 380px at 12% 0%, rgba(255,111,0,.24) 0%, rgba(255,111,0,0) 62%),
+    radial-gradient(900px 380px at 88% 8%, rgba(255,193,7,.14) 0%, rgba(255,193,7,0) 62%),
+    linear-gradient(135deg, rgba(255,255,255,.09) 0%, rgba(255,255,255,.05) 60%, rgba(255,255,255,.03) 100%);
+  border: 1px solid rgba(255,255,255,0.12);
+  box-shadow: 0 20px 70px rgba(0,0,0,.36);
+  backdrop-filter: blur(16px);
+}
+.splash-kicker{
+  display:inline-flex; align-items:center; gap:8px;
+  font-weight: 900;
+  font-size: .78rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(255,193,7,.92);
+  margin-bottom: 10px;
+}
+.splash-title{
+  font-size: 2.0rem;
+  font-weight: 980;
+  margin: 0 0 8px 0;
+  color:#fff;
+}
+.splash-sub{
+  margin: 0;
+  color: rgba(255,255,255,.70);
+  font-size: 1.02rem;
+  line-height: 1.55;
+}
+.splash-row{ display:flex; gap:10px; flex-wrap:wrap; margin-top: 14px; }
+.splash-pill{
+  display:inline-flex; align-items:center; gap:8px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.10);
+  color: rgba(255,255,255,.86);
+  font-weight: 750;
+  font-size: .88rem;
 }
 </style>
 """,
     unsafe_allow_html=True,
 )
-
-
 # ======================================================================================
 # SESSION STATE
 # ======================================================================================
@@ -1060,6 +1184,7 @@ with st.sidebar:
 # PAGE: SHOPEE
 # ======================================================================================
 if menu == "🟠 Shopee":
+    section_header("Shopee Marketplace", "Analisis & ekstraksi data Shopee dengan tampilan rapih dan konsisten.", "MARKETPLACE")
     banner("Dashboard UMKM — Shopee", "Ekstraksi data UMKM dari Shopee Marketplace (Bangka Belitung)")
 
     with st.container(border=True):
@@ -1299,6 +1424,7 @@ if menu == "🟠 Shopee":
 # PAGE: TOKOPEDIA
 # ======================================================================================
 elif menu == "🟢 Tokopedia":
+    section_header("Tokopedia Marketplace", "Workflow Tokopedia dengan UI enterprise dan feedback yang jelas.", "MARKETPLACE")
     banner("Dashboard UMKM — Tokopedia", "Ekstraksi data UMKM dari Tokopedia (Bangka Belitung)")
 
     with st.container(border=True):
@@ -1490,6 +1616,7 @@ elif menu == "🟢 Tokopedia":
 # PAGE: FACEBOOK
 # ======================================================================================
 elif menu == "🔵 Facebook":
+    section_header("Facebook Marketplace", "Scraping/olah data Facebook Marketplace dengan panel kontrol yang clean.", "MARKETPLACE")
     banner("Dashboard UMKM — Facebook Marketplace", "Ekstraksi data UMKM dari Facebook Marketplace (Bangka Belitung)")
 
     with st.container(border=True):
@@ -1669,6 +1796,7 @@ elif menu == "🔵 Facebook":
 # PAGE: GOOGLE MAPS
 # ======================================================================================
 elif menu == "📍 Google Maps":
+    section_header("Google Maps", "Pencarian lokasi & visualisasi peta dengan tampilan modern.", "LOCATION")
     banner("Dashboard UMKM — Google Maps", "Upload CSV hasil ekstensi → auto-clean → REAL MAP (Folium) + export Excel/CSV")
 
     with st.container(border=True):
@@ -1761,6 +1889,7 @@ elif menu == "📍 Google Maps":
 # PAGE: EXPORT MASTER
 # ======================================================================================
 elif menu == "📊 Export Gabungan":
+    section_header("Export Gabungan", "Satukan data lintas platform lalu unduh dalam format rapi.", "EXPORT")
     banner("Export Master Data Gabungan", "Konsolidasi (Shopee, Tokopedia, Facebook, Google Maps) → 1 Excel, sheet terpisah")
 
     df_shp_ready = st.session_state.data_shopee is not None and not st.session_state.data_shopee.empty
@@ -1815,4 +1944,22 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
+
+
+
+def section_header(title: str, subtitle: str = "", badge: str = "MODULE"):
+    """Premium section header (international look)."""
+    st.markdown(
+        f"""
+<div class="bps-section">
+  <div class="left">
+    <div class="bps-badge">{badge}</div>
+    <h2 class="bps-h">{title}</h2>
+    {f'<p class="bps-sub">{subtitle}</p>' if subtitle else ''}
+    <div class="bps-divider"></div>
+  </div>
+</div>
+""",
+        unsafe_allow_html=True,
+    )
 
