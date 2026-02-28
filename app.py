@@ -829,8 +829,8 @@ def render_real_map_folium(df_maps: pd.DataFrame, height: int = 600):
 # ======================================================================================
 with st.sidebar:
     st.markdown(f"<div class='sidebar-title'>{APP_ICON} {APP_TITLE}</div>", unsafe_allow_html=True)
-    st.markdown("<div class='sidebar-sub'>Dashboard UMKM Babel — tampilannya niat 🔥</div>", unsafe_allow_html=True)
-    st.markdown("<div class='sidebar-chip'>✨ Cakep • 📦 Export gampang • 🗺️ Map interaktif</div>", unsafe_allow_html=True)
+    st.markdown("<div class='sidebar-sub'>Premium dashboard • UMKM Bangka Belitung</div>", unsafe_allow_html=True)
+    st.markdown("<div class='sidebar-chip'>✨ UI Modern • 📦 Export Rapi • 🗺️ Map Interaktif</div>", unsafe_allow_html=True)
     st.divider()
 
     if os.path.exists("logo.png"):
@@ -854,8 +854,8 @@ with st.sidebar:
 # ======================================================================================
 if menu == "⭐ Executive Summary":
     hero(
-        "Executive Summary — UMKM Babel",
-        "Ringkasan paling penting dari semua sumber (Shopee, Tokopedia, Facebook, Google Maps). Enak dibaca, enak dipresentasiin.",
+        "Executive Summary — UMKM Bangka Belitung",
+        "Ringkasan strategis lintas sumber data (Shopee, Tokopedia, Facebook, Google Maps). Siap untuk pimpinan.",
         badges=["Narasi otomatis", "Top wilayah", "KPI ringkas", "Export Master"]
     )
 
@@ -872,7 +872,7 @@ if menu == "⭐ Executive Summary":
     c4.metric("📍 Google Maps", fmt_int_id(len(mp)) if isinstance(mp, pd.DataFrame) else "0")
 
     with st.container(border=True):
-        section("🧠 Insight Otomatis", "Kalimat ringkas yang bisa langsung kamu pakai (buat laporan, WA grup, atau slide).")
+        section("🧠 Insight Otomatis", "Kalimat siap copy-paste ke laporan / slide.")
         colA, colB = st.columns(2, gap="large")
 
         with colA:
@@ -919,13 +919,13 @@ if menu == "⭐ Executive Summary":
         section("📌 Aksi Cepat", "Export master + audit ringkas.")
         a1, a2, a3 = st.columns([1.3, 1.2, 1.5])
         with a1:
-            st.markdown("<div class='small-muted'>Kalau mau file gabungan, tinggal buka menu **Export Gabungan** — sekali klik beres.</div>", unsafe_allow_html=True)
-            st.markdown("Tips cepat: buat presentasi, cukup ambil screenshot **KPI** + **Top Wilayah** (udah cakep).")
+            st.markdown("<div class='small-muted'>Kamu bisa export master di menu Export Gabungan.</div>", unsafe_allow_html=True)
+            st.markdown("✅ **Saran**: untuk presentasi, gunakan screenshot KPI + chart Top Wilayah.")
         with a2:
-            st.markdown("<div class='small-muted'>Kalau mau naik level lagi:</div>", unsafe_allow_html=True)
+            st.markdown("<div class='small-muted'>Biar lebih mantap:</div>", unsafe_allow_html=True)
             st.markdown("- Tambah boundary Babel (GeoJSON)\n- PDF report otomatis\n- Dedup lintas platform")
         with a3:
-            st.info("Kalau peta nge-blank/403, coba ganti provider ke **OpenStreetMap**. Kalau masih bandel, pakai **Mode Aman** (fallback).")
+            st.info("Kalau map kamu masih kena 403, pakai Provider 'OpenStreetMap' atau hidupkan Mode Aman.")
 
 
 # ======================================================================================
