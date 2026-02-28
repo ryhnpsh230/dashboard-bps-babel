@@ -6,10 +6,14 @@ import requests
 import datetime
 import os
 import time
-import numpy as np
 from urllib.parse import urlparse
 
 import plotly.express as px
+
+import folium
+from folium.plugins import MarkerCluster
+from streamlit_folium import st_folium
+
 
 # ======================================================================================
 # CONFIG
@@ -22,7 +26,6 @@ BPS_AMBER = "#FFC107"
 BPS_DARK = "#0b0b0c"
 BPS_PAPER = "rgba(0,0,0,0)"
 
-# Palette plotly (tetap)
 BPS_PALETTE = ["#FF6F00", "#FFA000", "#FFB300", "#FFC107", "#263238", "#37474F", "#455A64"]
 
 BABEL_KEYS = [
@@ -32,6 +35,7 @@ BABEL_KEYS = [
 
 PLACEHOLDER = "Pemilik tidak mencantumkan"
 PHONE_EMPTY = "Pemilik belum meletakkan nomor"
+
 
 # ======================================================================================
 # PAGE SETUP
@@ -43,11 +47,9 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# ======================================================================================
-# PLOTLY DEFAULT THEME (biar chart konsisten + modern)
-# ======================================================================================
 px.defaults.template = "plotly_dark"
 px.defaults.color_discrete_sequence = BPS_PALETTE
+
 
 # ======================================================================================
 # THEME / CSS (Orange-heavy modern glass)
@@ -101,10 +103,6 @@ st.markdown(
 [data-testid="stSidebar"] * {{
     color: #f3f3f3 !important;
 }}
-/* Sidebar title highlight */
-[data-testid="stSidebar"] h3, [data-testid="stSidebar"] h2 {{
-    text-shadow: 0 10px 30px rgba(255,111,0,.18);
-}}
 
 /* -------------------- Cards (containers) -------------------- */
 div[data-testid="stVerticalBlockBorderWrapper"] {{
@@ -117,7 +115,6 @@ div[data-testid="stVerticalBlockBorderWrapper"] {{
       0 0 0 1px rgba(255,111,0,.07) inset;
     backdrop-filter: blur(12px);
 }}
-/* Subtle hover */
 div[data-testid="stVerticalBlockBorderWrapper"]:hover {{
     border-color: rgba(255,193,7,.48) !important;
     box-shadow:
@@ -233,10 +230,6 @@ button[kind="secondary"] {{
     color: #f2f2f2 !important;
 }}
 
-/* -------------------- Inputs -------------------- */
-input, textarea {{
-    border-radius: 14px !important;
-}}
 /* -------------------- Dataframe -------------------- */
 [data-testid="stDataFrame"] {{
     border-radius: 16px;
@@ -247,6 +240,7 @@ input, textarea {{
 """,
     unsafe_allow_html=True,
 )
+
 
 # ======================================================================================
 # SESSION STATE
@@ -263,6 +257,7 @@ def ensure_state():
             st.session_state[k] = v
 
 ensure_state()
+
 
 # ======================================================================================
 # HELPERS (UI)
@@ -290,6 +285,7 @@ def safe_title(x: str) -> str:
         return ""
     s = str(x).strip()
     return s[:1].upper() + s[1:] if s else s
+
 
 # ======================================================================================
 # HELPERS (CLEANERS)
@@ -360,6 +356,7 @@ def to_float_safe(x: str):
     except Exception:
         return None
 
+
 # ======================================================================================
 # BUSINESS LOGIC
 # ======================================================================================
@@ -382,10 +379,6 @@ def deteksi_tipe_usaha(nama_toko):
     return "Murni Online (Rumahan)"
 
 def clean_maps_dataframe(df_raw: pd.DataFrame) -> (pd.DataFrame, dict):
-    """
-    Expected columns from extension:
-    foto_url,nama_usaha,alamat,no_telepon,latitude,longitude,link
-    """
     audit = {
         "rows_in": 0,
         "rows_out": 0,
@@ -475,9 +468,6 @@ def clean_maps_dataframe(df_raw: pd.DataFrame) -> (pd.DataFrame, dict):
     return df_out, audit
 
 def df_to_excel_bytes(sheets: dict) -> bytes:
-    """
-    sheets: {sheet_name: dataframe}
-    """
     buf = io.BytesIO()
     with pd.ExcelWriter(buf, engine="xlsxwriter") as writer:
         wb = writer.book
@@ -524,167 +514,109 @@ def is_in_babel(wilayah: str) -> bool:
     s = (wilayah or "").lower()
     return any(k in s for k in BABEL_KEYS)
 
+
 # ======================================================================================
-# MAP HELPERS (anti-403)
+# REAL MAP (FOLIUM) + FALLBACK SAFE (NO TILE)
 # ======================================================================================
-def _decorate_points(df_plot: pd.DataFrame) -> pd.DataFrame:
-    df_plot = df_plot.copy()
-
-    # ensure columns
-    for col in ["Nama Usaha", "Alamat", "No Telepon", "Link"]:
-        if col not in df_plot.columns:
-            df_plot[col] = ""
-
-    df_plot["has_phone"] = df_plot["No Telepon"].astype(str).fillna("").str.strip().str.len() > 0
-    df_plot["has_link"] = df_plot["Link"].astype(str).fillna("").str.strip().str.len() > 0
-
-    def quality(row):
-        if row["has_phone"] and row["has_link"]:
-            return "Lengkap (Telp+Link)"
-        if row["has_phone"]:
-            return "Ada Telp"
-        if row["has_link"]:
-            return "Ada Link"
-        return "Minimal"
-
-    df_plot["quality"] = df_plot.apply(quality, axis=1)
-
-    df_plot["marker_size"] = 10
-    df_plot.loc[df_plot["has_link"], "marker_size"] = 12
-    df_plot.loc[df_plot["has_phone"], "marker_size"] = 14
-    df_plot.loc[df_plot["has_phone"] & df_plot["has_link"], "marker_size"] = 16
-
-    return df_plot
-
-def build_map_safe_no_tiles(df_maps: pd.DataFrame):
-    """
-    100% aman: tidak pakai tile eksternal -> tidak kena 403.
+def render_real_map_folium(df_maps: pd.DataFrame, height: int = 560):
+    """Real map (Leaflet/Folium). Jika tile diblok (403), user bisa ganti provider.
+    Kalau tetap gagal, otomatis fallback ke peta aman (tanpa tile) via scatter_geo.
     """
     df_plot = df_maps.dropna(subset=["Latitude", "Longitude"]).copy()
     df_plot = df_plot[(df_plot["Latitude"].between(-90, 90)) & (df_plot["Longitude"].between(-180, 180))].copy()
     if df_plot.empty:
-        return None
+        st.info("Tidak ada koordinat valid untuk ditampilkan.")
+        return
 
-    df_plot = _decorate_points(df_plot)
-
-    fig = px.scatter_geo(
-        df_plot,
-        lat="Latitude",
-        lon="Longitude",
-        color="quality",
-        size="marker_size",
-        size_max=18,
-        hover_name="Nama Usaha",
-        hover_data={
-            "Alamat": True,
-            "No Telepon": True,
-            "Link": True,
-            "Latitude": ":.6f",
-            "Longitude": ":.6f",
-            "quality": True,
-            "marker_size": False,
-            "has_phone": False,
-            "has_link": False,
-        },
-        projection="natural earth",
-        height=560,
+    tile_choice = st.selectbox(
+        "🗺️ Provider Peta (kalau blank/403, ganti ini)",
+        [
+            "CartoDB DarkMatter (recommended)",
+            "CartoDB Positron",
+            "OpenStreetMap",
+            "Stamen Terrain",
+        ],
+        index=0,
+        key="maps_tile_provider",
     )
 
-    # zoom ke area data
-    lat_min, lat_max = float(df_plot["Latitude"].min()), float(df_plot["Latitude"].max())
-    lon_min, lon_max = float(df_plot["Longitude"].min()), float(df_plot["Longitude"].max())
-    lat_pad = max((lat_max - lat_min) * 0.25, 0.2)
-    lon_pad = max((lon_max - lon_min) * 0.25, 0.2)
+    tiles_map = {
+        "OpenStreetMap": "OpenStreetMap",
+        "CartoDB Positron": "CartoDB positron",
+        "CartoDB DarkMatter (recommended)": "CartoDB dark_matter",
+        "Stamen Terrain": "Stamen Terrain",
+    }
 
-    fig.update_geos(
-        lataxis_range=[lat_min - lat_pad, lat_max + lat_pad],
-        lonaxis_range=[lon_min - lon_pad, lon_max + lon_pad],
-        showland=True,
-        showocean=True,
-        showlakes=True,
-        showcountries=False,
-        showcoastlines=True,
-        showframe=False,
-        bgcolor="rgba(0,0,0,0)",
-    )
+    center_lat = float(df_plot["Latitude"].mean())
+    center_lon = float(df_plot["Longitude"].mean())
 
-    fig.update_layout(
-        margin=dict(l=0, r=0, t=0, b=0),
-        paper_bgcolor=BPS_PAPER,
-        plot_bgcolor=BPS_PAPER,
-        font=dict(color="white"),
-        legend=dict(
-            title="Kualitas Data",
-            bgcolor="rgba(0,0,0,0.35)",
-            bordercolor="rgba(255,255,255,0.15)",
-            borderwidth=1,
-            yanchor="top",
-            y=0.98,
-            xanchor="left",
-            x=0.02,
-        ),
-    )
+    try:
+        m = folium.Map(
+            location=[center_lat, center_lon],
+            zoom_start=11,
+            tiles=tiles_map.get(tile_choice, "CartoDB dark_matter"),
+            control_scale=True,
+        )
 
-    fig.update_traces(marker=dict(opacity=0.92, line=dict(width=1)))
-    return fig
+        cluster = MarkerCluster(name="UMKM").add_to(m)
 
-def build_map_tiles_optional(df_maps: pd.DataFrame, style: str = "carto-darkmatter"):
-    """
-    Mode tile (lebih realistis), tapi bisa kena 403 tergantung jaringan.
-    """
-    df_plot = df_maps.dropna(subset=["Latitude", "Longitude"]).copy()
-    df_plot = df_plot[(df_plot["Latitude"].between(-90, 90)) & (df_plot["Longitude"].between(-180, 180))].copy()
-    if df_plot.empty:
-        return None
+        def safe_html(s):
+            return "" if s is None else str(s).replace("<", "&lt;").replace(">", "&gt;")
 
-    df_plot = _decorate_points(df_plot)
+        for _, r in df_plot.iterrows():
+            nama = safe_html(r.get("Nama Usaha", ""))
+            alamat = safe_html(r.get("Alamat", ""))
+            telp = safe_html(r.get("No Telepon", ""))
+            link = safe_html(r.get("Link", ""))
 
-    lat_min, lat_max = float(df_plot["Latitude"].min()), float(df_plot["Latitude"].max())
-    lon_min, lon_max = float(df_plot["Longitude"].min()), float(df_plot["Longitude"].max())
-    lat_span = max(lat_max - lat_min, 0.01)
-    lon_span = max(lon_max - lon_min, 0.01)
-    lat_pad = max(lat_span * 0.15, 0.02)
-    lon_pad = max(lon_span * 0.15, 0.02)
+            link_html = f'<a href="{link}" target="_blank">Buka Link</a>' if link else "-"
 
-    fig = px.scatter_mapbox(
-        df_plot,
-        lat="Latitude",
-        lon="Longitude",
-        hover_name="Nama Usaha",
-        hover_data={"Alamat": True, "No Telepon": True, "Link": True, "quality": True},
-        color="quality",
-        size="marker_size",
-        size_max=18,
-        height=560,
-    )
+            popup = f"""
+            <div style="width:260px;">
+              <div style="font-weight:800; font-size:14px; margin-bottom:6px;">{nama}</div>
+              <div style="font-size:12px; opacity:.92;">{alamat}</div>
+              <hr style="border:none;border-top:1px solid rgba(255,111,0,.25); margin:8px 0;">
+              <div style="font-size:12px;">☎️ {telp if telp else "-"}</div>
+              <div style="font-size:12px; margin-top:4px;">🔗 {link_html}</div>
+            </div>
+            """
 
-    fig.update_layout(
-        mapbox_style=style,  # carto-darkmatter / carto-positron / open-street-map
-        margin=dict(l=0, r=0, t=0, b=0),
-        paper_bgcolor=BPS_PAPER,
-        plot_bgcolor=BPS_PAPER,
-        font=dict(color="white"),
-        legend=dict(
-            title="Kualitas Data",
-            bgcolor="rgba(0,0,0,0.35)",
-            bordercolor="rgba(255,255,255,0.15)",
-            borderwidth=1,
-            yanchor="top",
-            y=0.98,
-            xanchor="left",
-            x=0.02,
-        ),
-        mapbox=dict(
-            bounds=dict(
-                west=lon_min - lon_pad,
-                east=lon_max + lon_pad,
-                south=lat_min - lat_pad,
-                north=lat_max + lat_pad,
-            )
-        ),
-    )
-    fig.update_traces(marker=dict(opacity=0.92, line=dict(width=1)))
-    return fig
+            folium.CircleMarker(
+                location=[float(r["Latitude"]), float(r["Longitude"])],
+                radius=7,
+                weight=2,
+                color="#FF6F00",
+                fill=True,
+                fill_color="#FF6F00",
+                fill_opacity=0.85,
+                popup=folium.Popup(popup, max_width=340),
+            ).add_to(cluster)
+
+        folium.LayerControl(collapsed=True).add_to(m)
+
+        st_folium(m, width=None, height=height)
+        st.caption("Jika peta tidak tampil (tile diblok), coba ganti Provider Peta di atas.")
+        return
+
+    except Exception:
+        st.warning("Provider tile diblok/403. Menampilkan peta aman (tanpa tile) sebagai fallback.")
+        fig = px.scatter_geo(
+            df_plot,
+            lat="Latitude",
+            lon="Longitude",
+            hover_name="Nama Usaha",
+            hover_data={"Alamat": True, "No Telepon": True, "Link": True, "Latitude": ":.6f", "Longitude": ":.6f"},
+            projection="mercator",
+            height=height,
+        )
+        fig.update_layout(
+            margin=dict(l=0, r=0, t=0, b=0),
+            paper_bgcolor=BPS_PAPER,
+            plot_bgcolor=BPS_PAPER,
+            font=dict(color="white"),
+        )
+        st.plotly_chart(fig, use_container_width=True)
+
 
 # ======================================================================================
 # SIDEBAR
@@ -707,6 +639,7 @@ with st.sidebar:
     with st.expander("⚙️ Pengaturan Umum", expanded=False):
         st.checkbox("Tampilkan tips cepat", value=True, key="show_tips")
         st.checkbox("Mode cepat (kurangi rendering chart besar)", value=False, key="fast_mode")
+
 
 # ======================================================================================
 # PAGE: SHOPEE
@@ -946,6 +879,7 @@ if menu == "🟠 Shopee":
             st.warning(f"⚠️ Error parsing harga: **{fmt_int_id(a.get('error_harga', 0))}**")
             st.caption(f"API calls: {fmt_int_id(a.get('api_calls', 0))}")
 
+
 # ======================================================================================
 # PAGE: TOKOPEDIA
 # ======================================================================================
@@ -1136,6 +1070,7 @@ elif menu == "🟢 Tokopedia":
             st.warning(f"⚠️ Diabaikan (luar wilayah): **{fmt_int_id(a.get('luar_wilayah', 0))}**")
             st.warning(f"⚠️ Error parsing harga: **{fmt_int_id(a.get('error_harga', 0))}**")
 
+
 # ======================================================================================
 # PAGE: FACEBOOK
 # ======================================================================================
@@ -1314,39 +1249,24 @@ elif menu == "🔵 Facebook":
             st.warning(f"⚠️ Diabaikan (luar wilayah): **{fmt_int_id(a.get('luar_wilayah', 0))}**")
             st.warning(f"⚠️ Error parsing harga: **{fmt_int_id(a.get('error_harga', 0))}**")
 
+
 # ======================================================================================
-# PAGE: GOOGLE MAPS (FIX TOTAL - NO TILE - NO 403)
+# PAGE: GOOGLE MAPS
 # ======================================================================================
 elif menu == "📍 Google Maps":
-    banner(
-        "Dashboard UMKM — Google Maps",
-        "Upload CSV hasil ekstensi → auto-clean → peta stabil (tanpa tile server)"
-    )
+    banner("Dashboard UMKM — Google Maps", "Upload CSV hasil ekstensi → auto-clean → REAL MAP (Folium) + export Excel/CSV")
 
     with st.container(border=True):
         col1, col2 = st.columns([1.15, 0.85], gap="large")
-
         with col1:
-            files = st.file_uploader(
-                "Unggah CSV Google Maps",
-                type=["csv"],
-                accept_multiple_files=True,
-                key="file_maps"
-            )
-
-            run = st.button(
-                "🚀 Proses Data Google Maps",
-                type="primary",
-                use_container_width=True
-            )
+            files = st.file_uploader("Unggah CSV Google Maps", type=["csv"], accept_multiple_files=True, key="file_maps")
+            do_clean = st.toggle("✨ Auto-clean (disarankan)", value=True, key="clean_maps")
+            run = st.button("🚀 Proses Data Google Maps", type="primary", use_container_width=True)
 
         with col2:
             st.subheader("🧾 Format Kolom (disarankan)")
-            st.code(
-                "foto_url, nama_usaha, alamat, no_telepon, latitude, longitude, link",
-                language="text"
-            )
-            st.caption("Sistem tetap toleran jika nama kolom berbeda.")
+            st.code("foto_url, nama_usaha, alamat, no_telepon, latitude, longitude, link", language="text")
+            st.caption("Kalau beda nama kolom, sistem tetap coba map otomatis (toleran).")
 
     if run:
         if not files:
@@ -1354,118 +1274,73 @@ elif menu == "📍 Google Maps":
         else:
             with st.status("Memproses data Google Maps…", expanded=True) as status:
                 try:
-                    df_raw, _ = read_csv_files(files)
+                    df_raw, total_rows = read_csv_files(files)
                     df_clean, audit = clean_maps_dataframe(df_raw)
 
                     st.session_state.data_maps = df_clean
-                    st.session_state.audit_maps = audit
+                    st.session_state.audit_maps = {
+                        "file_count": len(files),
+                        "rows_in": audit.get("rows_in", 0),
+                        "rows_out": audit.get("rows_out", 0),
+                        "dedup_removed": audit.get("dedup_removed", 0),
+                        "invalid_coord": audit.get("invalid_coord", 0),
+                        "invalid_link": audit.get("invalid_link", 0),
+                        "empty_name": audit.get("empty_name", 0),
+                        "missing_cols": audit.get("missing_cols", []),
+                    }
 
                     status.update(label="✅ Selesai memproses Google Maps", state="complete", expanded=False)
-                    st.toast(f"{len(df_clean)} data berhasil diproses", icon="✅")
+                    st.toast(f"Google Maps: {fmt_int_id(len(df_clean))} baris siap dianalisis", icon="✅")
 
                 except Exception as e:
                     status.update(label="❌ Gagal memproses Google Maps", state="error", expanded=True)
-                    st.exception(e)
+                    st.error(f"Error Sistem Google Maps: {e}")
 
     df_maps = st.session_state.data_maps
-
     if df_maps is not None and not df_maps.empty:
-
-        tab1, tab2, tab3 = st.tabs(["📊 Dashboard", "🧹 Data Bersih", "📑 Audit"])
-
-        # ================= DASHBOARD =================
+        tab1, tab2, tab3 = st.tabs(["📊 Executive Dashboard", "🧹 Data Bersih", "📑 Audit"])
         with tab1:
             m1, m2, m3, m4 = st.columns(4)
             m1.metric("📌 Total Data", fmt_int_id(len(df_maps)))
             m2.metric("📍 Koordinat Valid", fmt_int_id(df_maps["Latitude"].notna().sum()))
-            m3.metric("☎️ No Telp Valid", fmt_int_id((df_maps["No Telepon"] != "").sum()))
-            m4.metric("🔗 Link Valid", fmt_int_id((df_maps["Link"] != "").sum()))
+            m3.metric("🔗 Link Valid", fmt_int_id((df_maps["Link"].astype(str).str.len() > 0).sum()))
+            m4.metric("☎️ No Telp Valid", fmt_int_id((df_maps["No Telepon"].astype(str).str.len() > 0).sum()))
 
-            df_plot = df_maps.dropna(subset=["Latitude", "Longitude"]).copy()
+            if not st.session_state.get("fast_mode"):
+                render_real_map_folium(df_maps, height=560)
 
-            if df_plot.empty:
-                st.info("Tidak ada koordinat valid untuk ditampilkan.")
-            else:
-                # Quality grouping
-                df_plot["quality"] = np.where(
-                    (df_plot["No Telepon"] != "") & (df_plot["Link"] != ""),
-                    "Lengkap",
-                    np.where(df_plot["No Telepon"] != "", "Ada Telp",
-                             np.where(df_plot["Link"] != "", "Ada Link", "Minimal"))
-                )
-
-                fig = px.scatter_geo(
-                    df_plot,
-                    lat="Latitude",
-                    lon="Longitude",
-                    color="quality",
-                    hover_name="Nama Usaha",
-                    hover_data={
-                        "Alamat": True,
-                        "No Telepon": True,
-                        "Link": True,
-                        "Latitude": ":.6f",
-                        "Longitude": ":.6f"
-                    },
-                    projection="mercator",   # <- ini penting biar flat map
-                    height=600
-                )
-
-                lat_min, lat_max = df_plot["Latitude"].min(), df_plot["Latitude"].max()
-                lon_min, lon_max = df_plot["Longitude"].min(), df_plot["Longitude"].max()
-
-                lat_pad = max((lat_max - lat_min) * 0.2, 0.2)
-                lon_pad = max((lon_max - lon_min) * 0.2, 0.2)
-
-                fig.update_geos(
-                    lataxis_range=[lat_min - lat_pad, lat_max + lat_pad],
-                    lonaxis_range=[lon_min - lon_pad, lon_max + lon_pad],
-                    showland=True,
-                    landcolor="#1a1a1a",
-                    showocean=True,
-                    oceancolor="#0d0d0f",
-                    showlakes=True,
-                    lakecolor="#111111",
-                    showcoastlines=True,
-                    coastlinecolor="#FF6F00",
-                    bgcolor="rgba(0,0,0,0)"
-                )
-
-                fig.update_layout(
-                    margin=dict(l=0, r=0, t=0, b=0),
-                    paper_bgcolor="rgba(0,0,0,0)",
-                    plot_bgcolor="rgba(0,0,0,0)",
-                    font=dict(color="white"),
-                    legend=dict(
-                        bgcolor="rgba(0,0,0,0.4)",
-                        bordercolor="rgba(255,111,0,0.5)",
-                        borderwidth=1
-                    )
-                )
-
-                st.plotly_chart(fig, use_container_width=True)
-
-        # ================= DATA =================
         with tab2:
-            st.dataframe(df_maps, use_container_width=True, hide_index=True, height=450)
+            st.dataframe(df_maps, use_container_width=True, hide_index=True, height=440)
 
             excel_bytes = df_to_excel_bytes({"Data Google Maps": df_maps})
             st.download_button(
-                "⬇️ Unduh Excel (Bersih)",
+                "⬇️ Unduh Excel — Google Maps (Bersih)",
                 data=excel_bytes,
-                file_name=f"UMKM_GoogleMaps_{datetime.date.today()}.xlsx",
+                file_name=f"UMKM_GoogleMaps_Bersih_{datetime.date.today()}.xlsx",
                 use_container_width=True,
-                type="primary"
+                type="primary",
             )
 
-        # ================= AUDIT =================
+            csv_bytes = df_maps.to_csv(index=False).encode("utf-8")
+            st.download_button(
+                "⬇️ Unduh CSV — Google Maps (Bersih)",
+                data=csv_bytes,
+                file_name=f"UMKM_GoogleMaps_Bersih_{datetime.date.today()}.csv",
+                use_container_width=True,
+            )
+
         with tab3:
             a = st.session_state.audit_maps or {}
-            st.success(f"Baris Masuk: {a.get('rows_in', 0)}")
-            st.success(f"Baris Bersih: {a.get('rows_out', 0)}")
-            st.warning(f"Koordinat Invalid: {a.get('invalid_coord', 0)}")
-            st.warning(f"Link Invalid: {a.get('invalid_link', 0)}")
-            st.warning(f"Nama Kosong: {a.get('empty_name', 0)}")
+            st.info(f"📂 File diproses: **{fmt_int_id(a.get('file_count', 0))}**")
+            st.success(f"📥 Baris masuk: **{fmt_int_id(a.get('rows_in', 0))}**")
+            st.success(f"✅ Baris keluar: **{fmt_int_id(a.get('rows_out', 0))}**")
+            st.warning(f"🧽 Duplikat dihapus: **{fmt_int_id(a.get('dedup_removed', 0))}**")
+            st.warning(f"📍 Koordinat invalid: **{fmt_int_id(a.get('invalid_coord', 0))}**")
+            st.warning(f"🔗 Link invalid: **{fmt_int_id(a.get('invalid_link', 0))}**")
+            st.warning(f"🏷️ Nama usaha kosong: **{fmt_int_id(a.get('empty_name', 0))}**")
+            if a.get("missing_cols"):
+                st.warning(f"Kolom tidak ditemukan (diisi kosong): {', '.join(a['missing_cols'])}")
+
 
 # ======================================================================================
 # PAGE: EXPORT MASTER
@@ -1514,6 +1389,7 @@ elif menu == "📊 Export Gabungan":
                     type="primary",
                 )
 
+
 # ======================================================================================
 # FOOTER
 # ======================================================================================
@@ -1523,4 +1399,3 @@ st.markdown(
     "</div>",
     unsafe_allow_html=True,
 )
-
