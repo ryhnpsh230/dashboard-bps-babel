@@ -6,7 +6,6 @@ import requests
 import datetime
 import os
 import time
-from urllib.parse import urlparse
 
 import plotly.express as px
 
@@ -24,6 +23,11 @@ APP_ICON = "🏛️"
 BPS_OREN_UTAMA = "#FF6F00"
 BPS_AMBER = "#FFC107"
 BPS_DARK = "#0b0b0c"
+BPS_BG_2 = "#07070a"
+BPS_CARD = "rgba(255,255,255,0.06)"
+BPS_BORDER = "rgba(255,111,0,0.32)"
+BPS_BORDER_SOFT = "rgba(255,111,0,0.18)"
+BPS_TEXT_MUTED = "rgba(245,245,245,0.78)"
 BPS_PAPER = "rgba(0,0,0,0)"
 
 BPS_PALETTE = ["#FF6F00", "#FFA000", "#FFB300", "#FFC107", "#263238", "#37474F", "#455A64"]
@@ -52,18 +56,32 @@ px.defaults.color_discrete_sequence = BPS_PALETTE
 
 
 # ======================================================================================
-# THEME / CSS (Orange-heavy modern glass)
+# THEME / CSS (Premium Orange Glass)
 # ======================================================================================
 st.markdown(
     f"""
 <style>
-/* -------------------- Global background: lebih banyak oren -------------------- */
+/* =========================== Base + Typography =========================== */
+html, body, [class*="css"] {{
+    font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+}}
+code, pre {{
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace !important;
+}}
+a {{
+    color: {BPS_AMBER} !important;
+    text-decoration: none;
+}}
+a:hover {{
+    text-decoration: underline;
+}}
+
 [data-testid="stAppViewContainer"] {{
     background:
-      radial-gradient(1200px 720px at 12% 12%, rgba(255,111,0,.38) 0%, rgba(255,111,0,0) 60%),
-      radial-gradient(900px 650px at 88% 16%, rgba(255,193,7,.28) 0%, rgba(255,193,7,0) 58%),
-      radial-gradient(1000px 600px at 60% 95%, rgba(255,111,0,.16) 0%, rgba(255,111,0,0) 60%),
-      linear-gradient(135deg, #070708 0%, #0c0c10 55%, #060607 100%) !important;
+      radial-gradient(900px 520px at 12% 10%, rgba(255,111,0,.42) 0%, rgba(255,111,0,0) 64%),
+      radial-gradient(760px 520px at 88% 18%, rgba(255,193,7,.30) 0%, rgba(255,193,7,0) 58%),
+      radial-gradient(1000px 700px at 50% 110%, rgba(255,111,0,.18) 0%, rgba(255,111,0,0) 60%),
+      linear-gradient(135deg, {BPS_BG_2} 0%, {BPS_DARK} 55%, {BPS_BG_2} 100%) !important;
     background-attachment: fixed !important;
 }}
 
@@ -71,100 +89,155 @@ st.markdown(
     background: rgba(0,0,0,0) !important;
 }}
 
-/* Top glow bar */
 .block-container {{
-    padding-top: 1.1rem;
-    padding-bottom: 2.1rem;
+    padding-top: 1.0rem;
+    padding-bottom: 2.2rem;
+    max-width: 1400px;
 }}
+
+/* Top glow */
 .block-container::before {{
     content: "";
     display: block;
-    height: 6px;
+    height: 7px;
     width: 100%;
     border-radius: 999px;
-    margin-bottom: 14px;
+    margin: 4px 0 16px 0;
     background: linear-gradient(90deg,
         rgba(255,111,0,0) 0%,
-        rgba(255,111,0,.95) 28%,
-        rgba(255,193,7,.95) 56%,
-        rgba(255,111,0,.95) 80%,
+        rgba(255,111,0,.96) 25%,
+        rgba(255,193,7,.92) 55%,
+        rgba(255,111,0,.96) 82%,
         rgba(255,111,0,0) 100%);
-    box-shadow: 0 8px 36px rgba(255,111,0,.25);
+    box-shadow: 0 10px 46px rgba(255,111,0,.23);
 }}
 
-/* -------------------- Sidebar: oren lebih dominan -------------------- */
+/* =========================== Sidebar =========================== */
 [data-testid="stSidebar"] {{
     background:
-      radial-gradient(600px 420px at 20% 10%, rgba(255,111,0,.26) 0%, rgba(255,111,0,0) 62%),
-      linear-gradient(180deg, rgba(14,14,16,.98) 0%, rgba(10,10,12,.98) 55%, rgba(8,8,9,.99) 100%) !important;
+      radial-gradient(680px 420px at 15% 8%, rgba(255,111,0,.30) 0%, rgba(255,111,0,0) 62%),
+      radial-gradient(680px 420px at 90% 22%, rgba(255,193,7,.18) 0%, rgba(255,193,7,0) 62%),
+      linear-gradient(180deg, rgba(14,14,16,.99) 0%, rgba(10,10,12,.99) 55%, rgba(8,8,9,.995) 100%) !important;
     border-right: 1px solid rgba(255,111,0,.45);
-    box-shadow: 10px 0 40px rgba(0,0,0,.45);
+    box-shadow: 12px 0 50px rgba(0,0,0,.45);
 }}
 [data-testid="stSidebar"] * {{
-    color: #f3f3f3 !important;
+    color: #f4f4f4 !important;
+}}
+/* Sidebar title */
+.sidebar-title {{
+    font-weight: 950;
+    font-size: 1.05rem;
+    letter-spacing: .2px;
+    margin-bottom: 2px;
+}}
+.sidebar-sub {{
+    opacity: .78;
+    font-size: .86rem;
+    margin-bottom: 10px;
 }}
 
-/* -------------------- Cards (containers) -------------------- */
+/* =========================== Cards / Containers =========================== */
 div[data-testid="stVerticalBlockBorderWrapper"] {{
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,111,0,0.34) !important;
-    border-radius: 18px;
+    background: {BPS_CARD};
+    border: 1px solid {BPS_BORDER} !important;
+    border-radius: 20px;
     padding: 18px 18px;
     box-shadow:
-      0 14px 38px rgba(0,0,0,.33),
-      0 0 0 1px rgba(255,111,0,.07) inset;
-    backdrop-filter: blur(12px);
-}}
-div[data-testid="stVerticalBlockBorderWrapper"]:hover {{
-    border-color: rgba(255,193,7,.48) !important;
-    box-shadow:
-      0 18px 46px rgba(0,0,0,.36),
-      0 0 0 1px rgba(255,193,7,.10) inset,
-      0 22px 70px rgba(255,111,0,.10);
-}}
-
-/* -------------------- Banner -------------------- */
-.bps-banner {{
-    border-radius: 20px;
-    padding: 24px 28px;
-    margin: 2px 0 18px 0;
-    background:
-      radial-gradient(900px 360px at 15% 0%, rgba(255,111,0,.40) 0%, rgba(255,111,0,0) 62%),
-      radial-gradient(900px 380px at 85% 10%, rgba(255,193,7,.26) 0%, rgba(255,193,7,0) 62%),
-      linear-gradient(135deg, rgba(255,111,0,.18) 0%, rgba(255,193,7,.10) 40%, rgba(255,255,255,.04) 100%);
-    border: 1px solid rgba(255,111,0,.34);
-    box-shadow: 0 18px 55px rgba(0,0,0,.34);
+      0 16px 44px rgba(0,0,0,.30),
+      0 0 0 1px rgba(255,111,0,.06) inset;
     backdrop-filter: blur(14px);
 }}
-.bps-kicker {{
-    letter-spacing: 2px;
+div[data-testid="stVerticalBlockBorderWrapper"]:hover {{
+    border-color: rgba(255,193,7,.50) !important;
+    box-shadow:
+      0 20px 56px rgba(0,0,0,.35),
+      0 0 0 1px rgba(255,193,7,.10) inset,
+      0 26px 90px rgba(255,111,0,.12);
+}}
+
+/* =========================== Hero Banner =========================== */
+.bps-hero {{
+    border-radius: 22px;
+    padding: 26px 28px;
+    margin: 2px 0 18px 0;
+    background:
+      radial-gradient(980px 380px at 14% 0%, rgba(255,111,0,.44) 0%, rgba(255,111,0,0) 64%),
+      radial-gradient(980px 420px at 86% 8%, rgba(255,193,7,.26) 0%, rgba(255,193,7,0) 62%),
+      linear-gradient(135deg, rgba(255,111,0,.16) 0%, rgba(255,193,7,.10) 40%, rgba(255,255,255,.04) 100%);
+    border: 1px solid rgba(255,111,0,.34);
+    box-shadow: 0 20px 62px rgba(0,0,0,.36);
+    backdrop-filter: blur(16px);
+}}
+.hero-kicker {{
+    letter-spacing: 2.2px;
     text-transform: uppercase;
-    font-weight: 800;
+    font-weight: 900;
     font-size: .78rem;
     color: rgba(255,193,7,.98);
     margin-bottom: 8px;
 }}
-.bps-title {{
-    font-size: 2.10rem;
-    font-weight: 950;
+.hero-title {{
+    font-size: 2.2rem;
+    font-weight: 1000;
     margin: 0 0 8px 0;
     color: #ffffff;
+    line-height: 1.12;
 }}
-.bps-subtitle {{
+.hero-sub {{
     margin: 0;
     color: rgba(240,240,240,.90);
     font-size: 1.03rem;
 }}
+.hero-badges {{
+    margin-top: 14px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}}
+.badge {{
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border-radius: 999px;
+    border: 1px solid {BPS_BORDER_SOFT};
+    background: rgba(0,0,0,.20);
+    box-shadow: 0 10px 30px rgba(0,0,0,.25);
+    font-size: .88rem;
+    color: rgba(248,248,248,.92);
+}}
+.badge i {{
+    opacity: .92;
+}}
 
-/* -------------------- Metrics -------------------- */
+/* =========================== Section Titles =========================== */
+.section-title {{
+    font-size: 1.18rem;
+    font-weight: 950;
+    margin: 0 0 6px 0;
+}}
+.section-sub {{
+    color: {BPS_TEXT_MUTED};
+    margin: 0 0 10px 0;
+    font-size: .92rem;
+}}
+.hr-glow {{
+    height: 1px;
+    border: none;
+    margin: 12px 0 4px 0;
+    background: linear-gradient(90deg, rgba(255,111,0,0), rgba(255,111,0,.55), rgba(255,193,7,.38), rgba(255,111,0,0));
+}}
+
+/* =========================== Metrics =========================== */
 div[data-testid="metric-container"] {{
     background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,111,0,0.30);
-    border-left: 7px solid {BPS_OREN_UTAMA};
-    border-radius: 16px;
+    border: 1px solid rgba(255,111,0,0.28);
+    border-left: 8px solid {BPS_OREN_UTAMA};
+    border-radius: 18px;
     padding: 14px 16px;
     box-shadow:
-      0 12px 34px rgba(0,0,0,.26),
+      0 12px 36px rgba(0,0,0,.28),
       0 0 0 1px rgba(255,111,0,.06) inset;
     backdrop-filter: blur(12px);
     transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
@@ -173,24 +246,24 @@ div[data-testid="metric-container"]:hover {{
     transform: translateY(-3px);
     border-color: rgba(255,193,7,.58);
     box-shadow:
-      0 18px 46px rgba(0,0,0,.30),
+      0 18px 52px rgba(0,0,0,.32),
       0 0 0 1px rgba(255,193,7,.10) inset,
-      0 30px 90px rgba(255,111,0,.12);
+      0 34px 100px rgba(255,111,0,.12);
 }}
 div[data-testid="metric-container"] label {{
     color: rgba(240,240,240,.86) !important;
-    font-weight: 800;
+    font-weight: 850;
     letter-spacing: .2px;
 }}
 
-/* -------------------- Tabs -------------------- */
+/* =========================== Tabs =========================== */
 .stTabs [data-baseweb="tab-list"] {{
     gap: 10px;
     background: rgba(255,255,255,0.04);
-    border: 1px solid rgba(255,111,0,.24);
+    border: 1px solid rgba(255,111,0,.22);
     padding: 10px;
-    border-radius: 16px;
-    backdrop-filter: blur(12px);
+    border-radius: 18px;
+    backdrop-filter: blur(14px);
 }}
 .stTabs [data-baseweb="tab"] {{
     height: 46px;
@@ -200,41 +273,75 @@ div[data-testid="metric-container"] label {{
     color: rgba(245,245,245,.86);
 }}
 .stTabs [aria-selected="true"] {{
-    background: linear-gradient(135deg, rgba(255,111,0,.95) 0%, rgba(255,193,7,.95) 100%) !important;
+    background: linear-gradient(135deg, rgba(255,111,0,.98) 0%, rgba(255,193,7,.92) 100%) !important;
     color: #111 !important;
-    font-weight: 950;
-    box-shadow: 0 16px 44px rgba(255,111,0,.26);
+    font-weight: 1000;
+    box-shadow: 0 16px 52px rgba(255,111,0,.24);
 }}
 
-/* -------------------- Buttons -------------------- */
+/* =========================== Buttons =========================== */
 div[data-testid="stDownloadButton"] button,
 .stButton > button {{
-    border-radius: 14px !important;
+    border-radius: 16px !important;
     border: 1px solid rgba(255,255,255,.10) !important;
-    background: linear-gradient(135deg, rgba(255,111,0,.92) 0%, rgba(255,193,7,.88) 100%) !important;
+    background: linear-gradient(135deg, rgba(255,111,0,.95) 0%, rgba(255,193,7,.88) 100%) !important;
     color: #111 !important;
-    font-weight: 950 !important;
-    height: 48px !important;
-    box-shadow: 0 16px 44px rgba(255,111,0,.22);
+    font-weight: 1000 !important;
+    height: 50px !important;
+    box-shadow: 0 18px 55px rgba(255,111,0,.22);
     transition: transform .15s ease, box-shadow .15s ease, filter .15s ease;
 }}
 div[data-testid="stDownloadButton"] button:hover,
 .stButton > button:hover {{
     transform: translateY(-1px);
-    filter: brightness(1.04);
-    box-shadow: 0 22px 60px rgba(255,111,0,.28);
+    filter: brightness(1.05);
+    box-shadow: 0 24px 70px rgba(255,111,0,.28);
 }}
 button[kind="secondary"] {{
     background: rgba(255,255,255,.08) !important;
-    border: 1px solid rgba(255,111,0,.30) !important;
+    border: 1px solid rgba(255,111,0,.28) !important;
     color: #f2f2f2 !important;
 }}
 
-/* -------------------- Dataframe -------------------- */
+/* =========================== Inputs =========================== */
+[data-baseweb="input"] > div {{
+    border-radius: 14px !important;
+}}
+[data-baseweb="select"] > div {{
+    border-radius: 14px !important;
+}}
+textarea {{
+    border-radius: 14px !important;
+}}
+
+/* =========================== Dataframe =========================== */
 [data-testid="stDataFrame"] {{
-    border-radius: 16px;
+    border-radius: 18px;
     overflow: hidden;
-    border: 1px solid rgba(255,111,0,.20);
+    border: 1px solid rgba(255,111,0,.18);
+}}
+/* Scrollbar (webkit) */
+::-webkit-scrollbar {{
+    height: 10px;
+    width: 10px;
+}}
+::-webkit-scrollbar-thumb {{
+    background: rgba(255,111,0,.35);
+    border-radius: 999px;
+}}
+::-webkit-scrollbar-track {{
+    background: rgba(255,255,255,.06);
+    border-radius: 999px;
+}}
+
+/* =========================== Footer =========================== */
+.footer {{
+    margin-top: 22px;
+    padding: 14px 16px;
+    border-radius: 16px;
+    border: 1px solid rgba(255,111,0,.18);
+    background: rgba(255,255,255,.03);
+    color: rgba(245,245,245,.78);
 }}
 </style>
 """,
@@ -262,17 +369,26 @@ ensure_state()
 # ======================================================================================
 # HELPERS (UI)
 # ======================================================================================
-def banner(title: str, subtitle: str):
+def hero(title: str, subtitle: str, badges=None):
+    badges = badges or []
+    badges_html = "".join([f'<span class="badge"><i>✦</i>{b}</span>' for b in badges])
     st.markdown(
         f"""
-<div class="bps-banner">
-  <div class="bps-kicker">🏛️ BADAN PUSAT STATISTIK</div>
-  <div class="bps-title">{title}</div>
-  <p class="bps-subtitle">{subtitle}</p>
+<div class="bps-hero">
+  <div class="hero-kicker">🏛️ BADAN PUSAT STATISTIK</div>
+  <div class="hero-title">{title}</div>
+  <p class="hero-sub">{subtitle}</p>
+  <div class="hero-badges">{badges_html}</div>
 </div>
 """,
         unsafe_allow_html=True,
     )
+
+def section(title: str, subtitle: str = ""):
+    st.markdown(f"<div class='section-title'>{title}</div>", unsafe_allow_html=True)
+    if subtitle:
+        st.markdown(f"<div class='section-sub'>{subtitle}</div>", unsafe_allow_html=True)
+    st.markdown("<hr class='hr-glow'/>", unsafe_allow_html=True)
 
 def fmt_int_id(n: int) -> str:
     try:
@@ -570,10 +686,10 @@ def render_real_map_folium(df_maps: pd.DataFrame, height: int = 560):
             link_html = f'<a href="{link}" target="_blank">Buka Link</a>' if link else "-"
 
             popup = f"""
-            <div style="width:260px;">
-              <div style="font-weight:800; font-size:14px; margin-bottom:6px;">{nama}</div>
+            <div style="width:270px;">
+              <div style="font-weight:900; font-size:14px; margin-bottom:6px;">{nama}</div>
               <div style="font-size:12px; opacity:.92;">{alamat}</div>
-              <hr style="border:none;border-top:1px solid rgba(255,111,0,.25); margin:8px 0;">
+              <hr style="border:none;border-top:1px solid rgba(255,111,0,.28); margin:8px 0;">
               <div style="font-size:12px;">☎️ {telp if telp else "-"}</div>
               <div style="font-size:12px; margin-top:4px;">🔗 {link_html}</div>
             </div>
@@ -583,11 +699,11 @@ def render_real_map_folium(df_maps: pd.DataFrame, height: int = 560):
                 location=[float(r["Latitude"]), float(r["Longitude"])],
                 radius=7,
                 weight=2,
-                color="#FF6F00",
+                color=BPS_OREN_UTAMA,
                 fill=True,
-                fill_color="#FF6F00",
+                fill_color=BPS_OREN_UTAMA,
                 fill_opacity=0.85,
-                popup=folium.Popup(popup, max_width=340),
+                popup=folium.Popup(popup, max_width=360),
             ).add_to(cluster)
 
         folium.LayerControl(collapsed=True).add_to(m)
@@ -620,8 +736,8 @@ def render_real_map_folium(df_maps: pd.DataFrame, height: int = 560):
 # SIDEBAR
 # ======================================================================================
 with st.sidebar:
-    st.markdown(f"### {APP_ICON} {APP_TITLE}")
-    st.caption("Penyedia Data Statistik Berkualitas untuk Indonesia Maju")
+    st.markdown(f"<div class='sidebar-title'>{APP_ICON} {APP_TITLE}</div>", unsafe_allow_html=True)
+    st.markdown("<div class='sidebar-sub'>Penyedia Data Statistik Berkualitas untuk Indonesia Maju</div>", unsafe_allow_html=True)
     st.divider()
 
     if os.path.exists("logo.png"):
@@ -643,19 +759,23 @@ with st.sidebar:
 # PAGE: SHOPEE
 # ======================================================================================
 if menu == "🟠 Shopee":
-    banner("Dashboard UMKM — Shopee", "Ekstraksi data UMKM dari Shopee Marketplace (Bangka Belitung)")
+    hero(
+        "Dashboard UMKM — Shopee",
+        "Ekstraksi data UMKM dari Shopee Marketplace (Bangka Belitung). UI premium + export rapi.",
+        badges=["Filter Babel otomatis", "Klasifikasi Tipe Usaha", "Export Excel 1 klik", "Tema Oren BPS"]
+    )
 
     with st.container(border=True):
+        section("📥 Input Data", "Upload CSV hasil scraping, lalu proses otomatis.")
         left, right = st.columns([1.2, 1.0], gap="large")
 
         with left:
-            st.subheader("📥 Input Data")
             files = st.file_uploader("Unggah CSV Shopee", type=["csv"], accept_multiple_files=True, key="file_shp")
 
             mode_api = st.toggle(
                 "🔎 Deteksi Nama Toko via API Shopee",
                 value=True,
-                help="Jika ON: sistem akan mencoba mengambil nama toko dari API shopid di link produk.",
+                help="Jika ON: sistem mencoba mengambil nama toko dari API shopid di link produk.",
                 key="api_shp",
             )
 
@@ -667,11 +787,11 @@ if menu == "🟠 Shopee":
             with colC:
                 max_api_calls = st.number_input("Maks panggilan API", min_value=0, max_value=50000, value=8000, step=500)
 
-            st.caption("Tips: kalau scraping kamu “terdeteksi robot”, coba naikkan jeda request.")
+            st.caption("Tips: kalau scraping kamu “terdeteksi robot”, naikkan jeda request.")
             run = st.button("🚀 Proses Data Shopee", type="primary", use_container_width=True)
 
         with right:
-            st.subheader("🧾 Ringkasan & Aturan")
+            section("🧾 Ringkasan", "Aturan pembersihan & output yang dihasilkan.")
             st.info(
                 "• Data otomatis difilter **Bangka Belitung**.\n"
                 "• Harga dibersihkan jadi integer.\n"
@@ -714,9 +834,9 @@ if menu == "🟠 Shopee":
                         else:
                             col_link = next((c for c in df_raw.columns if "href" in c.lower()), df_raw.columns[0])
                             col_nama = next((c for c in df_raw.columns if "whitespace-normal" in c.lower()),
-                                            df_raw.columns[min(3, len(df_raw.columns)-1)])
+                                            df_raw.columns[min(3, len(df_raw.columns) - 1)])
                             col_harga = next((c for c in df_raw.columns if "font-medium" in c.lower()),
-                                             df_raw.columns[min(4, len(df_raw.columns)-1)])
+                                             df_raw.columns[min(4, len(df_raw.columns) - 1)])
                             idx_wilayah = 7 if len(df_raw.columns) > 7 else len(df_raw.columns) - 1
                             col_wilayah = next((c for c in df_raw.columns if "ml-[3px]" in c.lower()),
                                                df_raw.columns[idx_wilayah])
@@ -777,7 +897,7 @@ if menu == "🟠 Shopee":
                                 progress.progress(pct)
                                 info.markdown(
                                     f"**⏳ Progress:** {fmt_int_id(baris_diproses)} / {fmt_int_id(total_semua_baris)} "
-                                    f"({int(pct*100)}%) • API calls: {fmt_int_id(api_calls)}"
+                                    f"({int(pct * 100)}%) • API calls: {fmt_int_id(api_calls)}"
                                 )
 
                     progress.empty()
@@ -804,7 +924,7 @@ if menu == "🟠 Shopee":
     df_shp = st.session_state.data_shopee
     if df_shp is not None and not df_shp.empty:
         with st.container(border=True):
-            st.subheader("🔎 Filter Pintar")
+            section("🔎 Filter Pintar", "Cari cepat dan saring data untuk analisis yang presisi.")
             c1, c2, c3, c4 = st.columns([1.2, 1.2, 1.6, 1.2], gap="medium")
             with c1:
                 f_wil = st.multiselect("📍 Wilayah", options=sorted(df_shp["Wilayah"].unique()),
@@ -882,15 +1002,20 @@ if menu == "🟠 Shopee":
 # PAGE: TOKOPEDIA
 # ======================================================================================
 elif menu == "🟢 Tokopedia":
-    banner("Dashboard UMKM — Tokopedia", "Ekstraksi data UMKM dari Tokopedia (Bangka Belitung)")
+    hero(
+        "Dashboard UMKM — Tokopedia",
+        "Ekstraksi data UMKM dari Tokopedia (Bangka Belitung).",
+        badges=["Filter Babel otomatis", "Dashboard ringkas", "Export Excel rapi"]
+    )
 
     with st.container(border=True):
+        section("📥 Input Data", "Upload CSV Tokopedia lalu proses.")
         col1, col2 = st.columns([1.15, 0.85], gap="large")
         with col1:
             files = st.file_uploader("Unggah CSV Tokopedia", type=["csv"], accept_multiple_files=True, key="file_tkp")
             run = st.button("🚀 Proses Data Tokopedia", type="primary", use_container_width=True)
         with col2:
-            st.subheader("🧾 Catatan")
+            section("🧾 Catatan", "Sistem toleran walau kolom CSV berubah.")
             st.info("• Sistem akan menebak kolom bila struktur CSV berbeda.\n• Data difilter otomatis hanya Babel.")
 
     if run:
@@ -998,7 +1123,7 @@ elif menu == "🟢 Tokopedia":
     df_tkp = st.session_state.data_tokped
     if df_tkp is not None and not df_tkp.empty:
         with st.container(border=True):
-            st.subheader("🔎 Filter Pintar")
+            section("🔎 Filter Pintar", "Cari cepat dan saring data untuk analisis.")
             c1, c2, c3 = st.columns([1.2, 1.2, 1.6], gap="medium")
             with c1:
                 f_wil = st.multiselect("📍 Wilayah", options=sorted(df_tkp["Wilayah"].unique()),
@@ -1073,15 +1198,20 @@ elif menu == "🟢 Tokopedia":
 # PAGE: FACEBOOK
 # ======================================================================================
 elif menu == "🔵 Facebook":
-    banner("Dashboard UMKM — Facebook Marketplace", "Ekstraksi data UMKM dari Facebook Marketplace (Bangka Belitung)")
+    hero(
+        "Dashboard UMKM — Facebook Marketplace",
+        "Ekstraksi data UMKM dari Facebook Marketplace (Bangka Belitung).",
+        badges=["Filter Babel otomatis", "Deteksi perorangan", "Export Excel rapi"]
+    )
 
     with st.container(border=True):
+        section("📥 Input Data", "Upload CSV Facebook lalu proses.")
         col1, col2 = st.columns([1.15, 0.85], gap="large")
         with col1:
             files = st.file_uploader("Unggah CSV Facebook", type=["csv"], accept_multiple_files=True, key="file_fb")
             run = st.button("🚀 Proses Data Facebook", type="primary", use_container_width=True)
         with col2:
-            st.subheader("🧾 Catatan")
+            section("🧾 Catatan", "Nama toko sering kosong; sistem mengisi default dengan aman.")
             st.info("• Nama toko sering kosong → akan diisi default.\n• Tipe Usaha perorangan otomatis bila terdeteksi.")
 
     if run:
@@ -1177,7 +1307,7 @@ elif menu == "🔵 Facebook":
     df_fb = st.session_state.data_fb
     if df_fb is not None and not df_fb.empty:
         with st.container(border=True):
-            st.subheader("🔎 Filter Pintar")
+            section("🔎 Filter Pintar", "Cari cepat dan saring data untuk analisis.")
             c1, c2, c3 = st.columns([1.2, 1.2, 1.6], gap="medium")
             with c1:
                 f_wil = st.multiselect("📍 Wilayah", options=sorted(df_fb["Wilayah"].unique()),
@@ -1252,17 +1382,22 @@ elif menu == "🔵 Facebook":
 # PAGE: GOOGLE MAPS
 # ======================================================================================
 elif menu == "📍 Google Maps":
-    banner("Dashboard UMKM — Google Maps", "Upload CSV hasil ekstensi → auto-clean → REAL MAP (Folium) + export Excel/CSV")
+    hero(
+        "Dashboard UMKM — Google Maps",
+        "Upload CSV hasil ekstensi → auto-clean → REAL MAP (Folium) + export Excel/CSV.",
+        badges=["Real Map (Leaflet)", "Cluster marker", "Provider switch (anti 403)", "Export Excel/CSV"]
+    )
 
     with st.container(border=True):
+        section("📥 Input Data", "Unggah CSV hasil scraping Google Maps.")
         col1, col2 = st.columns([1.15, 0.85], gap="large")
         with col1:
             files = st.file_uploader("Unggah CSV Google Maps", type=["csv"], accept_multiple_files=True, key="file_maps")
-            do_clean = st.toggle("✨ Auto-clean (disarankan)", value=True, key="clean_maps")
+            _ = st.toggle("✨ Auto-clean (disarankan)", value=True, key="clean_maps")
             run = st.button("🚀 Proses Data Google Maps", type="primary", use_container_width=True)
 
         with col2:
-            st.subheader("🧾 Format Kolom (disarankan)")
+            section("🧾 Format Kolom", "Sistem toleran walau nama kolom beda.")
             st.code("foto_url, nama_usaha, alamat, no_telepon, latitude, longitude, link", language="text")
             st.caption("Kalau beda nama kolom, sistem tetap coba map otomatis (toleran).")
 
@@ -1272,7 +1407,7 @@ elif menu == "📍 Google Maps":
         else:
             with st.status("Memproses data Google Maps…", expanded=True) as status:
                 try:
-                    df_raw, total_rows = read_csv_files(files)
+                    df_raw, _total_rows = read_csv_files(files)
                     df_clean, audit = clean_maps_dataframe(df_raw)
 
                     st.session_state.data_maps = df_clean
@@ -1344,7 +1479,11 @@ elif menu == "📍 Google Maps":
 # PAGE: EXPORT MASTER
 # ======================================================================================
 elif menu == "📊 Export Gabungan":
-    banner("Export Master Data Gabungan", "Konsolidasi (Shopee, Tokopedia, Facebook, Google Maps) → 1 Excel, sheet terpisah")
+    hero(
+        "Export Master Data Gabungan",
+        "Konsolidasi (Shopee, Tokopedia, Facebook, Google Maps) → 1 Excel, sheet terpisah.",
+        badges=["1 klik export", "Sheet terpisah", "Header rapi", "Autofilter aktif"]
+    )
 
     df_shp_ready = st.session_state.data_shopee is not None and not st.session_state.data_shopee.empty
     df_tkp_ready = st.session_state.data_tokped is not None and not st.session_state.data_tokped.empty
@@ -1355,7 +1494,7 @@ elif menu == "📊 Export Gabungan":
         st.warning("⚠️ Belum ada data. Silakan proses dulu di menu Shopee/Tokopedia/Facebook/Google Maps.")
     else:
         with st.container(border=True):
-            st.subheader("✅ Data Siap Dikonsolidasi")
+            section("✅ Data Siap Dikonsolidasi", "Ringkasan jumlah data per sumber.")
             c1, c2, c3, c4 = st.columns(4)
             c1.metric("📦 Shopee", fmt_int_id(len(st.session_state.data_shopee)) if df_shp_ready else 0)
             c2.metric("📦 Tokopedia", fmt_int_id(len(st.session_state.data_tokped)) if df_tkp_ready else 0)
@@ -1376,7 +1515,7 @@ elif menu == "📊 Export Gabungan":
         excel_bytes = df_to_excel_bytes(sheets)
 
         with st.container(border=True):
-            st.subheader("⬇️ Unduh File Master")
+            section("⬇️ Unduh File Master", "Klik tombol untuk download Excel gabungan.")
             _, col_btn, _ = st.columns([1, 2, 1])
             with col_btn:
                 st.download_button(
@@ -1392,10 +1531,11 @@ elif menu == "📊 Export Gabungan":
 # FOOTER
 # ======================================================================================
 st.markdown(
-    "<div style='margin-top:22px; opacity:.78; font-size:.86rem;'>"
-    "Built with Streamlit • UI Modern Glass (Orange-heavy) • Export Excel Bersih • UMKM Toolkit"
-    "</div>",
+    f"""
+<div class="footer">
+  <b>UMKM Toolkit</b> • Streamlit • Premium Orange Glass • Export Excel Bersih<br/>
+  <span style="opacity:.75;">© {datetime.date.today().year} BPS • Dashboard internal</span>
+</div>
+""",
     unsafe_allow_html=True,
 )
-
-
