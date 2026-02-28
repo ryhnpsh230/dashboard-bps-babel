@@ -534,7 +534,6 @@ def render_real_map_folium(df_maps: pd.DataFrame, height: int = 560):
             "CartoDB DarkMatter (recommended)",
             "CartoDB Positron",
             "OpenStreetMap",
-            "Stamen Terrain",
         ],
         index=0,
         key="maps_tile_provider",
@@ -544,7 +543,6 @@ def render_real_map_folium(df_maps: pd.DataFrame, height: int = 560):
         "OpenStreetMap": "OpenStreetMap",
         "CartoDB Positron": "CartoDB positron",
         "CartoDB DarkMatter (recommended)": "CartoDB dark_matter",
-        "Stamen Terrain": "Stamen Terrain",
     }
 
     center_lat = float(df_plot["Latitude"].mean())
@@ -1399,3 +1397,4 @@ st.markdown(
     "</div>",
     unsafe_allow_html=True,
 )
+
