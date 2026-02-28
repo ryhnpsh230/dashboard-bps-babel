@@ -1,5 +1,8 @@
 streamlit
 pandas
-requests
+numpy
 plotly
+requests
 xlsxwriter
+folium
+streamlit-folium
