@@ -621,7 +621,7 @@ def render_real_map_folium(df_maps: pd.DataFrame, height: int = 560):
 # ======================================================================================
 with st.sidebar:
     st.markdown(f"### {APP_ICON} {APP_TITLE}")
-    st.caption("Versi modern • glass UI • Oren dominan • export Excel bersih")
+    st.caption("Penyedia Data Statistik Berkualitas untuk Indonesia Maju")
     st.divider()
 
     if os.path.exists("logo.png"):
@@ -1397,4 +1397,5 @@ st.markdown(
     "</div>",
     unsafe_allow_html=True,
 )
+
 
