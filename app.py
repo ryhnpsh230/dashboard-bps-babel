@@ -6,7 +6,6 @@ import requests
 import datetime
 import os
 import time
-from urllib.parse import urlparse
 
 import plotly.express as px
 
@@ -17,10 +16,7 @@ APP_TITLE = "Dashboard UMKM BPS"
 APP_ICON = "🏛️"
 
 BPS_OREN_UTAMA = "#FF6F00"
-BPS_AMBER = "#FFC107"
-BPS_DARK = "#0b0b0c"
 BPS_PAPER = "rgba(0,0,0,0)"
-
 BPS_PALETTE = ["#FF6F00", "#FFA000", "#FFB300", "#FFC107", "#263238", "#37474F", "#455A64"]
 
 BABEL_KEYS = [
@@ -47,7 +43,6 @@ st.set_page_config(
 st.markdown(
     f"""
 <style>
-/* ---------- Global background ---------- */
 [data-testid="stAppViewContainer"] {{
     background: radial-gradient(1200px 700px at 10% 10%, rgba(255,111,0,.22) 0%, rgba(255,111,0,0) 60%),
                 radial-gradient(900px 600px at 90% 20%, rgba(255,193,7,.16) 0%, rgba(255,193,7,0) 55%),
@@ -61,7 +56,6 @@ st.markdown(
     padding-top: 1.2rem;
     padding-bottom: 2.2rem;
 }}
-/* ---------- Sidebar ---------- */
 [data-testid="stSidebar"] {{
     background: linear-gradient(180deg, rgba(14,14,16,.96) 0%, rgba(12,12,13,.98) 55%, rgba(9,9,10,.98) 100%) !important;
     border-right: 1px solid rgba(255,111,0,.35);
@@ -70,7 +64,6 @@ st.markdown(
 [data-testid="stSidebar"] * {{
     color: #f3f3f3 !important;
 }}
-/* ---------- Cards (containers) ---------- */
 div[data-testid="stVerticalBlockBorderWrapper"] {{
     background: rgba(255,255,255,0.04);
     border: 1px solid rgba(255,111,0,0.28) !important;
@@ -79,7 +72,6 @@ div[data-testid="stVerticalBlockBorderWrapper"] {{
     box-shadow: 0 10px 30px rgba(0,0,0,.28);
     backdrop-filter: blur(10px);
 }}
-/* ---------- Banner ---------- */
 .bps-banner {{
     border-radius: 18px;
     padding: 22px 26px;
@@ -108,7 +100,6 @@ div[data-testid="stVerticalBlockBorderWrapper"] {{
     color: rgba(230,230,230,.92);
     font-size: 1.02rem;
 }}
-/* ---------- Metrics ---------- */
 div[data-testid="metric-container"] {{
     background: rgba(255,255,255,0.04);
     border: 1px solid rgba(255,111,0,0.25);
@@ -129,7 +120,6 @@ div[data-testid="metric-container"] label {{
     font-weight: 700;
     letter-spacing: .2px;
 }}
-/* ---------- Tabs ---------- */
 .stTabs [data-baseweb="tab-list"] {{
     gap: 10px;
     background: rgba(255,255,255,0.03);
@@ -151,7 +141,6 @@ div[data-testid="metric-container"] label {{
     font-weight: 900;
     box-shadow: 0 12px 34px rgba(255,111,0,.28);
 }}
-/* ---------- Buttons ---------- */
 div[data-testid="stDownloadButton"] button,
 .stButton > button {{
     border-radius: 12px !important;
@@ -169,16 +158,13 @@ div[data-testid="stDownloadButton"] button:hover,
     filter: brightness(1.05);
     box-shadow: 0 18px 46px rgba(255,111,0,.26);
 }}
-/* Secondary buttons */
 button[kind="secondary"] {{
     background: rgba(255,255,255,.06) !important;
     border: 1px solid rgba(255,111,0,.22) !important;
 }}
-/* ---------- Inputs ---------- */
 input, textarea {{
     border-radius: 12px !important;
 }}
-/* ---------- Dataframe ---------- */
 [data-testid="stDataFrame"] {{
     border-radius: 14px;
     overflow: hidden;
@@ -301,23 +287,50 @@ def to_float_safe(x: str):
         return None
 
 # ======================================================================================
-# MAP (PRETTY) — Upgrade biar ga kaku
+# MAP (SUPER ROBUST) — Fix "Peta tidak bisa dirender"
 # ======================================================================================
 def build_pretty_map(df_maps: pd.DataFrame):
-    """
-    Map aesthetic:
-    - auto-fit bounds
-    - marker size by data completeness
-    - color by quality (Telp+Link / Telp / Link / Minimal)
-    - hover rapi
-    """
-    df_plot = df_maps.dropna(subset=["Latitude", "Longitude"]).copy()
+    import numpy as np
+
+    if df_maps is None or df_maps.empty:
+        return None
+
+    df_plot = df_maps.copy()
+
+    # Ensure columns exist
+    for col in ["Nama Usaha", "Alamat", "No Telepon", "Link", "Latitude", "Longitude"]:
+        if col not in df_plot.columns:
+            df_plot[col] = ""
+
+    def _to_num(v):
+        if v is None:
+            return np.nan
+        s = str(v).strip()
+        if not s or s.lower() in ["nan", "none", "null"]:
+            return np.nan
+        s = s.replace(",", ".")
+        try:
+            return float(s)
+        except Exception:
+            return np.nan
+
+    # Force numeric
+    df_plot["Latitude"] = df_plot["Latitude"].apply(_to_num)
+    df_plot["Longitude"] = df_plot["Longitude"].apply(_to_num)
+
+    # Drop invalid coords
+    df_plot = df_plot.dropna(subset=["Latitude", "Longitude"]).copy()
     if df_plot.empty:
         return None
 
-    # flags
-    df_plot["has_phone"] = df_plot["No Telepon"].astype(str).str.strip().fillna("").str.len() > 0
-    df_plot["has_link"] = df_plot["Link"].astype(str).str.strip().fillna("").str.len() > 0
+    # Basic sanity bounds (optional, avoid crazy points)
+    df_plot = df_plot[(df_plot["Latitude"].between(-90, 90)) & (df_plot["Longitude"].between(-180, 180))].copy()
+    if df_plot.empty:
+        return None
+
+    # flags for styling
+    df_plot["has_phone"] = df_plot["No Telepon"].astype(str).fillna("").str.strip().str.len() > 0
+    df_plot["has_link"] = df_plot["Link"].astype(str).fillna("").str.strip().str.len() > 0
 
     def quality(row):
         if row["has_phone"] and row["has_link"]:
@@ -330,21 +343,22 @@ def build_pretty_map(df_maps: pd.DataFrame):
 
     df_plot["quality"] = df_plot.apply(quality, axis=1)
 
-    # marker size biar lebih “hidup”
+    # marker size (aesthetic)
     df_plot["marker_size"] = 10
     df_plot.loc[df_plot["has_link"], "marker_size"] = 12
     df_plot.loc[df_plot["has_phone"], "marker_size"] = 14
     df_plot.loc[df_plot["has_phone"] & df_plot["has_link"], "marker_size"] = 16
 
-    # bounds untuk auto-fit
+    # bounds for auto-fit (safe even when all same points)
     lat_min = float(df_plot["Latitude"].min())
     lat_max = float(df_plot["Latitude"].max())
     lon_min = float(df_plot["Longitude"].min())
     lon_max = float(df_plot["Longitude"].max())
 
-    # padding bounds biar ga mepet
-    lat_pad = max((lat_max - lat_min) * 0.12, 0.02)
-    lon_pad = max((lon_max - lon_min) * 0.12, 0.02)
+    lat_span = max(lat_max - lat_min, 0.01)
+    lon_span = max(lon_max - lon_min, 0.01)
+    lat_pad = max(lat_span * 0.15, 0.02)
+    lon_pad = max(lon_span * 0.15, 0.02)
 
     fig = px.scatter_mapbox(
         df_plot,
@@ -365,11 +379,10 @@ def build_pretty_map(df_maps: pd.DataFrame):
         color="quality",
         size="marker_size",
         size_max=18,
-        height=580,
-        color_discrete_sequence=BPS_PALETTE,  # tetap konsisten tema
+        height=590,
+        color_discrete_sequence=BPS_PALETTE,
     )
 
-    # style modern
     fig.update_layout(
         mapbox_style="open-street-map",
         margin=dict(l=0, r=0, t=0, b=0),
@@ -386,13 +399,6 @@ def build_pretty_map(df_maps: pd.DataFrame):
             xanchor="left",
             x=0.02,
         ),
-    )
-
-    # marker outline biar pop
-    fig.update_traces(marker=dict(opacity=0.92, line=dict(width=1)))
-
-    # auto fit bounds (yang bikin map “ngikut data”)
-    fig.update_layout(
         mapbox=dict(
             bounds=dict(
                 west=lon_min - lon_pad,
@@ -400,8 +406,10 @@ def build_pretty_map(df_maps: pd.DataFrame):
                 south=lat_min - lat_pad,
                 north=lat_max + lat_pad,
             )
-        )
+        ),
     )
+
+    fig.update_traces(marker=dict(opacity=0.92, line=dict(width=1)))
 
     return fig
 
@@ -411,7 +419,6 @@ def build_pretty_map(df_maps: pd.DataFrame):
 def deteksi_tipe_usaha(nama_toko):
     if pd.isna(nama_toko) or nama_toko in ["Tidak Dilacak", "Toko CSV", "Anonim", ""]:
         return "Tidak Terdeteksi (Butuh Nama Toko)"
-
     if str(nama_toko) == "FB Seller":
         return "Perorangan (Facebook)"
 
@@ -427,10 +434,6 @@ def deteksi_tipe_usaha(nama_toko):
     return "Murni Online (Rumahan)"
 
 def clean_maps_dataframe(df_raw: pd.DataFrame) -> (pd.DataFrame, dict):
-    """
-    Expected columns from extension:
-    foto_url,nama_usaha,alamat,no_telepon,latitude,longitude,link
-    """
     audit = {
         "rows_in": 0,
         "rows_out": 0,
@@ -518,9 +521,6 @@ def clean_maps_dataframe(df_raw: pd.DataFrame) -> (pd.DataFrame, dict):
     return df_out, audit
 
 def df_to_excel_bytes(sheets: dict) -> bytes:
-    """
-    sheets: {sheet_name: dataframe}
-    """
     buf = io.BytesIO()
     with pd.ExcelWriter(buf, engine="xlsxwriter") as writer:
         wb = writer.book
@@ -618,7 +618,6 @@ if menu == "🟠 Shopee":
                 max_api_calls = st.number_input("Maks panggilan API", min_value=0, max_value=50000, value=8000, step=500)
 
             st.caption("Tips: kalau scraping kamu “terdeteksi robot”, coba naikkan jeda request.")
-
             run = st.button("🚀 Proses Data Shopee", type="primary", use_container_width=True)
 
         with right:
@@ -629,9 +628,7 @@ if menu == "🟠 Shopee":
                 "• Tipe Usaha dihitung pakai heuristik (kata kunci nama toko)."
             )
             if st.session_state.get("show_tips"):
-                st.success(
-                    "Kalau file CSV struktur kolom beda-beda, sistem akan coba menebak kolom link/nama/harga/wilayah."
-                )
+                st.success("Kalau CSV beda struktur, sistem akan coba tebak kolom link/nama/harga/wilayah.")
 
     if run:
         if not files:
@@ -653,25 +650,23 @@ if menu == "🟠 Shopee":
                     progress = st.progress(0)
                     info = st.empty()
                     baris_diproses = 0
-
                     api_calls = 0
 
                     for file in files:
                         df_raw = pd.read_csv(file, dtype=str, on_bad_lines="skip")
                         total_baris += len(df_raw)
 
-                        # deteksi kolom
                         if "Link" in df_raw.columns and "Nama Produk" in df_raw.columns:
-                            col_link = "Link"
-                            col_nama = "Nama Produk"
-                            col_harga = "Harga"
-                            col_wilayah = "Wilayah"
+                            col_link, col_nama, col_harga, col_wilayah = "Link", "Nama Produk", "Harga", "Wilayah"
                         else:
                             col_link = next((c for c in df_raw.columns if "href" in c.lower()), df_raw.columns[0])
-                            col_nama = next((c for c in df_raw.columns if "whitespace-normal" in c.lower()), df_raw.columns[min(3, len(df_raw.columns)-1)])
-                            col_harga = next((c for c in df_raw.columns if "font-medium" in c.lower()), df_raw.columns[min(4, len(df_raw.columns)-1)])
+                            col_nama = next((c for c in df_raw.columns if "whitespace-normal" in c.lower()),
+                                            df_raw.columns[min(3, len(df_raw.columns) - 1)])
+                            col_harga = next((c for c in df_raw.columns if "font-medium" in c.lower()),
+                                             df_raw.columns[min(4, len(df_raw.columns) - 1)])
                             idx_wilayah = 7 if len(df_raw.columns) > 7 else len(df_raw.columns) - 1
-                            col_wilayah = next((c for c in df_raw.columns if "ml-[3px]" in c.lower()), df_raw.columns[idx_wilayah])
+                            col_wilayah = next((c for c in df_raw.columns if "ml-[3px]" in c.lower()),
+                                               df_raw.columns[idx_wilayah])
 
                         for i in range(len(df_raw)):
                             row = df_raw.iloc[i]
@@ -685,15 +680,11 @@ if menu == "🟠 Shopee":
                                 baris_diproses += 1
                                 continue
 
-                            # harga
                             try:
                                 harga_bersih = harga_str.replace(".", "").replace(",", "")
                                 angka_list = re.findall(r"\d+", harga_bersih)
-                                if angka_list:
-                                    val_h = int(angka_list[0])
-                                    if val_h > 1_000_000_000:
-                                        val_h = 0
-                                else:
+                                val_h = int(angka_list[0]) if angka_list else 0
+                                if val_h > 1_000_000_000:
                                     val_h = 0
                             except Exception:
                                 val_h = 0
@@ -718,7 +709,6 @@ if menu == "🟠 Shopee":
                                         time.sleep(float(api_sleep))
 
                             tipe_usaha = deteksi_tipe_usaha(toko)
-
                             hasil.append({
                                 "Nama Toko": toko,
                                 "Nama Produk": nama_produk,
@@ -733,7 +723,7 @@ if menu == "🟠 Shopee":
                                 pct = min(baris_diproses / max(total_semua_baris, 1), 1.0)
                                 progress.progress(pct)
                                 info.markdown(
-                                    f"**⏳ Progress:** {fmt_int_id(baris_diproses)} / {fmt_int_id(total_semua_baris)} baris "
+                                    f"**⏳ Progress:** {fmt_int_id(baris_diproses)} / {fmt_int_id(total_semua_baris)} "
                                     f"({int(pct*100)}%) • API calls: {fmt_int_id(api_calls)}"
                                 )
 
@@ -800,25 +790,16 @@ if menu == "🟠 Shopee":
             if not st.session_state.get("fast_mode") and not df_f.empty:
                 g1, g2 = st.columns(2, gap="large")
                 with g1:
-                    fig = px.pie(
-                        df_f,
-                        names="Tipe Usaha",
-                        hole=0.42,
-                        title="Komposisi Model Bisnis UMKM (Shopee)",
-                        color_discrete_sequence=BPS_PALETTE,
-                    )
+                    fig = px.pie(df_f, names="Tipe Usaha", hole=0.42,
+                                 title="Komposisi Model Bisnis UMKM (Shopee)",
+                                 color_discrete_sequence=BPS_PALETTE)
                     fig.update_layout(paper_bgcolor=BPS_PAPER, plot_bgcolor=BPS_PAPER, font=dict(color="white"))
                     st.plotly_chart(fig, use_container_width=True)
                 with g2:
                     grp = df_f.groupby("Wilayah").size().reset_index(name="Jumlah")
-                    fig = px.bar(
-                        grp,
-                        x="Wilayah",
-                        y="Jumlah",
-                        title="Total Usaha per Wilayah (Shopee)",
-                        color="Wilayah",
-                        color_discrete_sequence=BPS_PALETTE,
-                    )
+                    fig = px.bar(grp, x="Wilayah", y="Jumlah",
+                                 title="Total Usaha per Wilayah (Shopee)",
+                                 color="Wilayah", color_discrete_sequence=BPS_PALETTE)
                     fig.update_layout(paper_bgcolor=BPS_PAPER, plot_bgcolor=BPS_PAPER, font=dict(color="white"))
                     st.plotly_chart(fig, use_container_width=True)
 
@@ -857,10 +838,7 @@ elif menu == "🟢 Tokopedia":
             run = st.button("🚀 Proses Data Tokopedia", type="primary", use_container_width=True)
         with col2:
             st.subheader("🧾 Catatan")
-            st.info(
-                "• Sistem akan menebak kolom bila struktur CSV berbeda.\n"
-                "• Data difilter otomatis hanya wilayah Bangka Belitung."
-            )
+            st.info("• Sistem akan menebak kolom bila struktur CSV berbeda.\n• Data difilter otomatis hanya Babel.")
 
     if run:
         if not files:
@@ -887,7 +865,6 @@ elif menu == "🟢 Tokopedia":
                         df_raw = pd.read_csv(file, dtype=str, on_bad_lines="skip")
                         total_baris += len(df_raw)
 
-                        # versi “rapi”
                         if "Link" in df_raw.columns and "Nama Produk" in df_raw.columns:
                             col_links = ["Link"]
                             col_namas = ["Nama Produk"]
@@ -916,7 +893,6 @@ elif menu == "🟢 Tokopedia":
 
                                     if link == "nan" or nama == "nan":
                                         continue
-
                                     if not is_in_babel(lokasi):
                                         luar_wilayah += 1
                                         continue
@@ -924,11 +900,8 @@ elif menu == "🟢 Tokopedia":
                                     try:
                                         harga_bersih = harga_str.replace(".", "").replace(",", "")
                                         angka_list = re.findall(r"\d+", harga_bersih)
-                                        if angka_list:
-                                            val_h = int(angka_list[0])
-                                            if val_h > 1_000_000_000:
-                                                val_h = 0
-                                        else:
+                                        val_h = int(angka_list[0]) if angka_list else 0
+                                        if val_h > 1_000_000_000:
                                             val_h = 0
                                     except Exception:
                                         val_h = 0
@@ -940,7 +913,6 @@ elif menu == "🟢 Tokopedia":
                                             "Nama Toko": toko, "Nama Produk": nama, "Harga": val_h,
                                             "Wilayah": lokasi, "Tipe Usaha": tipe_usaha, "Link": link
                                         })
-
                                 except Exception:
                                     continue
 
@@ -1057,10 +1029,7 @@ elif menu == "🔵 Facebook":
             run = st.button("🚀 Proses Data Facebook", type="primary", use_container_width=True)
         with col2:
             st.subheader("🧾 Catatan")
-            st.info(
-                "• Nama toko sering kosong → akan diisi default.\n"
-                "• Tipe Usaha perorangan otomatis bila terdeteksi."
-            )
+            st.info("• Nama toko sering kosong → akan diisi default.\n• Tipe usaha perorangan otomatis bila terdeteksi.")
 
     if run:
         if not files:
@@ -1112,11 +1081,8 @@ elif menu == "🔵 Facebook":
                             try:
                                 harga_bersih = harga_str.replace(".", "").replace(",", "")
                                 angka_list = re.findall(r"\d+", harga_bersih)
-                                if angka_list:
-                                    val_h = int(angka_list[0])
-                                    if val_h > 1_000_000_000:
-                                        val_h = 0
-                                else:
+                                val_h = int(angka_list[0]) if angka_list else 0
+                                if val_h > 1_000_000_000:
                                     val_h = 0
                             except Exception:
                                 val_h = 0
@@ -1239,7 +1205,6 @@ elif menu == "📍 Google Maps":
         col1, col2 = st.columns([1.15, 0.85], gap="large")
         with col1:
             files = st.file_uploader("Unggah CSV Google Maps", type=["csv"], accept_multiple_files=True, key="file_maps")
-            do_clean = st.toggle("✨ Auto-clean (disarankan)", value=True, key="clean_maps")
             run = st.button("🚀 Proses Data Google Maps", type="primary", use_container_width=True)
 
         with col2:
@@ -1253,7 +1218,7 @@ elif menu == "📍 Google Maps":
         else:
             with st.status("Memproses data Google Maps…", expanded=True) as status:
                 try:
-                    df_raw, total_rows = read_csv_files(files)
+                    df_raw, _ = read_csv_files(files)
                     df_clean, audit = clean_maps_dataframe(df_raw)
 
                     st.session_state.data_maps = df_clean
@@ -1285,6 +1250,7 @@ elif menu == "📍 Google Maps":
             m3.metric("🔗 Link Valid", fmt_int_id((df_maps["Link"].astype(str).str.len() > 0).sum()))
             m4.metric("☎️ No Telp Valid", fmt_int_id((df_maps["No Telepon"].astype(str).str.len() > 0).sum()))
 
+            # IMPORTANT: tampilkan error asli bila gagal
             if not st.session_state.get("fast_mode"):
                 try:
                     fig = build_pretty_map(df_maps)
@@ -1292,8 +1258,9 @@ elif menu == "📍 Google Maps":
                         st.info("Tidak ada koordinat valid untuk ditampilkan.")
                     else:
                         st.plotly_chart(fig, use_container_width=True)
-                except Exception:
-                    st.info("Peta tidak bisa dirender. Data koordinat tetap siap diekspor.")
+                except Exception as e:
+                    st.error("Peta gagal dirender. Ini error aslinya:")
+                    st.exception(e)
 
         with tab2:
             st.dataframe(df_maps, use_container_width=True, hide_index=True, height=440)
@@ -1344,23 +1311,10 @@ elif menu == "📊 Export Gabungan":
         with st.container(border=True):
             st.subheader("✅ Data Siap Dikonsolidasi")
             c1, c2, c3, c4 = st.columns(4)
-            if df_shp_ready:
-                c1.metric("📦 Shopee", fmt_int_id(len(st.session_state.data_shopee)))
-            else:
-                c1.metric("📦 Shopee", "0")
-            if df_tkp_ready:
-                c2.metric("📦 Tokopedia", fmt_int_id(len(st.session_state.data_tokped)))
-            else:
-                c2.metric("📦 Tokopedia", "0")
-            if df_fb_ready:
-                c3.metric("📦 Facebook", fmt_int_id(len(st.session_state.data_fb)))
-            else:
-                c3.metric("📦 Facebook", "0")
-            if df_maps_ready:
-                c4.metric("📦 Google Maps", fmt_int_id(len(st.session_state.data_maps)))
-            else:
-                c4.metric("📦 Google Maps", "0")
-
+            c1.metric("📦 Shopee", fmt_int_id(len(st.session_state.data_shopee)) if df_shp_ready else 0)
+            c2.metric("📦 Tokopedia", fmt_int_id(len(st.session_state.data_tokped)) if df_tkp_ready else 0)
+            c3.metric("📦 Facebook", fmt_int_id(len(st.session_state.data_fb)) if df_fb_ready else 0)
+            c4.metric("📦 Google Maps", fmt_int_id(len(st.session_state.data_maps)) if df_maps_ready else 0)
             st.caption("Output: 1 file Excel berisi sheet terpisah per sumber + autofilter + header rapi.")
 
         sheets = {}
