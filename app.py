@@ -54,29 +54,30 @@ px.defaults.color_discrete_sequence = BPS_PALETTE
 # ======================================================================================
 # THEME / CSS (Orange-heavy modern glass)
 # ======================================================================================
-st.markdown(
-    f"""
-<style>
+# ======================================================================================
+# THEME / CSS (Original + Polished Add-ons)
+# ======================================================================================
+CSS_THEME = r"""
 /* -------------------- Global background: lebih banyak oren -------------------- */
-[data-testid="stAppViewContainer"] {{
+[data-testid="stAppViewContainer"] {
     background:
       radial-gradient(1200px 720px at 12% 12%, rgba(255,111,0,.38) 0%, rgba(255,111,0,0) 60%),
       radial-gradient(900px 650px at 88% 16%, rgba(255,193,7,.28) 0%, rgba(255,193,7,0) 58%),
       radial-gradient(1000px 600px at 60% 95%, rgba(255,111,0,.16) 0%, rgba(255,111,0,0) 60%),
       linear-gradient(135deg, #070708 0%, #0c0c10 55%, #060607 100%) !important;
     background-attachment: fixed !important;
-}}
+}
 
-[data-testid="stHeader"] {{
+[data-testid="stHeader"] {
     background: rgba(0,0,0,0) !important;
-}}
+}
 
 /* Top glow bar */
-.block-container {{
+.block-container {
     padding-top: 1.1rem;
     padding-bottom: 2.1rem;
-}}
-.block-container::before {{
+}
+.block-container::before {
     content: "";
     display: block;
     height: 6px;
@@ -90,22 +91,22 @@ st.markdown(
         rgba(255,111,0,.95) 80%,
         rgba(255,111,0,0) 100%);
     box-shadow: 0 8px 36px rgba(255,111,0,.25);
-}}
+}
 
 /* -------------------- Sidebar: oren lebih dominan -------------------- */
-[data-testid="stSidebar"] {{
+[data-testid="stSidebar"] {
     background:
       radial-gradient(600px 420px at 20% 10%, rgba(255,111,0,.26) 0%, rgba(255,111,0,0) 62%),
       linear-gradient(180deg, rgba(14,14,16,.98) 0%, rgba(10,10,12,.98) 55%, rgba(8,8,9,.99) 100%) !important;
     border-right: 1px solid rgba(255,111,0,.45);
     box-shadow: 10px 0 40px rgba(0,0,0,.45);
-}}
-[data-testid="stSidebar"] * {{
+}
+[data-testid="stSidebar"] * {
     color: #f3f3f3 !important;
-}}
+}
 
 /* -------------------- Cards (containers) -------------------- */
-div[data-testid="stVerticalBlockBorderWrapper"] {{
+div[data-testid="stVerticalBlockBorderWrapper"] {
     background: rgba(255,255,255,0.05);
     border: 1px solid rgba(255,111,0,0.34) !important;
     border-radius: 18px;
@@ -114,17 +115,17 @@ div[data-testid="stVerticalBlockBorderWrapper"] {{
       0 14px 38px rgba(0,0,0,.33),
       0 0 0 1px rgba(255,111,0,.07) inset;
     backdrop-filter: blur(12px);
-}}
-div[data-testid="stVerticalBlockBorderWrapper"]:hover {{
+}
+div[data-testid="stVerticalBlockBorderWrapper"]:hover {
     border-color: rgba(255,193,7,.48) !important;
     box-shadow:
       0 18px 46px rgba(0,0,0,.36),
       0 0 0 1px rgba(255,193,7,.10) inset,
       0 22px 70px rgba(255,111,0,.10);
-}}
+}
 
 /* -------------------- Banner -------------------- */
-.bps-banner {{
+.bps-banner {
     border-radius: 20px;
     padding: 24px 28px;
     margin: 2px 0 18px 0;
@@ -135,32 +136,32 @@ div[data-testid="stVerticalBlockBorderWrapper"]:hover {{
     border: 1px solid rgba(255,111,0,.34);
     box-shadow: 0 18px 55px rgba(0,0,0,.34);
     backdrop-filter: blur(14px);
-}}
-.bps-kicker {{
+}
+.bps-kicker {
     letter-spacing: 2px;
     text-transform: uppercase;
     font-weight: 800;
     font-size: .78rem;
     color: rgba(255,193,7,.98);
     margin-bottom: 8px;
-}}
-.bps-title {{
+}
+.bps-title {
     font-size: 2.10rem;
     font-weight: 950;
     margin: 0 0 8px 0;
     color: #ffffff;
-}}
-.bps-subtitle {{
+}
+.bps-subtitle {
     margin: 0;
     color: rgba(240,240,240,.90);
     font-size: 1.03rem;
-}}
+}
 
 /* -------------------- Metrics -------------------- */
-div[data-testid="metric-container"] {{
+div[data-testid="metric-container"] {
     background: rgba(255,255,255,0.05);
     border: 1px solid rgba(255,111,0,0.30);
-    border-left: 7px solid {BPS_OREN_UTAMA};
+    border-left: 7px solid __BPS_OREN__;
     border-radius: 16px;
     padding: 14px 16px;
     box-shadow:
@@ -168,47 +169,47 @@ div[data-testid="metric-container"] {{
       0 0 0 1px rgba(255,111,0,.06) inset;
     backdrop-filter: blur(12px);
     transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
-}}
-div[data-testid="metric-container"]:hover {{
+}
+div[data-testid="metric-container"]:hover {
     transform: translateY(-3px);
     border-color: rgba(255,193,7,.58);
     box-shadow:
       0 18px 46px rgba(0,0,0,.30),
       0 0 0 1px rgba(255,193,7,.10) inset,
       0 30px 90px rgba(255,111,0,.12);
-}}
-div[data-testid="metric-container"] label {{
+}
+div[data-testid="metric-container"] label {
     color: rgba(240,240,240,.86) !important;
     font-weight: 800;
     letter-spacing: .2px;
-}}
+}
 
 /* -------------------- Tabs -------------------- */
-.stTabs [data-baseweb="tab-list"] {{
+.stTabs [data-baseweb="tab-list"] {
     gap: 10px;
     background: rgba(255,255,255,0.04);
     border: 1px solid rgba(255,111,0,.24);
     padding: 10px;
     border-radius: 16px;
     backdrop-filter: blur(12px);
-}}
-.stTabs [data-baseweb="tab"] {{
+}
+.stTabs [data-baseweb="tab"] {
     height: 46px;
     border-radius: 14px;
     padding: 0 16px;
     background: rgba(255,255,255,0.03);
     color: rgba(245,245,245,.86);
-}}
-.stTabs [aria-selected="true"] {{
+}
+.stTabs [aria-selected="true"] {
     background: linear-gradient(135deg, rgba(255,111,0,.95) 0%, rgba(255,193,7,.95) 100%) !important;
     color: #111 !important;
     font-weight: 950;
     box-shadow: 0 16px 44px rgba(255,111,0,.26);
-}}
+}
 
 /* -------------------- Buttons -------------------- */
 div[data-testid="stDownloadButton"] button,
-.stButton > button {{
+.stButton > button {
     border-radius: 14px !important;
     border: 1px solid rgba(255,255,255,.10) !important;
     background: linear-gradient(135deg, rgba(255,111,0,.92) 0%, rgba(255,193,7,.88) 100%) !important;
@@ -217,25 +218,25 @@ div[data-testid="stDownloadButton"] button,
     height: 48px !important;
     box-shadow: 0 16px 44px rgba(255,111,0,.22);
     transition: transform .15s ease, box-shadow .15s ease, filter .15s ease;
-}}
+}
 div[data-testid="stDownloadButton"] button:hover,
-.stButton > button:hover {{
+.stButton > button:hover {
     transform: translateY(-1px);
     filter: brightness(1.04);
     box-shadow: 0 22px 60px rgba(255,111,0,.28);
-}}
-button[kind="secondary"] {{
+}
+button[kind="secondary"] {
     background: rgba(255,255,255,.08) !important;
     border: 1px solid rgba(255,111,0,.30) !important;
     color: #f2f2f2 !important;
-}}
+}
 
 /* -------------------- Dataframe -------------------- */
-[data-testid="stDataFrame"] {{
+[data-testid="stDataFrame"] {
     border-radius: 16px;
     overflow: hidden;
     border: 1px solid rgba(255,111,0,.20);
-}}
+}
 
 
 /* ============================================================================
@@ -293,14 +294,15 @@ button[kind="secondary"] {{
 [data-testid="stSidebar"] hr{
   border-color: rgba(255,255,255,.10) !important;
 }
+"""
 
-</style>
-""",
-    unsafe_allow_html=True,
+# Inject BPS accent tokens safely (no f-string CSS parsing issues)
+CSS_THEME = (CSS_THEME
+    .replace("__BPS_OREN__", BPS_OREN_UTAMA)
+    .replace("__BPS_AMBER__", BPS_AMBER)
 )
 
-
-
+st.markdown("<style>" + CSS_THEME + "</style>", unsafe_allow_html=True)
 
 # ======================================================================================
 # UI ADD-ON (keep your original design, add premium components)
