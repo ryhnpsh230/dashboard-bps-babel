@@ -236,6 +236,64 @@ button[kind="secondary"] {{
     overflow: hidden;
     border: 1px solid rgba(255,111,0,.20);
 }}
+
+
+/* ============================================================================
+   Sidebar — international nav styling (keeps your original theme)
+   ========================================================================== */
+[data-testid="stSidebar"] .block-container{
+  padding-top: 1.15rem !important;
+}
+[data-testid="stSidebar"] h3, [data-testid="stSidebar"] h2, [data-testid="stSidebar"] h1{
+  letter-spacing: -0.02em;
+}
+
+/* Radio group -> pill nav */
+[data-testid="stSidebar"] [role="radiogroup"]{
+  gap: 10px;
+}
+[data-testid="stSidebar"] [role="radiogroup"] > label{
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.045);
+  transition: transform .14s ease, box-shadow .14s ease, border-color .14s ease, background .14s ease;
+}
+[data-testid="stSidebar"] [role="radiogroup"] > label:hover{
+  transform: translateY(-1px);
+  border-color: rgba(255,255,255,.18);
+  background: rgba(255,255,255,.06);
+  box-shadow: 0 14px 40px rgba(0,0,0,.28);
+}
+[data-testid="stSidebar"] [role="radiogroup"] > label:has(input:checked){
+  background: linear-gradient(135deg, rgba(255,111,0,.92) 0%, rgba(255,193,7,.86) 100%);
+  border-color: rgba(255,193,7,.32);
+  box-shadow: 0 18px 56px rgba(255,111,0,.20);
+}
+[data-testid="stSidebar"] [role="radiogroup"] > label:has(input:checked) p{
+  color: #101113 !important;
+  font-weight: 950 !important;
+}
+[data-testid="stSidebar"] [role="radiogroup"] p{
+  margin: 0 !important;
+  font-weight: 800;
+  letter-spacing: .2px;
+}
+
+/* Make the radio dot subtle */
+[data-testid="stSidebar"] [role="radiogroup"] input{
+  accent-color: rgba(16,17,19,.0);
+}
+[data-testid="stSidebar"] [role="radiogroup"] svg{
+  filter: drop-shadow(0 6px 14px rgba(0,0,0,.28));
+}
+
+/* Sidebar separators */
+[data-testid="stSidebar"] hr{
+  border-color: rgba(255,255,255,.10) !important;
+}
+
 </style>
 """,
     unsafe_allow_html=True,
@@ -707,6 +765,111 @@ def render_real_map_folium(df_maps: pd.DataFrame, height: int = 560):
         st.plotly_chart(fig, use_container_width=True)
 
 
+
+# ======================================================================================
+# SPLASH / LOADING SCREEN (first open per session)
+# - Shows a brief progress bar before entering the dashboard
+# ======================================================================================
+def splash_screen():
+    """Splash screen shown once per session."""
+    # Temporarily hide the sidebar while loading
+    st.markdown(
+        """
+        <style>
+          [data-testid="stSidebar"]{ display:none !important; }
+          [data-testid="stHeader"]{ background: transparent !important; }
+          .block-container{ padding-top: 2.2rem !important; }
+          .splash-wrap{
+            border-radius: 28px;
+            padding: 30px 32px;
+            max-width: 860px;
+            margin: 6vh auto 0 auto;
+            background:
+              radial-gradient(1200px 520px at 12% 0%, rgba(255,111,0,.20) 0%, rgba(255,111,0,0) 62%),
+              radial-gradient(1000px 520px at 88% 12%, rgba(255,193,7,.12) 0%, rgba(255,193,7,0) 62%),
+              linear-gradient(135deg, rgba(255,255,255,.10) 0%, rgba(255,255,255,.05) 60%, rgba(255,255,255,.03) 100%);
+            border: 1px solid rgba(255,255,255,0.12);
+            box-shadow: 0 22px 70px rgba(0,0,0,.42);
+            backdrop-filter: blur(16px);
+          }
+          .splash-kicker{
+            display:inline-flex; align-items:center; gap:10px;
+            font-weight: 900; font-size: .80rem; letter-spacing: .16em;
+            text-transform: uppercase; color: rgba(255,193,7,.92);
+            margin-bottom: 10px;
+          }
+          .splash-title{
+            font-size: 2.2rem; font-weight: 950; margin: 0 0 10px 0; color: #fff;
+            letter-spacing: -0.02em;
+          }
+          .splash-sub{
+            margin: 0 0 18px 0; color: rgba(255,255,255,.70);
+            font-size: 1.04rem; line-height: 1.55;
+          }
+          .splash-row{ display:flex; gap:14px; align-items:center; margin-top: 12px; }
+          .splash-pill{
+            padding: 10px 12px;
+            border-radius: 14px;
+            border: 1px solid rgba(255,255,255,.10);
+            background: rgba(255,255,255,.05);
+            color: rgba(255,255,255,.86);
+            font-weight: 700;
+            font-size: .92rem;
+          }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    # Content
+    st.markdown('<div class="splash-wrap">', unsafe_allow_html=True)
+
+    # Header row with logo (if exists)
+    cols = st.columns([0.55, 2.2])
+    with cols[0]:
+        if os.path.exists("logo.png"):
+            st.image("logo.png", use_container_width=True)
+    with cols[1]:
+        st.markdown('<div class="splash-kicker">BPS BABEL • DASHBOARD UMKM</div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="splash-title">{APP_TITLE}</div>', unsafe_allow_html=True)
+        st.markdown(
+            '<div class="splash-sub">Menyiapkan tampilan, memuat modul, dan mengoptimalkan pengalaman penggunaan…</div>',
+            unsafe_allow_html=True,
+        )
+
+    st.markdown('<div class="splash-row">', unsafe_allow_html=True)
+    st.markdown('<div class="splash-pill">UI Modern</div>', unsafe_allow_html=True)
+    st.markdown('<div class="splash-pill">Navigasi Cepat</div>', unsafe_allow_html=True)
+    st.markdown('<div class="splash-pill">Akurat & Rapi</div>', unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    prog = st.progress(0)
+    status = st.empty()
+
+    # Fast, smooth progression (no heavy work; just UX)
+    for i in range(0, 101, 4):
+        prog.progress(i)
+        if i < 30:
+            status.caption("Menginisialisasi komponen…")
+        elif i < 70:
+            status.caption("Menyiapkan modul marketplace…")
+        else:
+            status.caption("Hampir selesai…")
+        time.sleep(0.02)
+
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    # Mark loaded and rerun to enter the main app
+    st.session_state["__splash_done__"] = True
+    st.rerun()
+
+
+if "__splash_done__" not in st.session_state:
+    st.session_state["__splash_done__"] = False
+
+if not st.session_state["__splash_done__"]:
+    splash_screen()
+
 # ======================================================================================
 # SIDEBAR
 # ======================================================================================
@@ -720,7 +883,7 @@ with st.sidebar:
 
     menu = st.radio(
         "🧭 Navigasi",
-        ["🏠 Overview", "🟠 Shopee", "🟢 Tokopedia", "🔵 Facebook", "📍 Google Maps", "📊 Export Gabungan"],
+        ["🟠 Shopee", "🟢 Tokopedia", "🔵 Facebook", "📍 Google Maps", "📊 Export Gabungan"],
         index=0,
         key="menu_nav",
     )
@@ -730,116 +893,6 @@ with st.sidebar:
         st.checkbox("Tampilkan tips cepat", value=True, key="show_tips")
         st.checkbox("Mode cepat (kurangi rendering chart besar)", value=False, key="fast_mode")
 
-
-# ======================================================================================
-# PAGE: OVERVIEW (Landing)
-# ======================================================================================
-if menu == "🏠 Overview":
-    banner("BPS Babel — Dashboard UMKM", "Ringkasan cepat & akses modul marketplace. Pilih modul di bawah untuk mulai bekerja lebih cepat.")
-
-    st.markdown(
-        """
-        <div class="bps-hero">
-          <div class="bps-hero-left">
-            <div class="bps-pill">INTERNATIONAL • MODERN • PROFESSIONAL</div>
-            <div class="bps-hero-title">Satu Dashboard. Semua Marketplace.</div>
-            <div class="bps-hero-sub">
-              Kelola ekstraksi, pembersihan, pemetaan lokasi, dan ekspor gabungan dalam satu alur kerja yang konsisten.
-              Fokus ke analisis, bukan urusan teknis.
-            </div>
-          </div>
-          <div class="bps-hero-right">
-            <div class="bps-mini-stat">
-              <div class="bps-mini-label">Status</div>
-              <div class="bps-mini-value">Ready</div>
-            </div>
-            <div class="bps-mini-stat">
-              <div class="bps-mini-label">Mode</div>
-              <div class="bps-mini-value">{mode}</div>
-            </div>
-          </div>
-        </div>
-        """.format(mode=("Fast" if st.session_state.get("fast_mode") else "Normal")),
-        unsafe_allow_html=True,
-    )
-
-    c1, c2, c3, c4 = st.columns(4, gap="large")
-    c1.metric("Modul Aktif", "5", help="Shopee, Tokopedia, Facebook, Google Maps, Export Gabungan")
-    c2.metric("Tips Cepat", "On" if st.session_state.get("show_tips") else "Off")
-    c3.metric("Rendering", "Ringan" if st.session_state.get("fast_mode") else "Penuh")
-    c4.metric("Versi UI", "International", help="Typography Inter, glass surfaces, consistent components")
-
-    st.divider()
-
-    left, right = st.columns([1.15, 0.85], gap="large")
-
-    with left:
-        st.subheader("🚀 Mulai dari sini")
-        st.markdown('<div class="bps-grid">', unsafe_allow_html=True)
-
-        def _card(icon, title, desc, tag):
-            st.markdown(
-                f"""
-                <div class="bps-card">
-                  <div class="bps-card-top">
-                    <div class="bps-card-icon">{icon}</div>
-                    <div class="bps-card-tag">{tag}</div>
-                  </div>
-                  <div class="bps-card-title">{title}</div>
-                  <div class="bps-card-desc">{desc}</div>
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
-
-        _card("🟠", "Shopee", "Unggah CSV, deteksi nama toko, bersihkan & siapkan untuk analisis.", "Marketplace")
-        if st.button("Buka Shopee", use_container_width=True):
-            st.session_state["menu_nav"] = "🟠 Shopee"
-            st.rerun()
-
-        _card("🟢", "Tokopedia", "Proses data Tokopedia dengan format yang konsisten dan hasil rapi.", "Marketplace")
-        if st.button("Buka Tokopedia", use_container_width=True):
-            st.session_state["menu_nav"] = "🟢 Tokopedia"
-            st.rerun()
-
-        _card("🔵", "Facebook", "Kompilasi data dari Facebook Page/Marketplace, normalisasi kolom.", "Marketplace")
-        if st.button("Buka Facebook", use_container_width=True):
-            st.session_state["menu_nav"] = "🔵 Facebook"
-            st.rerun()
-
-        _card("📍", "Google Maps", "Geocoding & pemetaan lokasi UMKM, cluster marker untuk eksplorasi.", "Geo")
-        if st.button("Buka Google Maps", use_container_width=True):
-            st.session_state["menu_nav"] = "📍 Google Maps"
-            st.rerun()
-
-        _card("📊", "Export Gabungan", "Gabungkan hasil lintas marketplace, ekspor final (CSV/Excel).", "Output")
-        if st.button("Buka Export Gabungan", use_container_width=True):
-            st.session_state["menu_nav"] = "📊 Export Gabungan"
-            st.rerun()
-
-        st.markdown("</div>", unsafe_allow_html=True)
-
-    with right:
-        st.subheader("✅ Checklist kualitas data")
-        with st.container(border=True):
-            st.markdown(
-                """
-                - Pastikan **CSV sesuai template** (delimiter, encoding).
-                - Cek kolom penting: **nama, alamat, kategori, link**.
-                - Gunakan **Mode cepat** jika file besar.
-                - Untuk peta, isi alamat sedetail mungkin (kecamatan/desa).
-                """
-            )
-
-        st.subheader("💡 Tips singkat")
-        with st.container(border=True):
-            st.markdown(
-                """
-                - Gunakan **Export Gabungan** setelah tiap modul selesai diproses.
-                - Saat API lookup lambat, turunkan *timeout* atau matikan sementara.
-                - Simpan output per batch untuk memudahkan audit.
-                """
-            )
 
 
 # ======================================================================================
