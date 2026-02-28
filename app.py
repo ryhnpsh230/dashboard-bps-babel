@@ -157,8 +157,8 @@ a:hover {{ text-decoration: underline; }}
 
 /* --- Cards --- */
 div[data-testid="stVerticalBlockBorderWrapper"] {{
-    background: var(--card);
-    border: 1px solid var(--bd) !important;
+    background: linear-gradient(135deg, rgba(255,255,255,0.07) 0%, rgba(255,255,255,0.04) 100%);
+    border: 1px solid rgba(255,111,0,.28) !important;
     border-radius: 22px;
     padding: 18px 18px;
     box-shadow:
@@ -177,6 +177,8 @@ div[data-testid="stVerticalBlockBorderWrapper"]:hover {{
 }}
 
 /* --- Hero --- */
+@keyframes floaty {0%{transform:translateY(0)}50%{transform:translateY(-2px)}100%{transform:translateY(0)}}
+
 .bps-hero {{
     border-radius: 24px;
     padding: 26px 28px;
@@ -231,7 +233,7 @@ div[data-testid="stVerticalBlockBorderWrapper"]:hover {{
     gap: 10px;
     position: relative;
 }}
-.badge {{
+.badge { animation: floaty 3.6s ease-in-out infinite;{
     display: inline-flex;
     align-items: center;
     gap: 8px;
@@ -664,13 +666,6 @@ def df_to_excel_bytes(sheets: dict) -> bytes:
     return buf.getvalue()
 
 
-# ======================================================================================
-# EXECUTIVE INSIGHT (narrative)
-# ======================================================================================
-def executive_insight(title: str, df: pd.DataFrame, wilayah_col="Wilayah", tipe_col="Tipe Usaha") -> str:
-    if df is None or df.empty:
-        return f"Belum ada data untuk **{title}**."
-
     total = len(df)
     wilayah_top = "-"
     if wilayah_col in df.columns and df[wilayah_col].notna().any():
@@ -852,19 +847,20 @@ with st.sidebar:
 # ======================================================================================
 # PAGE: EXECUTIVE SUMMARY
 # ======================================================================================
+
 if menu == "⭐ Executive Summary":
     hero(
         "Executive Summary — UMKM Babel",
-        "Ringkasan paling penting dari semua sumber (Shopee, Tokopedia, Facebook, Google Maps). Enak dibaca, enak dipresentasiin.",
-        badges=["Narasi otomatis", "Top wilayah", "KPI ringkas", "Export Master"]
+        "Ringkasan cepat yang isinya cuma angka penting + grafik, tanpa teks template.",
+        badges=["KPI ringkas", "Top wilayah", "Siap screenshot", "Export master"]
     )
 
-    # Build overview dataset counts
     shp = st.session_state.data_shopee
     tkp = st.session_state.data_tokped
     fb  = st.session_state.data_fb
     mp  = st.session_state.data_maps
 
+    # KPI row
     c1, c2, c3, c4 = st.columns(4)
     c1.metric("🟠 Shopee", fmt_int_id(len(shp)) if isinstance(shp, pd.DataFrame) else "0")
     c2.metric("🟢 Tokopedia", fmt_int_id(len(tkp)) if isinstance(tkp, pd.DataFrame) else "0")
@@ -872,12 +868,11 @@ if menu == "⭐ Executive Summary":
     c4.metric("📍 Google Maps", fmt_int_id(len(mp)) if isinstance(mp, pd.DataFrame) else "0")
 
     with st.container(border=True):
-        section("🧠 Insight Otomatis", "Kalimat ringkas yang bisa langsung kamu pakai (buat laporan, WA grup, atau slide).")
-        colA, colB = st.columns(2, gap="large")
+        section("📊 Grafik Ringkas", "Auto muncul kalau datanya ada.")
+        left, right = st.columns(2, gap="large")
 
-        with colA:
-            st.markdown("**Marketplace (Shopee/Tokopedia/Facebook)**")
-            # merge minimal marketplace summary if available
+        with left:
+            st.markdown("**Top Wilayah (Marketplace)**")
             frames = []
             if isinstance(shp, pd.DataFrame) and not shp.empty:
                 frames.append(shp.assign(Sumber="Shopee"))
@@ -888,48 +883,40 @@ if menu == "⭐ Executive Summary":
 
             if frames:
                 mk = pd.concat(frames, ignore_index=True)
-                st.success(
-                    executive_insight("Marketplace", mk, wilayah_col="Wilayah", tipe_col="Tipe Usaha")
-                )
-                top_wil = mk["Wilayah"].value_counts().head(6).reset_index()
-                top_wil.columns = ["Wilayah", "Jumlah"]
-                fig = px.bar(top_wil, x="Wilayah", y="Jumlah", title="Top Wilayah (Marketplace)")
-                fig.update_layout(paper_bgcolor=BPS_PAPER, plot_bgcolor=BPS_PAPER, margin=dict(l=0,r=0,t=50,b=0))
-                st.plotly_chart(fig, use_container_width=True)
+                if "Wilayah" in mk.columns and mk["Wilayah"].notna().any():
+                    top_wil = mk["Wilayah"].value_counts().head(8).reset_index()
+                    top_wil.columns = ["Wilayah", "Jumlah"]
+                    fig = px.bar(top_wil, x="Wilayah", y="Jumlah", title="Top Wilayah (Marketplace)")
+                    fig.update_layout(paper_bgcolor=BPS_PAPER, plot_bgcolor=BPS_PAPER, margin=dict(l=0, r=0, t=50, b=0))
+                    st.plotly_chart(fig, use_container_width=True)
+                else:
+                    st.info("Kolom 'Wilayah' belum ada di data marketplace.")
             else:
                 st.info("Belum ada data marketplace. Proses dulu di menu Shopee/Tokopedia/Facebook.")
 
-        with colB:
-            st.markdown("**Google Maps (Usaha berbasis lokasi)**")
-            if isinstance(mp, pd.DataFrame) and not mp.empty:
-                st.success(executive_insight("Google Maps", mp, wilayah_col="Alamat", tipe_col="Nama Usaha"))
-                # show simple map density by rounding coords
+        with right:
+            st.markdown("**Peta Hotspot (Google Maps)**")
+            if isinstance(mp, pd.DataFrame) and not mp.empty and {"Latitude","Longitude"}.issubset(mp.columns):
                 dfp = mp.dropna(subset=["Latitude","Longitude"]).copy()
                 if not dfp.empty:
                     dfp["LatR"] = dfp["Latitude"].round(2)
                     dfp["LngR"] = dfp["Longitude"].round(2)
-                    dens = dfp.groupby(["LatR","LngR"]).size().reset_index(name="Jumlah").sort_values("Jumlah", ascending=False).head(10)
+                    dens = dfp.groupby(["LatR","LngR"]).size().reset_index(name="Jumlah").sort_values("Jumlah", ascending=False).head(12)
                     fig = px.scatter_geo(dens, lat="LatR", lon="LngR", size="Jumlah", hover_data={"Jumlah": True}, title="Hotspot (approx)")
-                    fig.update_layout(paper_bgcolor=BPS_PAPER, plot_bgcolor=BPS_PAPER, margin=dict(l=0,r=0,t=50,b=0))
+                    fig.update_layout(paper_bgcolor=BPS_PAPER, plot_bgcolor=BPS_PAPER, margin=dict(l=0, r=0, t=50, b=0))
                     st.plotly_chart(fig, use_container_width=True)
+                else:
+                    st.info("Belum ada koordinat valid di Google Maps.")
             else:
                 st.info("Belum ada data Google Maps. Proses dulu di menu Google Maps.")
 
     with st.container(border=True):
-        section("📌 Aksi Cepat", "Export master + audit ringkas.")
-        a1, a2, a3 = st.columns([1.3, 1.2, 1.5])
-        with a1:
-            st.markdown("<div class='small-muted'>Kalau mau file gabungan, tinggal buka menu **Export Gabungan** — sekali klik beres.</div>", unsafe_allow_html=True)
-            st.markdown("Tips cepat: buat presentasi, cukup ambil screenshot **KPI** + **Top Wilayah** (udah cakep).")
-        with a2:
-            st.markdown("<div class='small-muted'>Kalau mau naik level lagi:</div>", unsafe_allow_html=True)
-            st.markdown("- Tambah boundary Babel (GeoJSON)\n- PDF report otomatis\n- Dedup lintas platform")
-        with a3:
-            st.info("Kalau peta nge-blank/403, coba ganti provider ke **OpenStreetMap**. Kalau masih bandel, pakai **Mode Aman** (fallback).")
-
+        section("⬇️ Export", "Kalau mau file gabungan, langsung ke menu Export Gabungan.")
+        st.markdown("<div class='small-muted'>Tip: KPI + grafik di atas udah cukup cakep buat screenshot.</div>", unsafe_allow_html=True)
 
 # ======================================================================================
 # PAGE: SHOPEE
+
 # ======================================================================================
 elif menu == "🟠 Shopee":
     hero(
