@@ -934,8 +934,8 @@ if menu == "⭐ Executive Summary":
 elif menu == "🟠 Shopee":
     hero(
         "Dashboard UMKM — Shopee",
-        "Ekstraksi data UMKM dari Shopee Marketplace (Bangka Belitung). UI premium + export rapi.",
-        badges=["Filter Babel otomatis", "Klasifikasi Tipe Usaha", "Export Excel 1 klik", "Tema Oren BPS"]
+        "Ekstraksi data UMKM dari Shopee Marketplace (Bangka Belitung).",
+        badges=["Filter Babel otomatis", "Klasifikasi Tipe Usaha", "Export Excel 1 klik", "Ekstraksi Data"]
     )
 
     with st.container(border=True):
@@ -1712,3 +1712,4 @@ st.markdown(
 """,
     unsafe_allow_html=True,
 )
+
