@@ -8,6 +8,23 @@ import os
 import time
 from urllib.parse import urlparse
 
+def section_header(title: str, subtitle: str = "", badge: str = "MODULE"):
+    """Premium section header (international look)."""
+    st.markdown(
+        f"""
+<div class="bps-section">
+  <div class="left">
+    <div class="bps-badge">{badge}</div>
+    <h2 class="bps-h">{title}</h2>
+    {f'<p class="bps-sub">{subtitle}</p>' if subtitle else ''}
+    <div class="bps-divider"></div>
+  </div>
+</div>
+""",
+        unsafe_allow_html=True,
+    )
+
+
 import plotly.express as px
 
 import folium
@@ -1945,21 +1962,4 @@ st.markdown(
 )
 
 
-
-
-def section_header(title: str, subtitle: str = "", badge: str = "MODULE"):
-    """Premium section header (international look)."""
-    st.markdown(
-        f"""
-<div class="bps-section">
-  <div class="left">
-    <div class="bps-badge">{badge}</div>
-    <h2 class="bps-h">{title}</h2>
-    {f'<p class="bps-sub">{subtitle}</p>' if subtitle else ''}
-    <div class="bps-divider"></div>
-  </div>
-</div>
-""",
-        unsafe_allow_html=True,
-    )
 
