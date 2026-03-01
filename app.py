@@ -1570,12 +1570,129 @@ if menu == "🏠 Dashboard":
 
     total_all = shp_n + tkp_n + fb_n + mp_n
 
-    c1, c2, c3, c4, c5 = st.columns([1,1,1,1,1], gap="medium")
-    c1.metric("📦 Total Data", fmt_int_id(total_all))
-    c2.metric("🟠 Shopee", fmt_int_id(shp_n))
-    c3.metric("🟢 Tokopedia", fmt_int_id(tkp_n))
-    c4.metric("🔵 Facebook", fmt_int_id(fb_n))
-    c5.metric("📍 Google Maps", fmt_int_id(mp_n))
+    
+    # Premium KPI cards (less "kaku" than st.metric)
+    st.markdown(
+        f"""
+<style>
+.kpi-grid{{
+  display:grid;
+  grid-template-columns: repeat(5, minmax(0,1fr));
+  gap: 14px;
+  margin-top: 6px;
+}}
+@media (max-width: 1200px){{
+  .kpi-grid{{ grid-template-columns: repeat(2, minmax(0,1fr)); }}
+}}
+.kpi-card{{
+  border-radius: 18px;
+  border: 1px solid rgba(255,200,120,0.18);
+  background: linear-gradient(180deg, rgba(255,255,255,0.07), rgba(255,255,255,0.035));
+  box-shadow: 0 18px 60px rgba(0,0,0,0.34);
+  padding: 14px 14px;
+  backdrop-filter: blur(16px);
+  position: relative;
+  overflow: hidden;
+}}
+.kpi-card::before{{
+  content:"";
+  position:absolute; inset:-2px;
+  background: radial-gradient(700px 240px at 10% 10%, rgba(255,140,40,0.26), rgba(255,140,40,0));
+  opacity:.9;
+  pointer-events:none;
+}}
+.kpi-top{{
+  display:flex; align-items:center; justify-content:space-between;
+  position: relative;
+}}
+.kpi-label{{
+  font-weight: 800;
+  letter-spacing: .2px;
+  color: rgba(255,255,255,0.78);
+  font-size: .92rem;
+}}
+.kpi-ico{{
+  width: 34px; height: 34px;
+  border-radius: 12px;
+  display:flex; align-items:center; justify-content:center;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.10);
+}}
+.kpi-val{{
+  position: relative;
+  margin-top: 10px;
+  font-size: 2.05rem;
+  font-weight: 950;
+  letter-spacing: -0.03em;
+  color: rgba(255,255,255,0.96);
+}}
+.kpi-sub{{
+  position: relative;
+  margin-top: 2px;
+  color: rgba(255,255,255,0.62);
+  font-size: .86rem;
+}}
+.kpi-accent{{
+  position:absolute; left:0; top:0; bottom:0;
+  width: 6px;
+  background: linear-gradient(180deg, rgba(255,120,0,0.95), rgba(255,210,140,0.65));
+}}
+</style>
+
+<div class="kpi-grid">
+  <div class="kpi-card">
+    <div class="kpi-accent"></div>
+    <div class="kpi-top">
+      <div class="kpi-label">📦 Total Data</div>
+      <div class="kpi-ico">⚡</div>
+    </div>
+    <div class="kpi-val">{fmt_int_id(total_all)}</div>
+    <div class="kpi-sub">Akumulasi semua sumber</div>
+  </div>
+
+  <div class="kpi-card">
+    <div class="kpi-accent"></div>
+    <div class="kpi-top">
+      <div class="kpi-label">🟠 Shopee</div>
+      <div class="kpi-ico">🛒</div>
+    </div>
+    <div class="kpi-val">{fmt_int_id(shp_n)}</div>
+    <div class="kpi-sub">Siap diproses</div>
+  </div>
+
+  <div class="kpi-card">
+    <div class="kpi-accent"></div>
+    <div class="kpi-top">
+      <div class="kpi-label">🟢 Tokopedia</div>
+      <div class="kpi-ico">🧾</div>
+    </div>
+    <div class="kpi-val">{fmt_int_id(tkp_n)}</div>
+    <div class="kpi-sub">Siap diproses</div>
+  </div>
+
+  <div class="kpi-card">
+    <div class="kpi-accent"></div>
+    <div class="kpi-top">
+      <div class="kpi-label">🔵 Facebook</div>
+      <div class="kpi-ico">💬</div>
+    </div>
+    <div class="kpi-val">{fmt_int_id(fb_n)}</div>
+    <div class="kpi-sub">Siap diproses</div>
+  </div>
+
+  <div class="kpi-card">
+    <div class="kpi-accent"></div>
+    <div class="kpi-top">
+      <div class="kpi-label">📍 Google Maps</div>
+      <div class="kpi-ico">🧭</div>
+    </div>
+    <div class="kpi-val">{fmt_int_id(mp_n)}</div>
+    <div class="kpi-sub">Siap divisualisasi</div>
+  </div>
+</div>
+""",
+        unsafe_allow_html=True,
+    )
 
     with st.container(border=True):
         st.subheader("🚦 Status Modul")
@@ -2407,5 +2524,20 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-
-
+# --- FINAL FINAL OVERRIDE (Premium Sunset v2: more warm, less black) ---
+st.markdown(
+    """
+<style>
+html, body, [data-testid="stAppViewContainer"], [data-testid="stApp"]{
+  background:
+    radial-gradient(1700px 980px at 7% 12%, rgba(255,140,40,.62) 0%, rgba(255,140,40,.30) 38%, rgba(255,140,40,0) 72%),
+    radial-gradient(1500px 980px at 92% 14%, rgba(255,200,90,.34) 0%, rgba(255,200,90,.16) 42%, rgba(255,200,90,0) 78%),
+    radial-gradient(1400px 900px at 45% 105%, rgba(255,210,140,.16) 0%, rgba(255,210,140,0) 72%),
+    radial-gradient(1200px 820px at 55% 55%, rgba(30,58,138,.14) 0%, rgba(30,58,138,0) 62%),
+    linear-gradient(155deg, #241006 0%, #2f1407 20%, #151017 55%, #070a10 100%) !important;
+  background-attachment: fixed !important;
+}
+</style>
+""",
+    unsafe_allow_html=True,
+)
