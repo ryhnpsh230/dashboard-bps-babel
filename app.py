@@ -233,7 +233,7 @@ div[data-testid="stDownloadButton"] button,
     color: #111 !important;
     font-weight: 950 !important;
     height: 48px !important;
-    box-shadow: 0 16px 44px rgba(255,111,0,.22);
+    box-shadow: 0 16px 44px rgba(255,111,0,.30);
     transition: transform .15s ease, box-shadow .15s ease, filter .15s ease;
 }
 div[data-testid="stDownloadButton"] button:hover,
@@ -358,7 +358,7 @@ st.markdown(
 
   --shadow-sm: 0 10px 26px rgba(0,0,0,.30);
   --shadow-md: 0 18px 64px rgba(0,0,0,.38);
-  --shadow-glow: 0 26px 90px rgba(255,111,0,.14);
+  --shadow-glow: 0 26px 90px rgba(255,111,0,.20);
   --ring: 0 0 0 4px rgba(255,111,0,.18);
 }
 
@@ -390,7 +390,7 @@ st.markdown(
     rgba(255,193,7,.72) 54%,
     rgba(255,111,0,.72) 82%,
     rgba(255,111,0,0) 100%);
-  box-shadow: 0 12px 44px rgba(255,111,0,.14);
+  box-shadow: 0 12px 44px rgba(255,111,0,.20);
 }
 
 /* Typography hierarchy */
@@ -1185,7 +1185,7 @@ with st.sidebar:
 
     menu = st.radio(
         "🧭 Navigasi",
-        ["🟠 Shopee", "🟢 Tokopedia", "🔵 Facebook", "📍 Google Maps", "📊 Export Gabungan"],
+        ["🏠 Dashboard", "🟠 Shopee", "🟢 Tokopedia", "🔵 Facebook", "📍 Google Maps", "📊 Export Gabungan"],
         index=0,
         key="menu_nav",
     )
@@ -1197,10 +1197,121 @@ with st.sidebar:
 
 
 
+
+# ======================================================================================
+# PAGE: DASHBOARD (Before entering UMKM modules)
+# ======================================================================================
+if menu == "🏠 Dashboard":
+    section_header("Dashboard Utama", "Ringkasan status data & akses cepat ke modul UMKM.", "DASHBOARD")
+    banner("Dashboard Utama", "Mulai dari ringkasan cepat, lalu masuk ke modul UMKM yang kamu butuhkan.")
+
+    # Hero / quick actions
+    st.markdown(
+        """
+<div class="bps-hero">
+  <div>
+    <div class="bps-badge">UMKM • BPS BABEL</div>
+    <h1>Kontrol Pusat Analisis UMKM</h1>
+    <p>Upload data dari marketplace / maps, cek ringkasan, lalu lanjutkan analisis dengan UI yang konsisten & profesional.</p>
+    <div class="cta-row">
+      <span class="bps-chip">🟠 Shopee</span>
+      <span class="bps-chip">🟢 Tokopedia</span>
+      <span class="bps-chip">🔵 Facebook</span>
+      <span class="bps-chip">📍 Google Maps</span>
+      <span class="bps-chip">📊 Export</span>
+    </div>
+  </div>
+</div>
+""",
+        unsafe_allow_html=True,
+    )
+
+    # Data readiness
+    df_shp = st.session_state.data_shopee
+    df_tkp = st.session_state.data_tokped
+    df_fb = st.session_state.data_fb
+    df_maps = st.session_state.data_maps
+
+    shp_n = 0 if df_shp is None else len(df_shp)
+    tkp_n = 0 if df_tkp is None else len(df_tkp)
+    fb_n  = 0 if df_fb is None else len(df_fb)
+    mp_n  = 0 if df_maps is None else len(df_maps)
+
+    total_all = shp_n + tkp_n + fb_n + mp_n
+
+    c1, c2, c3, c4, c5 = st.columns([1,1,1,1,1], gap="medium")
+    c1.metric("📦 Total Data", fmt_int_id(total_all))
+    c2.metric("🟠 Shopee", fmt_int_id(shp_n))
+    c3.metric("🟢 Tokopedia", fmt_int_id(tkp_n))
+    c4.metric("🔵 Facebook", fmt_int_id(fb_n))
+    c5.metric("📍 Google Maps", fmt_int_id(mp_n))
+
+    with st.container(border=True):
+        st.subheader("🚦 Status Modul")
+        s1, s2 = st.columns([1.1, 0.9], gap="large")
+
+        def _pill(ok: bool, text: str):
+            cls = "ok" if ok else "no"
+            icon = "✅" if ok else "⏳"
+            return f'<span class="dash-pill {cls}">{icon} {text}</span>'
+
+        st.markdown(
+            """
+<style>
+/* Dashboard pills */
+.dash-pill{
+  display:inline-flex; align-items:center; gap:8px;
+  padding: 10px 12px;
+  border-radius: 999px;
+  margin: 6px 10px 0 0;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.05);
+  font-weight: 800;
+}
+.dash-pill.ok{
+  border-color: rgba(255,193,7,.32);
+  background: linear-gradient(135deg, rgba(255,111,0,.20), rgba(255,193,7,.10));
+  box-shadow: 0 18px 50px rgba(255,111,0,.10);
+}
+.dash-pill.no{
+  opacity: .82;
+}
+</style>
+""",
+            unsafe_allow_html=True,
+        )
+
+        with s1:
+            st.markdown(
+                _pill(shp_n > 0, "Shopee siap dianalisis") +
+                _pill(tkp_n > 0, "Tokopedia siap dianalisis") +
+                _pill(fb_n > 0, "Facebook siap dianalisis") +
+                _pill(mp_n > 0, "Google Maps siap divisualisasi"),
+                unsafe_allow_html=True,
+            )
+            st.caption("Tip: Mulai dari modul yang datanya sudah siap. Setelah itu gunakan Export Gabungan untuk konsolidasi.")
+        with s2:
+            st.subheader("🧭 Navigasi Cepat")
+            st.info("Gunakan sidebar untuk pindah modul. Default awal memang Dashboard biar lebih ‘hidup’ dan profesional.")
+            st.caption("Kalau mau, nanti bisa dibuat tombol langsung pindah menu (butuh rerun state).")
+
+    # Recommendations / tips area
+    with st.container(border=True):
+        st.subheader("✨ Rekomendasi Cepat")
+        t1, t2 = st.columns(2, gap="large")
+        with t1:
+            st.success("**Workflow ideal:** Upload → Filter → Dashboard Eksekutif → Export.")
+            st.write("• Pakai **Mode cepat** kalau file sangat besar.\n• Naikkan **jeda request** API Shopee kalau kena rate limit.")
+        with t2:
+            st.warning("**Catatan kualitas data:**")
+            st.write("• Pastikan kolom lokasi/wilayah benar.\n• Untuk Google Maps, pastikan **lat/lon** valid.\n• Link/telepon kosong akan otomatis dibersihkan.")
+
+
+
 # ======================================================================================
 # PAGE: SHOPEE
 # ======================================================================================
-if menu == "🟠 Shopee":
+elif menu == "🟠 Shopee":
     section_header("Shopee Marketplace", "Analisis & ekstraksi data Shopee dengan tampilan rapih dan konsisten.", "MARKETPLACE")
     banner("Dashboard UMKM — Shopee", "Ekstraksi data UMKM dari Shopee Marketplace (Bangka Belitung)")
 
