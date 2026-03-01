@@ -579,6 +579,25 @@ EXTRA_CSS = """
 
 st.markdown("<style>\n" + CSS_THEME + "\n" + EXTRA_CSS + "\n</style>", unsafe_allow_html=True)
 
+# --- Force background override (Premium Sunset) ---
+st.markdown(
+    """
+<style>
+/* FINAL OVERRIDE — ensures background changes apply */
+html, body, [data-testid="stAppViewContainer"], [data-testid="stApp"]{
+  background:
+    radial-gradient(1600px 900px at 5% 15%, rgba(255,120,0,.55) 0%, rgba(255,120,0,.28) 35%, rgba(255,120,0,0) 70%),
+    radial-gradient(1400px 900px at 95% 10%, rgba(255,170,0,.35) 0%, rgba(255,170,0,.18) 40%, rgba(255,170,0,0) 75%),
+    radial-gradient(1200px 800px at 50% 100%, rgba(255,200,120,.18) 0%, rgba(255,200,120,0) 70%),
+    linear-gradient(155deg, #1b0f08 0%, #2a1306 22%, #140c08 55%, #07090d 100%) !important;
+  background-attachment: fixed !important;
+}
+</style>
+""",
+    unsafe_allow_html=True,
+)
+
+
 # Hide sidebar entirely on Dashboard mode
 if not st.session_state.get("show_sidebar", False):
     st.markdown(
