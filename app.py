@@ -156,7 +156,7 @@ div[data-testid="stVerticalBlockBorderWrapper"]:hover {
     background:
       radial-gradient(900px 360px at 15% 0%, rgba(255,111,0,.40) 0%, rgba(255,111,0,0) 62%),
       radial-gradient(900px 380px at 85% 10%, rgba(255,193,7,.26) 0%, rgba(255,193,7,0) 62%),
-      linear-gradient(135deg, rgba(255,111,0,.18) 0%, rgba(255,193,7,.10) 40%, rgba(255,255,255,.04) 100%);
+      linear-gradient(135deg, rgba(255,111,0,.24) 0%, rgba(255,193,7,.10) 40%, rgba(255,255,255,.04) 100%);
     border: 1px solid rgba(255,111,0,.34);
     box-shadow: 0 18px 55px rgba(0,0,0,.34);
     backdrop-filter: blur(14px);
@@ -240,7 +240,7 @@ div[data-testid="stDownloadButton"] button,
     color: #111 !important;
     font-weight: 950 !important;
     height: 48px !important;
-    box-shadow: 0 16px 44px rgba(255,111,0,.30);
+    box-shadow: 0 16px 44px rgba(255,111,0,.42);
     transition: transform .15s ease, box-shadow .15s ease, filter .15s ease;
 }
 div[data-testid="stDownloadButton"] button:hover,
@@ -251,7 +251,7 @@ div[data-testid="stDownloadButton"] button:hover,
 }
 button[kind="secondary"] {
     background: rgba(255,255,255,.08) !important;
-    border: 1px solid rgba(255,111,0,.30) !important;
+    border: 1px solid rgba(255,111,0,.42) !important;
     color: #f2f2f2 !important;
 }
 
@@ -259,7 +259,7 @@ button[kind="secondary"] {
 [data-testid="stDataFrame"] {
     border-radius: 16px;
     overflow: hidden;
-    border: 1px solid rgba(255,111,0,.20);
+    border: 1px solid rgba(255,111,0,.26);
 }
 
 
@@ -294,7 +294,7 @@ button[kind="secondary"] {
 [data-testid="stSidebar"] [role="radiogroup"] > label:has(input:checked){
   background: linear-gradient(135deg, rgba(255,111,0,.92) 0%, rgba(255,193,7,.86) 100%);
   border-color: rgba(255,193,7,.32);
-  box-shadow: 0 18px 56px rgba(255,111,0,.20);
+  box-shadow: 0 18px 56px rgba(255,111,0,.26);
 }
 [data-testid="stSidebar"] [role="radiogroup"] > label:has(input:checked) p{
   color: #101113 !important;
@@ -385,8 +385,8 @@ st.markdown(
 
   --shadow-sm: 0 10px 26px rgba(0,0,0,.30);
   --shadow-md: 0 18px 64px rgba(0,0,0,.38);
-  --shadow-glow: 0 26px 90px rgba(255,111,0,.20);
-  --ring: 0 0 0 4px rgba(255,111,0,.18);
+  --shadow-glow: 0 26px 90px rgba(255,111,0,.26);
+  --ring: 0 0 0 4px rgba(255,111,0,.24);
 }
 
 /* ---- Base ---- */
@@ -417,7 +417,7 @@ st.markdown(
     rgba(255,193,7,.72) 54%,
     rgba(255,111,0,.72) 82%,
     rgba(255,111,0,0) 100%);
-  box-shadow: 0 12px 44px rgba(255,111,0,.20);
+  box-shadow: 0 12px 44px rgba(255,111,0,.26);
 }
 
 /* Typography hierarchy */
@@ -561,7 +561,7 @@ div[data-testid="metric-container"] [data-testid="stMetricValue"]{ font-weight: 
   background: linear-gradient(135deg, rgba(255,111,0,.92) 0%, rgba(255,193,7,.88) 100%) !important;
   color: #101113 !important;
   font-weight: 950;
-  box-shadow: 0 18px 54px rgba(255,111,0,.20);
+  box-shadow: 0 18px 54px rgba(255,111,0,.26);
 }
 
 /* ---- Buttons ---- */
@@ -573,7 +573,7 @@ div[data-testid="stDownloadButton"] button,
   color: #101113 !important;
   font-weight: 950 !important;
   height: 48px !important;
-  box-shadow: 0 16px 44px rgba(255,111,0,.18);
+  box-shadow: 0 16px 44px rgba(255,111,0,.24);
   transition: transform .15s ease, box-shadow .15s ease, filter .15s ease;
 }
 div[data-testid="stDownloadButton"] button:hover,
@@ -660,7 +660,7 @@ details[open]{ box-shadow: var(--shadow-sm); }
 [data-testid="stSidebar"] div[role="radiogroup"] label:has(input:checked){
   background: linear-gradient(135deg, rgba(255,111,0,.95) 0%, rgba(255,193,7,.88) 100%);
   border-color: rgba(255,255,255,.12);
-  box-shadow: 0 18px 54px rgba(255,111,0,.18);
+  box-shadow: 0 18px 54px rgba(255,111,0,.24);
 }
 [data-testid="stSidebar"] div[role="radiogroup"] label:has(input:checked) p{
   color: #101113 !important;
@@ -1114,7 +1114,7 @@ def splash_screen():
             max-width: 860px;
             margin: 6vh auto 0 auto;
             background:
-              radial-gradient(1200px 520px at 12% 0%, rgba(255,111,0,.20) 0%, rgba(255,111,0,0) 62%),
+              radial-gradient(1200px 520px at 12% 0%, rgba(255,111,0,.26) 0%, rgba(255,111,0,0) 62%),
               radial-gradient(1000px 520px at 88% 12%, rgba(255,193,7,.12) 0%, rgba(255,193,7,0) 62%),
               linear-gradient(135deg, rgba(255,255,255,.10) 0%, rgba(255,255,255,.05) 60%, rgba(255,255,255,.03) 100%);
             border: 1px solid rgba(255,255,255,0.12);
@@ -1214,6 +1214,12 @@ if st.session_state.get("nav_target"):
     st.session_state["menu_nav"] = st.session_state["nav_target"]
     st.session_state["nav_target"] = None
 
+# Ensure widget value is valid when sidebar is shown
+if st.session_state.get("show_sidebar") and st.session_state.get("menu_nav") == "🏠 Dashboard":
+    st.session_state["menu_nav"] = "🟠 Shopee"
+
+
+
 menu = "🏠 Dashboard"
 
 if st.session_state["show_sidebar"]:
@@ -1222,12 +1228,19 @@ if st.session_state["show_sidebar"]:
         st.caption("Penyedia Data Statistik Berkualitas untuk Indonesia Maju")
         st.divider()
 
+top_l, top_r = st.columns([0.82, 0.18])
+with top_r:
+    if st.button("🏠", key="btn_home", help="Kembali ke Dashboard"):
+        st.session_state["show_sidebar"] = False
+        st.session_state["menu_nav"] = "🏠 Dashboard"
+        st.rerun()
+
         if os.path.exists("logo.png"):
             st.image("logo.png", use_container_width=True)
 
         menu = st.radio(
             "🧭 Navigasi",
-            ["🏠 Dashboard", "🟠 Shopee", "🟢 Tokopedia", "🔵 Facebook", "📍 Google Maps", "📊 Export Gabungan"],
+            ["🟠 Shopee", "🟢 Tokopedia", "🔵 Facebook", "📍 Google Maps", "📊 Export Gabungan"],
             index=0,
             key="menu_nav",
         )
@@ -1319,7 +1332,7 @@ if menu == "🏠 Dashboard":
 }
 .dash-pill.ok{
   border-color: rgba(255,193,7,.32);
-  background: linear-gradient(135deg, rgba(255,111,0,.20), rgba(255,193,7,.10));
+  background: linear-gradient(135deg, rgba(255,111,0,.26), rgba(255,193,7,.10));
   box-shadow: 0 18px 50px rgba(255,111,0,.10);
 }
 .dash-pill.no{
@@ -1342,9 +1355,9 @@ if menu == "🏠 Dashboard":
         with s2:
             st.subheader("🧭 Navigasi Cepat")
 
-st.markdown("Klik tombol di bawah untuk mulai mengelola data UMKM. Sidebar akan muncul otomatis.")
-if st.button("🚀 Ayo Upload Data", use_container_width=True):
-    goto_menu("🟠 Shopee")
+            st.markdown("Klik tombol di bawah untuk mulai mengelola data UMKM. Sidebar akan muncul otomatis.")
+            if st.button("🚀 Ayo Upload Data", use_container_width=True):
+                goto_menu("🟠 Shopee")
 
 
 
