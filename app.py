@@ -428,6 +428,99 @@ button:focus-visible{
   border-color: rgba(255,255,255,0.16) !important;
   box-shadow: 0 22px 74px rgba(255,111,0,0.26);
 }
+
+
+/* ==================== Premium Motion & Smoothing ==================== */
+*{ -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+@media (prefers-reduced-motion: no-preference){
+  .stButton > button, [data-testid="stSidebar"] .stRadio label, .stTabs [data-baseweb="tab"]{
+    transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease, background .16s ease, filter .16s ease;
+  }
+}
+
+/* ==================== Sidebar (less rigid, more premium) ==================== */
+[data-testid="stSidebar"]{
+  border-right: 1px solid rgba(255,255,255,0.10);
+}
+[data-testid="stSidebar"] > div:first-child{
+  padding-top: 18px;
+}
+[data-testid="stSidebar"] .stRadio div[role="radiogroup"]{
+  gap: 10px;
+}
+
+/* Make sidebar nav look like premium capsules */
+[data-testid="stSidebar"] .stRadio div[role="radiogroup"] > label{
+  background: linear-gradient(180deg, rgba(255,255,255,0.055), rgba(255,255,255,0.03)) !important;
+  border-radius: 18px !important;
+  padding: 12px 14px !important;
+}
+[data-testid="stSidebar"] .stRadio div[role="radiogroup"] > label:has(input:checked){
+  background: linear-gradient(135deg, rgba(255,111,0,.92) 0%, rgba(255,179,0,.82) 55%, rgba(255,213,79,.74) 100%) !important;
+  transform: translateY(-1px);
+}
+[data-testid="stSidebar"] .stRadio div[role="radiogroup"] > label:hover{
+  transform: translateY(-1px);
+  filter: brightness(1.03);
+}
+
+/* "Back to Dashboard" button in sidebar */
+[data-testid="stSidebar"] .stButton > button{
+  height: 46px !important;
+  border-radius: 16px !important;
+}
+[data-testid="stSidebar"] button[kind="secondary"]{
+  background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.05)) !important;
+  border: 1px solid rgba(255,179,0,0.22) !important;
+  box-shadow: 0 14px 40px rgba(0,0,0,0.34) !important;
+}
+[data-testid="stSidebar"] button[kind="secondary"]:hover{
+  border-color: rgba(255,179,0,0.34) !important;
+  box-shadow: 0 22px 70px rgba(255,111,0,0.18), 0 16px 44px rgba(0,0,0,0.38) !important;
+}
+
+/* ==================== Buttons (reduce 'slab' feel) ==================== */
+.stButton > button{
+  border-radius: 18px !important;
+}
+.stButton > button:active{ transform: translateY(0px) scale(.995); }
+
+/* Download buttons: less 'blocky' */
+div[data-testid="stDownloadButton"] button{
+  height: 50px !important;
+  border-radius: 18px !important;
+  background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.04)) !important;
+  color: rgba(255,255,255,0.92) !important;
+  border: 1px solid rgba(255,179,0,0.28) !important;
+  box-shadow: 0 16px 44px rgba(0,0,0,0.34) !important;
+}
+div[data-testid="stDownloadButton"] button:hover{
+  border-color: rgba(255,179,0,0.40) !important;
+  box-shadow: 0 26px 86px rgba(255,111,0,0.20), 0 18px 52px rgba(0,0,0,0.38) !important;
+}
+
+/* ==================== Tabs (more premium) ==================== */
+.stTabs [data-baseweb="tab-list"]{
+  background: linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.03));
+  border: 1px solid rgba(255,255,255,0.10);
+  border-radius: 18px;
+  padding: 10px;
+}
+.stTabs [data-baseweb="tab"]{
+  border-radius: 16px;
+  background: rgba(255,255,255,0.03);
+}
+.stTabs [aria-selected="true"]{
+  background: linear-gradient(135deg, rgba(255,111,0,.95) 0%, rgba(255,179,0,.85) 55%, rgba(255,213,79,.78) 100%) !important;
+  box-shadow: 0 18px 60px rgba(255,111,0,0.22) !important;
+}
+
+/* ==================== DataFrame polish ==================== */
+[data-testid="stDataFrame"]{
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,0.10);
+  box-shadow: 0 18px 60px rgba(0,0,0,0.34);
+}
 """
 
 # Inject BPS accent tokens safely (no f-string CSS parsing issues)
@@ -1349,12 +1442,11 @@ if st.session_state["show_sidebar"]:
         st.caption("Penyedia Data Statistik Berkualitas untuk Indonesia Maju")
         st.divider()
 
-        top_l, top_r = st.columns([0.82, 0.18])
-        with top_r:
-            if st.button("🏠", key="btn_home", help="Kembali ke Dashboard"):
-                st.session_state["show_sidebar"] = False
-                st.session_state["menu_nav"] = "🏠 Dashboard"
-                st.rerun()
+        # Premium "Back to Dashboard"
+        if st.button("⬅️ Kembali ke Dashboard", key="btn_home", use_container_width=True, type="secondary"):
+            st.session_state["show_sidebar"] = False
+            st.session_state["menu_nav"] = "🏠 Dashboard"
+            st.rerun()
 
         if os.path.exists("logo.png"):
             st.image("logo.png", use_container_width=True)
