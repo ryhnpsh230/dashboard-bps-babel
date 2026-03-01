@@ -85,13 +85,14 @@ CSS_THEME = r"""@import url("https://fonts.googleapis.com/css2?family=Manrope:wg
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap");
 
 
-/* -------------------- Global background: ULTRA ORANGE -------------------- */
+
+/* -------------------- Global background: PREMIUM SUNSET MODE -------------------- */
 [data-testid="stAppViewContainer"] {
     background:
-      radial-gradient(1400px 900px at 8% 10%, rgba(255,111,0,.65) 0%, rgba(255,111,0,.35) 40%, rgba(255,111,0,0) 70%),
-      radial-gradient(1200px 800px at 92% 15%, rgba(255,140,0,.45) 0%, rgba(255,140,0,.20) 45%, rgba(255,140,0,0) 70%),
-      radial-gradient(1000px 700px at 50% 100%, rgba(255,179,0,.30) 0%, rgba(255,179,0,0) 70%),
-      linear-gradient(165deg, #120904 0%, #1a0c05 25%, #0d0a08 60%, #050608 100%) !important;
+      radial-gradient(1600px 900px at 5% 15%, rgba(255,120,0,.55) 0%, rgba(255,120,0,.28) 35%, rgba(255,120,0,0) 70%),
+      radial-gradient(1400px 900px at 95% 10%, rgba(255,170,0,.35) 0%, rgba(255,170,0,.18) 40%, rgba(255,170,0,0) 75%),
+      radial-gradient(1200px 800px at 50% 100%, rgba(255,200,120,.18) 0%, rgba(255,200,120,0) 70%),
+      linear-gradient(155deg, #1b0f08 0%, #2a1306 22%, #140c08 55%, #07090d 100%) !important;
     background-attachment: fixed !important;
 }
 
@@ -523,6 +524,39 @@ div[data-testid="stDownloadButton"] button:hover{
     rgba(255,140,0,.95) 75%,
     rgba(255,140,0,0) 100%);
   box-shadow: 0 18px 70px rgba(255,111,0,.55);
+}
+
+/* Cinematic glass depth */
+div[data-testid="stVerticalBlockBorderWrapper"]{
+  background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.04));
+  border: 1px solid rgba(255,170,0,0.18);
+  backdrop-filter: blur(18px);
+  box-shadow: 0 25px 90px rgba(255,120,0,0.18);
+}
+div[data-testid="stVerticalBlockBorderWrapper"]:hover{
+  box-shadow: 0 35px 120px rgba(255,120,0,0.28);
+  border-color: rgba(255,200,120,0.28);
+}
+
+/* Softer premium buttons */
+.stButton > button{
+  background: linear-gradient(135deg, rgba(255,120,0,.95) 0%, rgba(255,170,0,.85) 60%, rgba(255,210,140,.75) 100%) !important;
+  box-shadow: 0 24px 80px rgba(255,120,0,0.25), 0 12px 30px rgba(0,0,0,0.35) !important;
+}
+.stButton > button:hover{
+  box-shadow: 0 34px 110px rgba(255,120,0,0.35), 0 18px 50px rgba(0,0,0,0.40) !important;
+}
+
+/* Elegant top accent */
+.block-container::before{
+  height:5px;
+  background: linear-gradient(90deg,
+    rgba(255,140,0,0) 0%,
+    rgba(255,120,0,.85) 30%,
+    rgba(255,200,120,.95) 55%,
+    rgba(255,140,0,.85) 75%,
+    rgba(255,140,0,0) 100%);
+  box-shadow: 0 18px 60px rgba(255,120,0,.40);
 }
 """
 
