@@ -26,8 +26,9 @@ def section_header(title: str, subtitle: str = "", badge: str = "MODULE"):
 
 
 def goto_menu(label: str):
-    """Jump navigation to a module from buttons/links."""
-    st.session_state["menu_nav"] = label
+    """Jump navigation safely (cannot mutate widget state after creation)."""
+    st.session_state["nav_target"] = label
+    st.session_state["show_sidebar"] = True
     st.rerun()
 
 
@@ -337,6 +338,14 @@ EXTRA_CSS = """
 """
 
 st.markdown("<style>\n" + CSS_THEME + "\n" + EXTRA_CSS + "\n</style>", unsafe_allow_html=True)
+
+# Hide sidebar entirely on Dashboard mode
+if not st.session_state.get("show_sidebar", False):
+    st.markdown(
+        "<style>[data-testid='stSidebar']{display:none !important;} section.main{margin-left:0 !important;}</style>",
+        unsafe_allow_html=True,
+    )
+
 
 
 # ======================================================================================
@@ -1190,36 +1199,58 @@ if "__splash_done__" not in st.session_state:
 if not st.session_state["__splash_done__"]:
     splash_screen()
 
-# ======================================================================================
-# SIDEBAR
-# ======================================================================================
-with st.sidebar:
-    st.markdown(f"### {APP_ICON} {APP_TITLE}")
-    st.caption("Penyedia Data Statistik Berkualitas untuk Indonesia Maju")
-    st.divider()
 
-    if os.path.exists("logo.png"):
-        st.image("logo.png", use_container_width=True)
+# ======================================================================================
+# SIDEBAR (hidden on Dashboard)
+# ======================================================================================
+# --- Navigation state (safe) ---
+if "show_sidebar" not in st.session_state:
+    st.session_state["show_sidebar"] = False  # start without sidebar on Dashboard
+if "menu_nav" not in st.session_state:
+    st.session_state["menu_nav"] = "🏠 Dashboard"
 
-    menu = st.radio(
-        "🧭 Navigasi",
-        ["🏠 Dashboard", "🟠 Shopee", "🟢 Tokopedia", "🔵 Facebook", "📍 Google Maps", "📊 Export Gabungan"],
-        index=0,
-        key="menu_nav",
+# Apply pending navigation target BEFORE widget creation
+if st.session_state.get("nav_target"):
+    st.session_state["menu_nav"] = st.session_state["nav_target"]
+    st.session_state["nav_target"] = None
+
+menu = "🏠 Dashboard"
+
+if st.session_state["show_sidebar"]:
+    with st.sidebar:
+        st.markdown(f"### {APP_ICON} {APP_TITLE}")
+        st.caption("Penyedia Data Statistik Berkualitas untuk Indonesia Maju")
+        st.divider()
+
+        if os.path.exists("logo.png"):
+            st.image("logo.png", use_container_width=True)
+
+        menu = st.radio(
+            "🧭 Navigasi",
+            ["🏠 Dashboard", "🟠 Shopee", "🟢 Tokopedia", "🔵 Facebook", "📍 Google Maps", "📊 Export Gabungan"],
+            index=0,
+            key="menu_nav",
+        )
+
+        st.divider()
+        with st.expander("⚙️ Pengaturan Umum", expanded=False):
+            st.checkbox("Tampilkan tips cepat", value=True, key="show_tips")
+            st.checkbox("Mode cepat (kurangi rendering chart besar)", value=False, key="fast_mode")
+
+# Hide sidebar visually when not used (Dashboard mode)
+if not st.session_state.get("show_sidebar", False):
+    st.markdown(
+        "<style>[data-testid='stSidebar']{display:none !important;} section.main{margin-left:0 !important;}</style>",
+        unsafe_allow_html=True,
     )
-
-    st.divider()
-    with st.expander("⚙️ Pengaturan Umum", expanded=False):
-        st.checkbox("Tampilkan tips cepat", value=True, key="show_tips")
-        st.checkbox("Mode cepat (kurangi rendering chart besar)", value=False, key="fast_mode")
-
-
-
 
 # ======================================================================================
 # PAGE: DASHBOARD (Before entering UMKM modules)
 # ======================================================================================
 if menu == "🏠 Dashboard":
+    # Always hide sidebar on Dashboard
+    st.session_state["show_sidebar"] = False
+
     section_header("Dashboard Utama", "Ringkasan status data & akses cepat ke modul UMKM.", "DASHBOARD")
     banner("Dashboard Utama", "Mulai dari ringkasan cepat, lalu masuk ke modul UMKM yang kamu butuhkan.")
 
@@ -1311,23 +1342,11 @@ if menu == "🏠 Dashboard":
         with s2:
             st.subheader("🧭 Navigasi Cepat")
 
-            b1, b2 = st.columns(2, gap="small")
-            with b1:
-                if st.button("🟠 Buka Shopee", use_container_width=True):
-                    goto_menu("🟠 Shopee")
-                if st.button("🔵 Buka Facebook", use_container_width=True):
-                    goto_menu("🔵 Facebook")
-                if st.button("📊 Buka Export", use_container_width=True):
-                    goto_menu("📊 Export Gabungan")
-            with b2:
-                if st.button("🟢 Buka Tokopedia", use_container_width=True):
-                    goto_menu("🟢 Tokopedia")
-                if st.button("📍 Buka Google Maps", use_container_width=True):
-                    goto_menu("📍 Google Maps")
-                st.caption("Tombol ini akan pindah menu otomatis tanpa scroll sidebar.")
+st.markdown("Klik tombol di bawah untuk mulai mengelola data UMKM. Sidebar akan muncul otomatis.")
+if st.button("🚀 Ayo Upload Data", use_container_width=True):
+    goto_menu("🟠 Shopee")
 
-            st.info("Gunakan sidebar untuk pindah modul. Default awal memang Dashboard biar lebih ‘hidup’ dan profesional.")
-            st.caption("Kalau mau, nanti bisa dibuat tombol langsung pindah menu (butuh rerun state).")
+
 
     # Recommendations / tips area
     with st.container(border=True):
