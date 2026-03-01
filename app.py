@@ -84,24 +84,15 @@ px.defaults.color_discrete_sequence = BPS_PALETTE
 CSS_THEME = r"""@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap");
 
-/* -------------------- Global background: lebih banyak oren -------------------- */
-:root{
-  --orange:#FF6F00;
-  --orange2:#FFB300;
-  --orange3:#FFD54F;
-  --bg0:#07080B;
-  --bg1:#0B0D12;
-  --surface: rgba(255,255,255,0.06);
-  --surface2: rgba(255,255,255,0.09);
-  --border: rgba(255,255,255,0.11);
-  --text: rgba(255,255,255,0.92);
-  --muted: rgba(255,255,255,0.70);
-  --radius-xl: 22px;
-  --radius-lg: 16px;
-  --radius-md: 12px;
-  --shadow-sm: 0 10px 26px rgba(0,0,0,0.30);
-  --shadow-md: 0 18px 60px rgba(0,0,0,0.40);
-  --glow: 0 26px 90px rgba(255,111,0,0.22);
+
+/* -------------------- Global background: ULTRA ORANGE -------------------- */
+[data-testid="stAppViewContainer"] {
+    background:
+      radial-gradient(1400px 900px at 8% 10%, rgba(255,111,0,.65) 0%, rgba(255,111,0,.35) 40%, rgba(255,111,0,0) 70%),
+      radial-gradient(1200px 800px at 92% 15%, rgba(255,140,0,.45) 0%, rgba(255,140,0,.20) 45%, rgba(255,140,0,0) 70%),
+      radial-gradient(1000px 700px at 50% 100%, rgba(255,179,0,.30) 0%, rgba(255,179,0,0) 70%),
+      linear-gradient(165deg, #120904 0%, #1a0c05 25%, #0d0a08 60%, #050608 100%) !important;
+    background-attachment: fixed !important;
 }
 
 [data-testid="stAppViewContainer"] {
@@ -520,6 +511,18 @@ div[data-testid="stDownloadButton"] button:hover{
   border-radius: 18px;
   border: 1px solid rgba(255,255,255,0.10);
   box-shadow: 0 18px 60px rgba(0,0,0,0.34);
+}
+
+/* Strong top orange accent line */
+.block-container::before{
+  height:6px;
+  background: linear-gradient(90deg,
+    rgba(255,140,0,0) 0%,
+    rgba(255,111,0,.95) 30%,
+    rgba(255,179,0,1) 55%,
+    rgba(255,140,0,.95) 75%,
+    rgba(255,140,0,0) 100%);
+  box-shadow: 0 18px 70px rgba(255,111,0,.55);
 }
 """
 
