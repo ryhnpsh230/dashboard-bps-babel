@@ -81,8 +81,29 @@ px.defaults.color_discrete_sequence = BPS_PALETTE
 # ======================================================================================
 # THEME / CSS (Original + Polished Add-ons)
 # ======================================================================================
-CSS_THEME = r"""
+CSS_THEME = r"""@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap");
+
 /* -------------------- Global background: lebih banyak oren -------------------- */
+:root{
+  --orange:#FF6F00;
+  --orange2:#FFB300;
+  --orange3:#FFD54F;
+  --bg0:#07080B;
+  --bg1:#0B0D12;
+  --surface: rgba(255,255,255,0.06);
+  --surface2: rgba(255,255,255,0.09);
+  --border: rgba(255,255,255,0.11);
+  --text: rgba(255,255,255,0.92);
+  --muted: rgba(255,255,255,0.70);
+  --radius-xl: 22px;
+  --radius-lg: 16px;
+  --radius-md: 12px;
+  --shadow-sm: 0 10px 26px rgba(0,0,0,0.30);
+  --shadow-md: 0 18px 60px rgba(0,0,0,0.40);
+  --glow: 0 26px 90px rgba(255,111,0,0.22);
+}
+
 [data-testid="stAppViewContainer"] {
     background:
       radial-gradient(1200px 720px at 12% 12%, rgba(255,111,0,.38) 0%, rgba(255,111,0,0) 60%),
@@ -120,7 +141,7 @@ CSS_THEME = r"""
 /* -------------------- Sidebar: oren lebih dominan -------------------- */
 [data-testid="stSidebar"] {
     background:
-      radial-gradient(600px 420px at 20% 10%, rgba(255,111,0,.26) 0%, rgba(255,111,0,0) 62%),
+      radial-gradient(600px 420px at 20% 10%, rgba(255,111,0,.32) 0%, rgba(255,111,0,0) 62%),
       linear-gradient(180deg, rgba(14,14,16,.98) 0%, rgba(10,10,12,.98) 55%, rgba(8,8,9,.99) 100%) !important;
     border-right: 1px solid rgba(255,111,0,.45);
     box-shadow: 10px 0 40px rgba(0,0,0,.45);
@@ -156,7 +177,7 @@ div[data-testid="stVerticalBlockBorderWrapper"]:hover {
     background:
       radial-gradient(900px 360px at 15% 0%, rgba(255,111,0,.40) 0%, rgba(255,111,0,0) 62%),
       radial-gradient(900px 380px at 85% 10%, rgba(255,193,7,.26) 0%, rgba(255,193,7,0) 62%),
-      linear-gradient(135deg, rgba(255,111,0,.24) 0%, rgba(255,193,7,.10) 40%, rgba(255,255,255,.04) 100%);
+      linear-gradient(135deg, rgba(255,111,0,.30) 0%, rgba(255,193,7,.10) 40%, rgba(255,255,255,.04) 100%);
     border: 1px solid rgba(255,111,0,.34);
     box-shadow: 0 18px 55px rgba(0,0,0,.34);
     backdrop-filter: blur(14px);
@@ -212,7 +233,7 @@ div[data-testid="metric-container"] label {
 .stTabs [data-baseweb="tab-list"] {
     gap: 10px;
     background: rgba(255,255,255,0.04);
-    border: 1px solid rgba(255,111,0,.24);
+    border: 1px solid rgba(255,111,0,.30);
     padding: 10px;
     border-radius: 16px;
     backdrop-filter: blur(12px);
@@ -228,7 +249,7 @@ div[data-testid="metric-container"] label {
     background: linear-gradient(135deg, rgba(255,111,0,.95) 0%, rgba(255,193,7,.95) 100%) !important;
     color: #111 !important;
     font-weight: 950;
-    box-shadow: 0 16px 44px rgba(255,111,0,.26);
+    box-shadow: 0 16px 44px rgba(255,111,0,.32);
 }
 
 /* -------------------- Buttons -------------------- */
@@ -240,7 +261,7 @@ div[data-testid="stDownloadButton"] button,
     color: #111 !important;
     font-weight: 950 !important;
     height: 48px !important;
-    box-shadow: 0 16px 44px rgba(255,111,0,.42);
+    box-shadow: 0 16px 44px rgba(255,111,0,.52);
     transition: transform .15s ease, box-shadow .15s ease, filter .15s ease;
 }
 div[data-testid="stDownloadButton"] button:hover,
@@ -251,7 +272,7 @@ div[data-testid="stDownloadButton"] button:hover,
 }
 button[kind="secondary"] {
     background: rgba(255,255,255,.08) !important;
-    border: 1px solid rgba(255,111,0,.42) !important;
+    border: 1px solid rgba(255,111,0,.52) !important;
     color: #f2f2f2 !important;
 }
 
@@ -259,7 +280,7 @@ button[kind="secondary"] {
 [data-testid="stDataFrame"] {
     border-radius: 16px;
     overflow: hidden;
-    border: 1px solid rgba(255,111,0,.26);
+    border: 1px solid rgba(255,111,0,.32);
 }
 
 
@@ -294,7 +315,7 @@ button[kind="secondary"] {
 [data-testid="stSidebar"] [role="radiogroup"] > label:has(input:checked){
   background: linear-gradient(135deg, rgba(255,111,0,.92) 0%, rgba(255,193,7,.86) 100%);
   border-color: rgba(255,193,7,.32);
-  box-shadow: 0 18px 56px rgba(255,111,0,.26);
+  box-shadow: 0 18px 56px rgba(255,111,0,.32);
 }
 [data-testid="stSidebar"] [role="radiogroup"] > label:has(input:checked) p{
   color: #101113 !important;
@@ -317,6 +338,95 @@ button[kind="secondary"] {
 /* Sidebar separators */
 [data-testid="stSidebar"] hr{
   border-color: rgba(255,255,255,.10) !important;
+}
+
+
+/* -------------------- Typography -------------------- */
+h1, h2, h3, h4, h5{
+  font-family: "Manrope", "Inter", system-ui, sans-serif !important;
+  letter-spacing: -0.025em;
+}
+h1{ font-weight: 900 !important; }
+h2{ font-weight: 850 !important; }
+p, li, label, .stMarkdown{
+  color: var(--text) !important;
+  line-height: 1.6;
+}
+
+
+/* -------------------- Buttons (premium) -------------------- */
+.stButton > button, div[data-testid="stDownloadButton"] button{
+  border-radius: 16px !important;
+  height: 52px !important;
+  font-weight: 900 !important;
+  letter-spacing: .2px;
+  background: linear-gradient(135deg, rgba(255,111,0,.98) 0%, rgba(255,179,0,.92) 55%, rgba(255,213,79,.88) 100%) !important;
+  color: #111114 !important;
+  border: 1px solid rgba(255,255,255,0.14) !important;
+  box-shadow: 0 20px 70px rgba(255,111,0,0.26), 0 10px 26px rgba(0,0,0,0.35) !important;
+  transition: transform .14s ease, box-shadow .14s ease, filter .14s ease;
+}
+.stButton > button:hover, div[data-testid="stDownloadButton"] button:hover{
+  transform: translateY(-2px);
+  filter: brightness(1.03);
+  box-shadow: 0 26px 92px rgba(255,111,0,0.34), 0 14px 36px rgba(0,0,0,0.38) !important;
+}
+.stButton > button:active{
+  transform: translateY(0px) scale(.99);
+}
+button[kind="secondary"]{
+  background: rgba(255,255,255,0.08) !important;
+  color: rgba(255,255,255,0.92) !important;
+  border: 1px solid rgba(255,255,255,0.16) !important;
+  box-shadow: 0 12px 32px rgba(0,0,0,0.34) !important;
+}
+button:focus-visible{
+  outline: none !important;
+  box-shadow: 0 0 0 4px rgba(255,111,0,0.26), 0 26px 92px rgba(255,111,0,0.22) !important;
+}
+
+
+/* -------------------- Chips / Pills -------------------- */
+.bps-chip{
+  display:inline-flex; align-items:center; gap:8px;
+  padding: 10px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.14);
+  background: rgba(255,255,255,0.06);
+  box-shadow: 0 14px 40px rgba(0,0,0,0.28);
+  font-weight: 800;
+}
+.bps-chip:hover{
+  border-color: rgba(255,179,0,0.38);
+  box-shadow: 0 22px 64px rgba(255,111,0,0.18);
+  transform: translateY(-1px);
+}
+
+
+/* -------------------- Sidebar nav (stronger active) -------------------- */
+[data-testid="stSidebar"]{
+  background:
+    radial-gradient(680px 420px at 22% 8%, rgba(255,111,0,.26) 0%, rgba(255,111,0,0) 62%),
+    radial-gradient(640px 420px at 78% 22%, rgba(255,179,0,.16) 0%, rgba(255,179,0,0) 60%),
+    linear-gradient(180deg, rgba(13,15,20,.98) 0%, rgba(9,10,14,.99) 100%) !important;
+  border-right: 1px solid rgba(255,255,255,0.10);
+  box-shadow: 18px 0 60px rgba(0,0,0,.46);
+}
+[data-testid="stSidebar"] .stRadio div[role="radiogroup"] > label{
+  border-radius: 16px !important;
+  padding: 10px 12px !important;
+  margin: 8px 0 !important;
+  background: rgba(255,255,255,0.04) !important;
+  border: 1px solid rgba(255,255,255,0.10) !important;
+}
+[data-testid="stSidebar"] .stRadio div[role="radiogroup"] > label:hover{
+  border-color: rgba(255,179,0,0.30) !important;
+  box-shadow: 0 18px 54px rgba(255,111,0,0.16);
+}
+[data-testid="stSidebar"] .stRadio div[role="radiogroup"] > label:has(input:checked){
+  background: linear-gradient(135deg, rgba(255,111,0,.86) 0%, rgba(255,179,0,.76) 60%, rgba(255,213,79,.70) 100%) !important;
+  border-color: rgba(255,255,255,0.16) !important;
+  box-shadow: 0 22px 74px rgba(255,111,0,0.26);
 }
 """
 
