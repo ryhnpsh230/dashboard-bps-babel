@@ -25,6 +25,12 @@ def section_header(title: str, subtitle: str = "", badge: str = "MODULE"):
     )
 
 
+def goto_menu(label: str):
+    """Jump navigation to a module from buttons/links."""
+    st.session_state["menu_nav"] = label
+    st.rerun()
+
+
 import plotly.express as px
 
 import folium
@@ -319,7 +325,19 @@ CSS_THEME = (CSS_THEME
     .replace("__BPS_AMBER__", BPS_AMBER)
 )
 
-st.markdown("<style>" + CSS_THEME + "</style>", unsafe_allow_html=True)
+EXTRA_CSS = """
+/* Dashboard quick-nav buttons */
+.bps-hero + div .stButton > button{
+  background: linear-gradient(135deg, rgba(255,111,0,.95) 0%, rgba(255,193,7,.88) 100%) !important;
+}
+.bps-hero + div button[kind="secondary"],
+.bps-hero + div .stButton > button:disabled{
+  background: rgba(255,255,255,.08) !important;
+}
+"""
+
+st.markdown("<style>\n" + CSS_THEME + "\n" + EXTRA_CSS + "\n</style>", unsafe_allow_html=True)
+
 
 # ======================================================================================
 # UI ADD-ON (keep your original design, add premium components)
@@ -1292,6 +1310,22 @@ if menu == "🏠 Dashboard":
             st.caption("Tip: Mulai dari modul yang datanya sudah siap. Setelah itu gunakan Export Gabungan untuk konsolidasi.")
         with s2:
             st.subheader("🧭 Navigasi Cepat")
+
+            b1, b2 = st.columns(2, gap="small")
+            with b1:
+                if st.button("🟠 Buka Shopee", use_container_width=True):
+                    goto_menu("🟠 Shopee")
+                if st.button("🔵 Buka Facebook", use_container_width=True):
+                    goto_menu("🔵 Facebook")
+                if st.button("📊 Buka Export", use_container_width=True):
+                    goto_menu("📊 Export Gabungan")
+            with b2:
+                if st.button("🟢 Buka Tokopedia", use_container_width=True):
+                    goto_menu("🟢 Tokopedia")
+                if st.button("📍 Buka Google Maps", use_container_width=True):
+                    goto_menu("📍 Google Maps")
+                st.caption("Tombol ini akan pindah menu otomatis tanpa scroll sidebar.")
+
             st.info("Gunakan sidebar untuk pindah modul. Default awal memang Dashboard biar lebih ‘hidup’ dan profesional.")
             st.caption("Kalau mau, nanti bisa dibuat tombol langsung pindah menu (butuh rerun state).")
 
