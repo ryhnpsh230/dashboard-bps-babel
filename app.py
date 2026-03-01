@@ -1204,6 +1204,13 @@ if not st.session_state["__splash_done__"]:
 # SIDEBAR (hidden on Dashboard)
 # ======================================================================================
 # --- Navigation state (safe) ---
+if "__boot__" not in st.session_state:
+    # always start clean: Dashboard without sidebar
+    st.session_state["__boot__"] = True
+    st.session_state["show_sidebar"] = False
+    st.session_state["menu_nav"] = "🏠 Dashboard"
+    st.session_state["nav_target"] = None
+
 if "show_sidebar" not in st.session_state:
     st.session_state["show_sidebar"] = False  # start without sidebar on Dashboard
 if "menu_nav" not in st.session_state:
@@ -1213,6 +1220,10 @@ if "menu_nav" not in st.session_state:
 if st.session_state.get("nav_target"):
     st.session_state["menu_nav"] = st.session_state["nav_target"]
     st.session_state["nav_target"] = None
+
+# If we're on Dashboard, force-hide sidebar (even if previous run left it on)
+if st.session_state.get("menu_nav") == "🏠 Dashboard" and not st.session_state.get("nav_target"):
+    st.session_state["show_sidebar"] = False
 
 # Ensure widget value is valid when sidebar is shown
 if st.session_state.get("show_sidebar") and st.session_state.get("menu_nav") == "🏠 Dashboard":
@@ -1228,12 +1239,12 @@ if st.session_state["show_sidebar"]:
         st.caption("Penyedia Data Statistik Berkualitas untuk Indonesia Maju")
         st.divider()
 
-top_l, top_r = st.columns([0.82, 0.18])
-with top_r:
-    if st.button("🏠", key="btn_home", help="Kembali ke Dashboard"):
-        st.session_state["show_sidebar"] = False
-        st.session_state["menu_nav"] = "🏠 Dashboard"
-        st.rerun()
+        top_l, top_r = st.columns([0.82, 0.18])
+        with top_r:
+            if st.button("🏠", key="btn_home", help="Kembali ke Dashboard"):
+                st.session_state["show_sidebar"] = False
+                st.session_state["menu_nav"] = "🏠 Dashboard"
+                st.rerun()
 
         if os.path.exists("logo.png"):
             st.image("logo.png", use_container_width=True)
