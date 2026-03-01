@@ -2524,18 +2524,42 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# --- FINAL FINAL OVERRIDE (Premium Sunset v2: more warm, less black) ---
+# --- FINAL FINAL OVERRIDE (Premium Sunset v3: toned down + vignette) ---
 st.markdown(
     """
 <style>
 html, body, [data-testid="stAppViewContainer"], [data-testid="stApp"]{
   background:
-    radial-gradient(1700px 980px at 7% 12%, rgba(255,140,40,.62) 0%, rgba(255,140,40,.30) 38%, rgba(255,140,40,0) 72%),
-    radial-gradient(1500px 980px at 92% 14%, rgba(255,200,90,.34) 0%, rgba(255,200,90,.16) 42%, rgba(255,200,90,0) 78%),
-    radial-gradient(1400px 900px at 45% 105%, rgba(255,210,140,.16) 0%, rgba(255,210,140,0) 72%),
-    radial-gradient(1200px 820px at 55% 55%, rgba(30,58,138,.14) 0%, rgba(30,58,138,0) 62%),
-    linear-gradient(155deg, #241006 0%, #2f1407 20%, #151017 55%, #070a10 100%) !important;
+    radial-gradient(1700px 980px at 7% 12%, rgba(255,140,40,.36) 0%, rgba(255,140,40,.16) 38%, rgba(255,140,40,0) 72%),
+    radial-gradient(1500px 980px at 92% 14%, rgba(255,200,90,.22) 0%, rgba(255,200,90,.10) 42%, rgba(255,200,90,0) 78%),
+    radial-gradient(1400px 900px at 45% 105%, rgba(255,210,140,.10) 0%, rgba(255,210,140,0) 72%),
+    radial-gradient(1200px 820px at 55% 55%, rgba(30,58,138,.10) 0%, rgba(30,58,138,0) 62%),
+    linear-gradient(155deg, #1a0f0a 0%, #22110b 20%, #111018 55%, #070a10 100%) !important;
   background-attachment: fixed !important;
+}
+
+/* Cinematic vignette to prevent "too bright" look */
+[data-testid="stAppViewContainer"]::before{
+  content:"";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(1200px 700px at 50% 35%, rgba(0,0,0,0) 0%, rgba(0,0,0,0.28) 60%, rgba(0,0,0,0.52) 100%),
+    linear-gradient(180deg, rgba(0,0,0,0.18) 0%, rgba(0,0,0,0.42) 100%);
+  mix-blend-mode: multiply;
+}
+
+/* Slightly calm the top accent line */
+.block-container::before{
+  height:5px;
+  background: linear-gradient(90deg,
+    rgba(255,140,0,0) 0%,
+    rgba(255,120,0,.72) 30%,
+    rgba(255,200,120,.80) 55%,
+    rgba(255,140,0,.72) 75%,
+    rgba(255,140,0,0) 100%);
+  box-shadow: 0 14px 44px rgba(255,120,0,.26);
 }
 </style>
 """,
