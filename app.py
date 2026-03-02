@@ -1543,7 +1543,7 @@ if menu == "🏠 Dashboard":
   <div>
     <div class="bps-badge">UMKM • BPS BABEL</div>
     <h1>Kontrol Pusat Analisis UMKM</h1>
-    <p>Upload data dari marketplace / maps, cek ringkasan, lalu lanjutkan analisis dengan UI yang konsisten & profesional.</p>
+    <p>Upload data dari marketplace / maps, cek ringkasan, lalu lanjutkan analisis.</p>
     <div class="cta-row">
       <span class="bps-chip">🟠 Shopee</span>
       <span class="bps-chip">🟢 Tokopedia</span>
@@ -1764,7 +1764,7 @@ if menu == "🏠 Dashboard":
 # PAGE: SHOPEE
 # ======================================================================================
 elif menu == "🟠 Shopee":
-    section_header("Shopee Marketplace", "Analisis & ekstraksi data Shopee dengan tampilan rapih dan konsisten.", "MARKETPLACE")
+    section_header("Shopee Marketplace", "Analisis & ekstraksi data UMKM Shopee.", "MARKETPLACE")
     banner("Dashboard UMKM — Shopee", "Ekstraksi data UMKM dari Shopee Marketplace (Bangka Belitung)")
 
     with st.container(border=True):
@@ -2519,7 +2519,7 @@ elif menu == "📊 Export Gabungan":
 # ======================================================================================
 st.markdown(
     "<div style='margin-top:22px; opacity:.78; font-size:.86rem;'>"
-    "Built with Streamlit • UI Modern Glass (Orange-heavy) • Export Excel Bersih • UMKM Toolkit"
+    "Built with Streamlit • Badan Pusat Statistik UMKM Toolkit"
     "</div>",
     unsafe_allow_html=True,
 )
@@ -2565,3 +2565,4 @@ html, body, [data-testid="stAppViewContainer"], [data-testid="stApp"]{
 """,
     unsafe_allow_html=True,
 )
+
