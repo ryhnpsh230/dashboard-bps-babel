@@ -987,6 +987,7 @@ def ensure_state():
         "data_shopee": None, "audit_shopee": {},
         "data_tokped": None, "audit_tokped": {},
         "data_fb": None,     "audit_fb": {},
+        "data_fb_forum": None, "audit_fb_forum": {},
         "data_maps": None,   "audit_maps": {},
     }
     for k, v in defaults.items():
@@ -1237,16 +1238,117 @@ def df_to_excel_bytes(sheets: dict) -> bytes:
 
     return buf.getvalue()
 
+def read_csv_smart(file_obj) -> pd.DataFrame:
+    """
+    Read CSV from Streamlit UploadedFile / file-like object with best-effort delimiter detection.
+    Supports comma/semicolon/tab/pipe, and utf-8-sig (Excel-friendly).
+    """
+    # Read bytes (do not rely on current pointer)
+    try:
+        raw = file_obj.getvalue()
+    except Exception:
+        pos = None
+        try:
+            pos = file_obj.tell()
+        except Exception:
+            pos = None
+        raw = file_obj.read()
+        try:
+            if pos is not None:
+                file_obj.seek(pos)
+        except Exception:
+            pass
+
+    if raw is None:
+        return pd.DataFrame()
+
+    # Try a small set of common delimiters and pick the one that yields the most columns.
+    seps = [",", ";", "\t", "|"]
+    best_df = None
+    best_cols = -1
+
+    for sep in seps:
+        try:
+            df = pd.read_csv(io.BytesIO(raw), sep=sep, dtype=str, on_bad_lines="skip",
+                             encoding="utf-8-sig", engine="python")
+            if df is not None and df.shape[1] > best_cols:
+                best_df, best_cols = df, df.shape[1]
+        except Exception:
+            continue
+
+    if best_df is not None and best_cols > 0:
+        return best_df
+
+    # Final fallback
+    try:
+        return pd.read_csv(io.BytesIO(raw), sep=None, dtype=str, on_bad_lines="skip",
+                           encoding="utf-8-sig", engine="python")
+    except Exception:
+        return pd.DataFrame()
+
+
 def read_csv_files(files) -> (pd.DataFrame, int):
     dfs = []
     total = 0
     for f in files:
-        df = pd.read_csv(f, dtype=str, on_bad_lines="skip")
+        df = read_csv_smart(f)
         total += len(df)
         dfs.append(df)
     if not dfs:
         return pd.DataFrame(), 0
     return pd.concat(dfs, ignore_index=True), total
+
+
+def _parse_price_int_any(x: str) -> int:
+    s = clean_placeholder_to_empty(x)
+    if not s:
+        return 0
+    digits = re.findall(r"\d+", s.replace(".", "").replace(",", ""))
+    if not digits:
+        return 0
+    try:
+        val = int(digits[0])
+        return 0 if val > 1_000_000_000 else val
+    except Exception:
+        return 0
+
+
+def _parse_coord_pair(x: str):
+    s = clean_placeholder_to_empty(x)
+    if not s or s == "-":
+        return (None, None)
+    s = s.replace(" ", "")
+    m = re.search(r"(-?\d+(?:\.\d+)?)[,;](-?\d+(?:\.\d+)?)", s)
+    if not m:
+        return (None, None)
+    try:
+        lat = float(m.group(1))
+        lon = float(m.group(2))
+        if not (-90 <= lat <= 90 and -180 <= lon <= 180):
+            return (None, None)
+        return (lat, lon)
+    except Exception:
+        return (None, None)
+
+
+def _infer_wilayah_from_text(text: str) -> str:
+    s = (text or "").lower()
+    for k in BABEL_KEYS:
+        if k in s:
+            return safe_title(k.replace("tanjungpandan", "tanjung pandan"))
+    return ""
+def _pick_col(columns, candidates):
+    colset = set(columns)
+    for c in candidates:
+        if c in colset:
+            return c
+    # case-insensitive fallback
+    lower_map = {str(c).lower(): c for c in columns}
+    for c in candidates:
+        lc = str(c).lower()
+        if lc in lower_map:
+            return lower_map[lc]
+    return None
 
 def is_in_babel(wilayah: str) -> bool:
     s = (wilayah or "").lower()
@@ -1510,7 +1612,7 @@ if st.session_state["show_sidebar"]:
 
         menu = st.radio(
             "🧭 Navigasi",
-            ["🟠 Shopee", "🟢 Tokopedia", "🔵 Facebook", "📍 Google Maps", "📊 Export Gabungan"],
+            ["🟠 Shopee", "🟢 Tokopedia", "🔵 Facebook", "🟣 FB Forum", "📍 Google Maps", "📊 Export Gabungan"],
             index=0,
             key="menu_nav",
         )
@@ -1549,6 +1651,7 @@ if menu == "🏠 Dashboard":
       <span class="bps-chip">🟠 Shopee</span>
       <span class="bps-chip">🟢 Tokopedia</span>
       <span class="bps-chip">🔵 Facebook</span>
+      <span class="bps-chip">🟣 FB Forum</span>
       <span class="bps-chip">📍 Google Maps</span>
       <span class="bps-chip">📊 Export</span>
     </div>
@@ -1562,14 +1665,16 @@ if menu == "🏠 Dashboard":
     df_shp = st.session_state.data_shopee
     df_tkp = st.session_state.data_tokped
     df_fb = st.session_state.data_fb
+    df_fb_forum = st.session_state.data_fb_forum
     df_maps = st.session_state.data_maps
 
     shp_n = 0 if df_shp is None else len(df_shp)
     tkp_n = 0 if df_tkp is None else len(df_tkp)
     fb_n  = 0 if df_fb is None else len(df_fb)
+    fbf_n = 0 if df_fb_forum is None else len(df_fb_forum)
     mp_n  = 0 if df_maps is None else len(df_maps)
 
-    total_all = shp_n + tkp_n + fb_n + mp_n
+    total_all = shp_n + tkp_n + fb_n + fbf_n + mp_n
 
     
     # Premium KPI cards (less "kaku" than st.metric)
@@ -1578,7 +1683,7 @@ if menu == "🏠 Dashboard":
 <style>
 .kpi-grid{{
   display:grid;
-  grid-template-columns: repeat(5, minmax(0,1fr));
+  grid-template-columns: repeat(6, minmax(0,1fr));
   gap: 14px;
   margin-top: 6px;
 }}
@@ -1681,6 +1786,16 @@ if menu == "🏠 Dashboard":
     <div class="kpi-sub">Siap diproses</div>
   </div>
 
+
+<div class="kpi-card">
+  <div class="kpi-accent"></div>
+  <div class="kpi-top">
+    <div class="kpi-label">🟣 FB Forum</div>
+    <div class="kpi-ico">🧵</div>
+  </div>
+  <div class="kpi-val">{fmt_int_id(fbf_n)}</div>
+  <div class="kpi-sub">Siap diproses</div>
+</div>
   <div class="kpi-card">
     <div class="kpi-accent"></div>
     <div class="kpi-top">
@@ -1735,6 +1850,7 @@ if menu == "🏠 Dashboard":
                 _pill(shp_n > 0, "Shopee siap dianalisis") +
                 _pill(tkp_n > 0, "Tokopedia siap dianalisis") +
                 _pill(fb_n > 0, "Facebook siap dianalisis") +
+                _pill(fbf_n > 0, "FB Forum siap dianalisis") +
                 _pill(mp_n > 0, "Google Maps siap divisualisasi"),
                 unsafe_allow_html=True,
             )
@@ -1811,9 +1927,8 @@ elif menu == "🟠 Shopee":
                 try:
                     total_semua_baris = 0
                     for f in files:
-                        df_temp = pd.read_csv(f, dtype=str, on_bad_lines="skip")
+                        df_temp = read_csv_smart(f)
                         total_semua_baris += len(df_temp)
-                        f.seek(0)
 
                     hasil = []
                     total_baris = 0
@@ -1823,85 +1938,92 @@ elif menu == "🟠 Shopee":
                     progress = st.progress(0)
                     info = st.empty()
                     baris_diproses = 0
-                    api_calls = 0
 
                     for file in files:
-                        df_raw = pd.read_csv(file, dtype=str, on_bad_lines="skip")
+                        df_raw = read_csv_smart(file)
                         total_baris += len(df_raw)
+                        if df_raw is None or df_raw.empty:
+                            continue
 
-                        if "Link" in df_raw.columns and "Nama Produk" in df_raw.columns:
-                            col_link = "Link"
-                            col_nama = "Nama Produk"
-                            col_harga = "Harga"
-                            col_wilayah = "Wilayah"
-                        else:
-                            col_link = next((c for c in df_raw.columns if "href" in c.lower()), df_raw.columns[0])
-                            col_nama = next((c for c in df_raw.columns if "whitespace-normal" in c.lower()),
-                                            df_raw.columns[min(3, len(df_raw.columns)-1)])
-                            col_harga = next((c for c in df_raw.columns if "font-medium" in c.lower()),
-                                             df_raw.columns[min(4, len(df_raw.columns)-1)])
-                            idx_wilayah = 7 if len(df_raw.columns) > 7 else len(df_raw.columns) - 1
-                            col_wilayah = next((c for c in df_raw.columns if "ml-[3px]" in c.lower()),
-                                               df_raw.columns[idx_wilayah])
+                        # Support CSV dari server_marketplace.py (delimiter ;) dan variasi lainnya
+                        col_toko = _pick_col(df_raw.columns, ["Nama_Penjual", "Nama Penjual", "Nama_Toko", "Nama Toko", "Penjual", "Seller"])
+                        col_nama = _pick_col(df_raw.columns, ["Nama_Barang", "Nama Barang", "Nama Produk", "Produk", "Judul", "Title"])
+                        col_harga = _pick_col(df_raw.columns, ["Harga", "Price"])
+                        col_alamat = _pick_col(df_raw.columns, ["Alamat", "Wilayah", "Lokasi"])
+                        col_nomor = _pick_col(df_raw.columns, ["Nomor_HP", "Nomor HP", "Nomor", "No HP", "No. HP", "Nomor WA", "WhatsApp"])
+                        col_koor = _pick_col(df_raw.columns, ["Koordinat", "Coordinate"])
+                        col_linkmap = _pick_col(df_raw.columns, ["Link_Map", "Link Map", "Link Maps"])
+                        col_desc = _pick_col(df_raw.columns, ["Deskripsi", "Keterangan", "Description"])
+                        col_link = _pick_col(df_raw.columns, ["URL", "Link", "Tautan"])
+                        col_foto = _pick_col(df_raw.columns, ["Foto_Profil", "Foto Profil", "Foto", "foto", "Avatar"])
+
+                        # Fallback lama (kalau struktur CSV tidak dikenal)
+                        if not col_link and len(df_raw.columns) > 0:
+                            col_link = df_raw.columns[-1]
+                        if not col_harga and len(df_raw.columns) > 0:
+                            col_harga = df_raw.columns[min(3, len(df_raw.columns) - 1)]
+                        if not col_alamat and len(df_raw.columns) > 0:
+                            col_alamat = df_raw.columns[min(2, len(df_raw.columns) - 1)]
+                        if not col_nama and len(df_raw.columns) > 0:
+                            col_nama = df_raw.columns[min(1, len(df_raw.columns) - 1)]
+                        if not col_toko and len(df_raw.columns) > 0:
+                            col_toko = df_raw.columns[0]
 
                         for i in range(len(df_raw)):
                             row = df_raw.iloc[i]
-                            link = str(row.get(col_link, ""))
-                            nama_produk = str(row.get(col_nama, ""))
-                            harga_str = str(row.get(col_harga, ""))
-                            lokasi = safe_title(str(row.get(col_wilayah, "")))
 
-                            if not is_in_babel(lokasi):
+                            toko = clean_placeholder_to_empty(str(row.get(col_toko, ""))) or "FB Seller"
+                            nama = clean_placeholder_to_empty(str(row.get(col_nama, "")))
+                            harga_str = str(row.get(col_harga, "")) if col_harga else ""
+                            alamat = clean_placeholder_to_empty(str(row.get(col_alamat, ""))) if col_alamat else ""
+                            nomor = clean_placeholder_to_empty(str(row.get(col_nomor, ""))) if col_nomor else ""
+                            deskripsi = clean_placeholder_to_empty(str(row.get(col_desc, ""))) if col_desc else ""
+                            link = clean_placeholder_to_empty(str(row.get(col_link, ""))) if col_link else ""
+                            foto = clean_placeholder_to_empty(str(row.get(col_foto, ""))) if col_foto else ""
+                            koordinat = clean_placeholder_to_empty(str(row.get(col_koor, ""))) if col_koor else ""
+                            link_map = clean_placeholder_to_empty(str(row.get(col_linkmap, ""))) if col_linkmap else ""
+
+                            lat, lon = _parse_coord_pair(koordinat)
+                            if (not link_map) and lat is not None and lon is not None:
+                                link_map = f"https://www.google.com/maps?q={lat},{lon}"
+
+                            wilayah_tag = _infer_wilayah_from_text(alamat) or safe_title(alamat)
+                            # Validasi Bangka Belitung berdasarkan alamat/wilayah tag
+                            if not is_in_babel(alamat) and not is_in_babel(wilayah_tag):
                                 luar_wilayah += 1
                                 baris_diproses += 1
                                 continue
 
                             try:
-                                harga_bersih = harga_str.replace(".", "").replace(",", "")
-                                angka_list = re.findall(r"\d+", harga_bersih)
-                                val_h = int(angka_list[0]) if angka_list else 0
-                                if val_h > 1_000_000_000:
-                                    val_h = 0
+                                val_h = _parse_price_int_any(harga_str)
                             except Exception:
                                 val_h = 0
                                 err_h += 1
 
-                            toko = "Tidak Dilacak"
-                            if mode_api and api_calls < int(max_api_calls):
-                                match = re.search(r"i\.(\d+)\.", link)
-                                if match:
-                                    try:
-                                        api_calls += 1
-                                        res = requests.get(
-                                            f"https://shopee.co.id/api/v4/shop/get_shop_base?shopid={match.group(1)}",
-                                            headers={"User-Agent": "Mozilla/5.0"},
-                                            timeout=float(api_timeout),
-                                        )
-                                        if res.status_code == 200:
-                                            toko = res.json().get("data", {}).get("name", "Anonim")
-                                    except Exception:
-                                        pass
-                                    if api_sleep and api_sleep > 0:
-                                        time.sleep(float(api_sleep))
-
-                            tipe_usaha = deteksi_tipe_usaha(toko)
-                            hasil.append({
-                                "Nama Toko": toko,
-                                "Nama Produk": nama_produk,
-                                "Harga": val_h,
-                                "Wilayah": lokasi,
-                                "Tipe Usaha": tipe_usaha,
-                                "Link": link,
-                            })
+                            if val_h > 0:
+                                tipe_usaha = deteksi_tipe_usaha(toko)
+                                hasil.append({
+                                    "Nama Toko": toko,
+                                    "Nama Produk": nama,
+                                    "Harga": val_h,
+                                    "Wilayah": wilayah_tag if wilayah_tag else "Bangka Belitung",
+                                    "Alamat": alamat if alamat else wilayah_tag,
+                                    "Nomor HP": nomor,
+                                    "Latitude": lat,
+                                    "Longitude": lon,
+                                    "Koordinat": koordinat,
+                                    "Link Maps": link_map,
+                                    "Deskripsi": deskripsi,
+                                    "Foto Profil": foto,
+                                    "Tipe Usaha": tipe_usaha,
+                                    "Link": link
+                                })
 
                             baris_diproses += 1
                             if baris_diproses % 25 == 0 or baris_diproses == total_semua_baris:
                                 pct = min(baris_diproses / max(total_semua_baris, 1), 1.0)
                                 progress.progress(pct)
-                                info.markdown(
-                                    f"**⏳ Progress:** {fmt_int_id(baris_diproses)} / {fmt_int_id(total_semua_baris)} "
-                                    f"({int(pct*100)}%) • API calls: {fmt_int_id(api_calls)}"
-                                )
+                                info.markdown(f"**⏳ Progress:** {fmt_int_id(baris_diproses)} / {fmt_int_id(total_semua_baris)} ({int(pct*100)}%)")
 
                     progress.empty()
                     info.empty()
@@ -2217,9 +2339,8 @@ elif menu == "🔵 Facebook":
                 try:
                     total_semua_baris = 0
                     for f in files:
-                        df_temp = pd.read_csv(f, dtype=str, on_bad_lines="skip")
+                        df_temp = read_csv_smart(f)
                         total_semua_baris += len(df_temp)
-                        f.seek(0)
 
                     hasil = []
                     total_baris = 0
@@ -2231,37 +2352,62 @@ elif menu == "🔵 Facebook":
                     baris_diproses = 0
 
                     for file in files:
-                        df_raw = pd.read_csv(file, dtype=str, on_bad_lines="skip")
+                        df_raw = read_csv_smart(file)
                         total_baris += len(df_raw)
+                        if df_raw is None or df_raw.empty:
+                            continue
 
-                        if "Link" in df_raw.columns and "Nama Produk" in df_raw.columns:
-                            col_link, col_nama, col_harga, col_wilayah, col_toko = "Link", "Nama Produk", "Harga", "Wilayah", "Nama Toko"
-                        else:
+                        # Support CSV dari server_marketplace.py (delimiter ;) dan variasi lainnya
+                        col_toko = _pick_col(df_raw.columns, ["Nama_Penjual", "Nama Penjual", "Nama_Toko", "Nama Toko", "Penjual", "Seller"])
+                        col_nama = _pick_col(df_raw.columns, ["Nama_Barang", "Nama Barang", "Nama Produk", "Produk", "Judul", "Title"])
+                        col_harga = _pick_col(df_raw.columns, ["Harga", "Price"])
+                        col_alamat = _pick_col(df_raw.columns, ["Alamat", "Wilayah", "Lokasi"])
+                        col_nomor = _pick_col(df_raw.columns, ["Nomor_HP", "Nomor HP", "Nomor", "No HP", "No. HP", "Nomor WA", "WhatsApp"])
+                        col_koor = _pick_col(df_raw.columns, ["Koordinat", "Coordinate"])
+                        col_linkmap = _pick_col(df_raw.columns, ["Link_Map", "Link Map", "Link Maps"])
+                        col_desc = _pick_col(df_raw.columns, ["Deskripsi", "Keterangan", "Description"])
+                        col_link = _pick_col(df_raw.columns, ["URL", "Link", "Tautan"])
+                        col_foto = _pick_col(df_raw.columns, ["Foto_Profil", "Foto Profil", "Foto", "foto", "Avatar"])
+
+                        # Fallback lama (kalau struktur CSV tidak dikenal)
+                        if not col_link and len(df_raw.columns) > 0:
+                            col_link = df_raw.columns[-1]
+                        if not col_harga and len(df_raw.columns) > 0:
+                            col_harga = df_raw.columns[min(3, len(df_raw.columns) - 1)]
+                        if not col_alamat and len(df_raw.columns) > 0:
+                            col_alamat = df_raw.columns[min(2, len(df_raw.columns) - 1)]
+                        if not col_nama and len(df_raw.columns) > 0:
+                            col_nama = df_raw.columns[min(1, len(df_raw.columns) - 1)]
+                        if not col_toko and len(df_raw.columns) > 0:
                             col_toko = df_raw.columns[0]
-                            col_nama = df_raw.columns[1] if len(df_raw.columns) > 1 else df_raw.columns[0]
-                            col_wilayah = df_raw.columns[2] if len(df_raw.columns) > 2 else df_raw.columns[0]
-                            col_harga = df_raw.columns[4] if len(df_raw.columns) > 4 else df_raw.columns[-1]
-                            col_link = df_raw.columns[5] if len(df_raw.columns) > 5 else df_raw.columns[-1]
 
                         for i in range(len(df_raw)):
                             row = df_raw.iloc[i]
-                            link = str(row.get(col_link, ""))
-                            nama = str(row.get(col_nama, ""))
-                            harga_str = str(row.get(col_harga, ""))
-                            lokasi = safe_title(str(row.get(col_wilayah, "")))
-                            toko = str(row.get(col_toko, "FB Seller")) or "FB Seller"
 
-                            if not is_in_babel(lokasi):
+                            toko = clean_placeholder_to_empty(str(row.get(col_toko, ""))) or "FB Seller"
+                            nama = clean_placeholder_to_empty(str(row.get(col_nama, "")))
+                            harga_str = str(row.get(col_harga, "")) if col_harga else ""
+                            alamat = clean_placeholder_to_empty(str(row.get(col_alamat, ""))) if col_alamat else ""
+                            nomor = clean_placeholder_to_empty(str(row.get(col_nomor, ""))) if col_nomor else ""
+                            deskripsi = clean_placeholder_to_empty(str(row.get(col_desc, ""))) if col_desc else ""
+                            link = clean_placeholder_to_empty(str(row.get(col_link, ""))) if col_link else ""
+                            foto = clean_placeholder_to_empty(str(row.get(col_foto, ""))) if col_foto else ""
+                            koordinat = clean_placeholder_to_empty(str(row.get(col_koor, ""))) if col_koor else ""
+                            link_map = clean_placeholder_to_empty(str(row.get(col_linkmap, ""))) if col_linkmap else ""
+
+                            lat, lon = _parse_coord_pair(koordinat)
+                            if (not link_map) and lat is not None and lon is not None:
+                                link_map = f"https://www.google.com/maps?q={lat},{lon}"
+
+                            wilayah_tag = _infer_wilayah_from_text(alamat) or safe_title(alamat)
+                            # Validasi Bangka Belitung berdasarkan alamat/wilayah tag
+                            if not is_in_babel(alamat) and not is_in_babel(wilayah_tag):
                                 luar_wilayah += 1
                                 baris_diproses += 1
                                 continue
 
                             try:
-                                harga_bersih = harga_str.replace(".", "").replace(",", "")
-                                angka_list = re.findall(r"\d+", harga_bersih)
-                                val_h = int(angka_list[0]) if angka_list else 0
-                                if val_h > 1_000_000_000:
-                                    val_h = 0
+                                val_h = _parse_price_int_any(harga_str)
                             except Exception:
                                 val_h = 0
                                 err_h += 1
@@ -2269,8 +2415,20 @@ elif menu == "🔵 Facebook":
                             if val_h > 0:
                                 tipe_usaha = deteksi_tipe_usaha(toko)
                                 hasil.append({
-                                    "Nama Toko": toko, "Nama Produk": nama, "Harga": val_h,
-                                    "Wilayah": lokasi, "Tipe Usaha": tipe_usaha, "Link": link
+                                    "Nama Toko": toko,
+                                    "Nama Produk": nama,
+                                    "Harga": val_h,
+                                    "Wilayah": wilayah_tag if wilayah_tag else "Bangka Belitung",
+                                    "Alamat": alamat if alamat else wilayah_tag,
+                                    "Nomor HP": nomor,
+                                    "Latitude": lat,
+                                    "Longitude": lon,
+                                    "Koordinat": koordinat,
+                                    "Link Maps": link_map,
+                                    "Deskripsi": deskripsi,
+                                    "Foto Profil": foto,
+                                    "Tipe Usaha": tipe_usaha,
+                                    "Link": link
                                 })
 
                             baris_diproses += 1
@@ -2376,6 +2534,192 @@ elif menu == "🔵 Facebook":
 # ======================================================================================
 # PAGE: GOOGLE MAPS
 # ======================================================================================
+elif menu == "🟣 FB Forum":
+    section_header("Facebook Forum", "Scraping/olah data dari postingan forum/grup Facebook.", "FORUM")
+    banner("Dashboard UMKM — Facebook Forum", "Ekstraksi data UMKM dari Forum/Grup Facebook (Bangka Belitung)")
+
+    with st.container(border=True):
+        col1, col2 = st.columns([1.15, 0.85], gap="large")
+        with col1:
+            files = st.file_uploader("Unggah CSV FB Forum", type=["csv"], accept_multiple_files=True, key="file_fb_forum")
+            run = st.button("🚀 Proses Data FB Forum", type="primary", use_container_width=True)
+        with col2:
+            st.subheader("🧾 Catatan")
+            st.info("• Struktur CSV bisa berbeda-beda (delimiter , / ;). Sistem akan auto-detect.\n• Data difilter hanya Bangka Belitung.")
+
+    if run:
+        if not files:
+            st.error("⚠️ Silakan unggah file CSV FB Forum terlebih dahulu.")
+        else:
+            with st.status("Memproses data FB Forum…", expanded=True) as status:
+                try:
+                    total_semua_baris = 0
+                    for f in files:
+                        total_semua_baris += len(read_csv_smart(f))
+
+                    hasil = []
+                    total_baris = 0
+                    err_h = 0
+                    luar_wilayah = 0
+
+                    progress = st.progress(0)
+                    info = st.empty()
+                    baris_diproses = 0
+
+                    for file in files:
+                        df_raw = read_csv_smart(file)
+                        total_baris += len(df_raw)
+                        if df_raw is None or df_raw.empty:
+                            continue
+
+                        col_toko = _pick_col(df_raw.columns, ["Nama_Penjual", "Nama Penjual", "Nama", "Akun", "Penjual", "Seller"])
+                        col_nama = _pick_col(df_raw.columns, ["Nama_Barang", "Nama Barang", "Nama Produk", "Produk", "Judul", "Title"])
+                        col_harga = _pick_col(df_raw.columns, ["Harga", "Price"])
+                        col_alamat = _pick_col(df_raw.columns, ["Alamat", "Wilayah", "Lokasi"])
+                        col_nomor = _pick_col(df_raw.columns, ["Nomor_HP", "Nomor HP", "Nomor", "No HP", "No. HP", "Nomor WA", "WhatsApp"])
+                        col_desc = _pick_col(df_raw.columns, ["Deskripsi", "Keterangan", "Description"])
+                        col_link = _pick_col(df_raw.columns, ["URL", "Link", "Tautan"])
+                        col_foto = _pick_col(df_raw.columns, ["Foto_Profil", "Foto Profil", "Foto", "foto", "Avatar"])
+
+                        if not col_link and len(df_raw.columns) > 0:
+                            col_link = df_raw.columns[-1]
+                        if not col_harga and len(df_raw.columns) > 0:
+                            col_harga = df_raw.columns[min(3, len(df_raw.columns) - 1)]
+                        if not col_alamat and len(df_raw.columns) > 0:
+                            col_alamat = df_raw.columns[min(2, len(df_raw.columns) - 1)]
+                        if not col_nama and len(df_raw.columns) > 0:
+                            col_nama = df_raw.columns[min(1, len(df_raw.columns) - 1)]
+                        if not col_toko and len(df_raw.columns) > 0:
+                            col_toko = df_raw.columns[0]
+
+                        for i in range(len(df_raw)):
+                            row = df_raw.iloc[i]
+
+                            toko = clean_placeholder_to_empty(str(row.get(col_toko, ""))) or "FB Seller"
+                            nama = clean_placeholder_to_empty(str(row.get(col_nama, "")))
+                            harga_str = str(row.get(col_harga, "")) if col_harga else ""
+                            alamat = clean_placeholder_to_empty(str(row.get(col_alamat, ""))) if col_alamat else ""
+                            nomor = clean_placeholder_to_empty(str(row.get(col_nomor, ""))) if col_nomor else ""
+                            deskripsi = clean_placeholder_to_empty(str(row.get(col_desc, ""))) if col_desc else ""
+                            link = clean_placeholder_to_empty(str(row.get(col_link, ""))) if col_link else ""
+                            foto = clean_placeholder_to_empty(str(row.get(col_foto, ""))) if col_foto else ""
+
+                            wilayah_tag = _infer_wilayah_from_text(alamat) or safe_title(alamat)
+                            if not is_in_babel(alamat) and not is_in_babel(wilayah_tag):
+                                luar_wilayah += 1
+                                baris_diproses += 1
+                                continue
+
+                            try:
+                                val_h = _parse_price_int_any(harga_str)
+                            except Exception:
+                                val_h = 0
+                                err_h += 1
+
+                            if val_h > 0:
+                                tipe_usaha = deteksi_tipe_usaha(toko)
+                                hasil.append({
+                                    "Nama Toko": toko,
+                                    "Nama Produk": nama,
+                                    "Harga": val_h,
+                                    "Wilayah": wilayah_tag if wilayah_tag else "Bangka Belitung",
+                                    "Alamat": alamat if alamat else wilayah_tag,
+                                    "Nomor HP": nomor,
+                                    "Deskripsi": deskripsi,
+                                    "Foto Profil": foto,
+                                    "Tipe Usaha": tipe_usaha,
+                                    "Link": link
+                                })
+
+                            baris_diproses += 1
+                            if baris_diproses % 25 == 0 or baris_diproses == total_semua_baris:
+                                pct = min(baris_diproses / max(total_semua_baris, 1), 1.0)
+                                progress.progress(pct)
+                                info.markdown(f"**⏳ Progress:** {fmt_int_id(baris_diproses)} / {fmt_int_id(total_semua_baris)} ({int(pct*100)}%)")
+
+                    progress.empty()
+                    info.empty()
+
+                    df_final = pd.DataFrame(hasil).drop_duplicates()
+                    st.session_state.data_fb_forum = df_final
+                    st.session_state.audit_fb_forum = {
+                        "file_count": len(files),
+                        "total_rows": total_baris,
+                        "valid_rows": len(df_final),
+                        "luar_wilayah": luar_wilayah,
+                        "error_harga": err_h,
+                    }
+
+                    status.update(label="✅ Selesai memproses FB Forum", state="complete", expanded=False)
+                    st.toast(f"FB Forum: {fmt_int_id(len(df_final))} baris siap dianalisis", icon="✅")
+
+                except Exception as e:
+                    status.update(label="❌ Gagal memproses FB Forum", state="error", expanded=True)
+                    st.error(f"Error Sistem FB Forum: {e}")
+
+    df_fb = st.session_state.data_fb_forum
+    if df_fb is not None and not df_fb.empty:
+        with st.container(border=True):
+            st.subheader("🔎 Filter Pintar")
+            c1, c2, c3 = st.columns([1.2, 1.2, 1.6], gap="medium")
+            with c1:
+                f_wil = st.multiselect("📍 Wilayah", options=sorted(df_fb["Wilayah"].unique()),
+                                       default=sorted(df_fb["Wilayah"].unique()), key="f_wil_fb_forum")
+            with c2:
+                f_tipe = st.multiselect("🏢 Tipe Usaha", options=sorted(df_fb["Tipe Usaha"].unique()),
+                                        default=sorted(df_fb["Tipe Usaha"].unique()), key="f_tipe_fb_forum")
+            with c3:
+                q = st.text_input("🔎 Cari (nama toko / produk)", value="", key="q_fb_forum")
+
+            max_h = int(df_fb["Harga"].max()) if df_fb["Harga"].max() > 0 else 1_000_000
+            f_hrg = st.slider("💰 Harga (Rp)", 0, max_h, (0, max_h), key="f_hrg_fb_forum")
+
+        df_f = df_fb[
+            df_fb["Wilayah"].isin(f_wil)
+            & df_fb["Tipe Usaha"].isin(f_tipe)
+            & (df_fb["Harga"] >= f_hrg[0])
+            & (df_fb["Harga"] <= f_hrg[1])
+        ].copy()
+
+        if q.strip():
+            qq = q.strip().lower()
+            df_f = df_f[
+                df_f["Nama Toko"].astype(str).str.lower().str.contains(qq, na=False)
+                | df_f["Nama Produk"].astype(str).str.lower().str.contains(qq, na=False)
+            ]
+
+        tab1, tab2, tab3 = st.tabs(["📊 Executive Dashboard", "🗄️ Database", "📑 Audit"])
+        with tab1:
+            m1, m2, m3 = st.columns(3)
+            m1.metric("📌 Total Ditampilkan", fmt_int_id(len(df_f)))
+            m2.metric("👤 Perorangan", fmt_int_id((df_f["Tipe Usaha"] == "Perorangan (Facebook)").sum()))
+            m3.metric("🏪 Usaha", fmt_int_id((df_f["Tipe Usaha"] != "Perorangan (Facebook)").sum()))
+
+            st.divider()
+            colA, colB = st.columns([1.1, 0.9], gap="large")
+            with colA:
+                st.caption("Top 10 Wilayah")
+                st.bar_chart(df_f["Wilayah"].value_counts().head(10))
+            with colB:
+                st.caption("Distribusi Harga (ringkas)")
+                df_hist = df_f[df_f["Harga"] > 0].copy()
+                if not df_hist.empty:
+                    st.line_chart(df_hist["Harga"].sort_values().reset_index(drop=True).head(200))
+                else:
+                    st.info("Belum ada harga valid untuk visualisasi.")
+
+        with tab2:
+            st.dataframe(df_f, use_container_width=True, height=460)
+            st.download_button("⬇️ Unduh CSV (FB Forum Filtered)", data=df_f.to_csv(index=False).encode("utf-8-sig"),
+                               file_name="fb_forum_filtered.csv", mime="text/csv", use_container_width=True)
+
+        with tab3:
+            audit = st.session_state.audit_fb_forum or {}
+            st.json(audit)
+
+    else:
+        st.info("📭 Belum ada data FB Forum. Unggah CSV lalu klik proses.")
+
 elif menu == "📍 Google Maps":
     section_header("Google Maps", "Pencarian lokasi & visualisasi peta dengan tampilan modern.", "LOCATION")
     banner("Dashboard UMKM — Google Maps", "Upload CSV hasil ekstensi → auto-clean → REAL MAP (Folium) + export Excel/CSV")
@@ -2471,23 +2815,25 @@ elif menu == "📍 Google Maps":
 # ======================================================================================
 elif menu == "📊 Export Gabungan":
     section_header("Export Gabungan", "Satukan data lintas platform lalu unduh dalam format rapi.", "EXPORT")
-    banner("Export Master Data Gabungan", "Konsolidasi (Shopee, Tokopedia, Facebook, Google Maps) → 1 Excel, sheet terpisah")
+    banner("Export Master Data Gabungan", "Konsolidasi (Shopee, Tokopedia, Facebook Marketplace, FB Forum, Google Maps) → 1 Excel, sheet terpisah")
 
     df_shp_ready = st.session_state.data_shopee is not None and not st.session_state.data_shopee.empty
     df_tkp_ready = st.session_state.data_tokped is not None and not st.session_state.data_tokped.empty
     df_fb_ready = st.session_state.data_fb is not None and not st.session_state.data_fb.empty
+    df_fbf_ready = st.session_state.data_fb_forum is not None and not st.session_state.data_fb_forum.empty
     df_maps_ready = st.session_state.data_maps is not None and not st.session_state.data_maps.empty
 
-    if not (df_shp_ready or df_tkp_ready or df_fb_ready or df_maps_ready):
-        st.warning("⚠️ Belum ada data. Silakan proses dulu di menu Shopee/Tokopedia/Facebook/Google Maps.")
+    if not (df_shp_ready or df_tkp_ready or df_fb_ready or df_fbf_ready or df_maps_ready):
+        st.warning("⚠️ Belum ada data. Silakan proses dulu di menu Shopee/Tokopedia/Facebook/FB Forum/Google Maps.")
     else:
         with st.container(border=True):
             st.subheader("✅ Data Siap Dikonsolidasi")
-            c1, c2, c3, c4 = st.columns(4)
+            c1, c2, c3, c4, c5 = st.columns(5)
             c1.metric("📦 Shopee", fmt_int_id(len(st.session_state.data_shopee)) if df_shp_ready else 0)
             c2.metric("📦 Tokopedia", fmt_int_id(len(st.session_state.data_tokped)) if df_tkp_ready else 0)
             c3.metric("📦 Facebook", fmt_int_id(len(st.session_state.data_fb)) if df_fb_ready else 0)
-            c4.metric("📦 Google Maps", fmt_int_id(len(st.session_state.data_maps)) if df_maps_ready else 0)
+            c4.metric("📦 FB Forum", fmt_int_id(len(st.session_state.data_fb_forum)) if df_fbf_ready else 0)
+            c5.metric("📦 Google Maps", fmt_int_id(len(st.session_state.data_maps)) if df_maps_ready else 0)
             st.caption("Output: 1 file Excel berisi sheet terpisah per sumber + autofilter + header rapi.")
 
         sheets = {}
@@ -2497,6 +2843,8 @@ elif menu == "📊 Export Gabungan":
             sheets["Data Tokopedia"] = st.session_state.data_tokped
         if df_fb_ready:
             sheets["Data Facebook"] = st.session_state.data_fb
+        if df_fbf_ready:
+            sheets["Data FB Forum"] = st.session_state.data_fb_forum
         if df_maps_ready:
             sheets["Data Google Maps"] = st.session_state.data_maps
 
