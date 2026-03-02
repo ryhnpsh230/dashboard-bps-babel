@@ -1510,7 +1510,7 @@ if st.session_state["show_sidebar"]:
 
         menu = st.radio(
             "🧭 Navigasi",
-            ["🟠 Shopee", "🟢 Tokopedia", "🔵 Facebook", "📍 Google Maps", "📊 Export Gabungan"],
+            ["🟠 Shopee", "🟢 Tokopedia", "🔵 Facebook", "🟦 Forum Facebook", "📍 Google Maps", "📊 Export Gabungan"],
             index=0,
             key="menu_nav",
         )
@@ -2376,6 +2376,150 @@ elif menu == "🔵 Facebook":
 # ======================================================================================
 # PAGE: GOOGLE MAPS
 # ======================================================================================
+
+
+# ======================================================================================
+# PAGE: FORUM FACEBOOK (GROUP)
+# ======================================================================================
+elif menu == "🟦 Forum Facebook":
+    section_header("Forum Facebook (Grup)", "Ekstraksi data dari postingan di grup/forum Facebook (format CSV ekstensi forum).", "FORUM")
+    banner("Dashboard UMKM — Forum Facebook", "Upload CSV hasil scraping grup/forum Facebook, lalu analisis seperti platform lain.")
+
+    with st.container(border=True):
+        col1, col2 = st.columns([1.15, 0.85], gap="large")
+        with col1:
+            files = st.file_uploader("Unggah CSV Forum Facebook", type=["csv"], accept_multiple_files=True, key="file_fb_forum")
+            run = st.button("🚀 Proses Data Forum Facebook", type="primary", use_container_width=True)
+        with col2:
+            st.subheader("🧾 Catatan")
+            st.info("• Format CSV mengikuti ekstensi forum (nama, barang, harga, alamat, nomor, deskripsi, link).\n• Baris tanpa harga valid akan dilewati.")
+
+    if run:
+        if not files:
+            st.error("⚠️ Silakan unggah file CSV Forum Facebook terlebih dahulu.")
+        else:
+            with st.status("Memproses data Forum Facebook…", expanded=True) as status:
+                try:
+                    total_semua_baris = 0
+                    for f in files:
+                        df_temp = pd.read_csv(f, dtype=str, on_bad_lines="skip")
+                        total_semua_baris += len(df_temp)
+                        f.seek(0)
+
+                    hasil = []
+                    total_baris = 0
+                    err_h = 0
+                    luar_wilayah = 0
+
+                    progress = st.progress(0)
+                    info = st.empty()
+                    baris_diproses = 0
+
+                    for file in files:
+                        df_raw = pd.read_csv(file, dtype=str, on_bad_lines="skip")
+                        total_baris += len(df_raw)
+
+                        # format teman: nama, barang, harga, alamat, nomor, deskripsi, link
+                        cols = [c.strip().lower() for c in df_raw.columns]
+                        if "nama" in cols and "barang" in cols and "harga" in cols:
+                            col_nama = df_raw.columns[cols.index("nama")]
+                            col_barang = df_raw.columns[cols.index("barang")]
+                            col_harga = df_raw.columns[cols.index("harga")]
+                            col_alamat = df_raw.columns[cols.index("alamat")] if "alamat" in cols else None
+                            col_link = df_raw.columns[cols.index("link")] if "link" in cols else None
+                        else:
+                            # fallback: posisi kolom
+                            col_nama = df_raw.columns[0]
+                            col_barang = df_raw.columns[1] if len(df_raw.columns) > 1 else df_raw.columns[0]
+                            col_harga = df_raw.columns[2] if len(df_raw.columns) > 2 else df_raw.columns[-1]
+                            col_alamat = df_raw.columns[3] if len(df_raw.columns) > 3 else None
+                            col_link = df_raw.columns[6] if len(df_raw.columns) > 6 else (df_raw.columns[-1] if len(df_raw.columns) else None)
+
+                        for i in range(len(df_raw)):
+                            row = df_raw.iloc[i]
+                            toko = str(row.get(col_nama, "FB Seller")) or "FB Seller"
+                            nama_produk = str(row.get(col_barang, "")) or ""
+                            harga_str = str(row.get(col_harga, "")) or ""
+                            lokasi_raw = str(row.get(col_alamat, "")) if col_alamat else ""
+                            link = str(row.get(col_link, "")) if col_link else ""
+
+                            lokasi = safe_title(lokasi_raw)
+                            if lokasi.strip() in ["", "-", "Tidak diketahui", "TIDAK DIKETAHUI"]:
+                                lokasi = "TIDAK DIKETAHUI"
+                            else:
+                                # kalau ada lokasi, filter Babel
+                                if not is_in_babel(lokasi):
+                                    luar_wilayah += 1
+                                    baris_diproses += 1
+                                    continue
+
+                            try:
+                                harga_bersih = harga_str.replace(".", "").replace(",", "")
+                                angka_list = re.findall(r"\d+", harga_bersih)
+                                val_h = int(angka_list[0]) if angka_list else 0
+                                if val_h > 1_000_000_000:
+                                    val_h = 0
+                            except Exception:
+                                val_h = 0
+                                err_h += 1
+
+                            if val_h > 0:
+                                tipe_usaha = deteksi_tipe_usaha(toko)
+                                hasil.append({
+                                    "Nama Toko": toko,
+                                    "Nama Produk": nama_produk,
+                                    "Harga": val_h,
+                                    "Wilayah": lokasi,
+                                    "Tipe Usaha": tipe_usaha,
+                                    "Link": link
+                                })
+
+                            baris_diproses += 1
+                            if baris_diproses % 25 == 0 or baris_diproses == total_semua_baris:
+                                pct = min(baris_diproses / max(total_semua_baris, 1), 1.0)
+                                progress.progress(pct)
+                                info.markdown(f"**⏳ Progress:** {fmt_int_id(baris_diproses)} / {fmt_int_id(total_semua_baris)} ({int(pct*100)}%)")
+
+                    progress.empty()
+                    info.empty()
+
+                    df_final = pd.DataFrame(hasil).drop_duplicates()
+                    st.session_state.data_fb_forum = df_final
+                    st.session_state.audit_fb_forum = {
+                        "file_count": len(files),
+                        "total_rows": total_baris,
+                        "valid_rows": len(df_final),
+                        "luar_wilayah": luar_wilayah,
+                        "error_harga": err_h,
+                    }
+
+                    status.update(label="✅ Selesai memproses Forum Facebook", state="complete", expanded=False)
+                    st.toast(f"Forum FB: {fmt_int_id(len(df_final))} baris siap dianalisis", icon="✅")
+
+                except Exception as e:
+                    status.update(label="❌ Gagal memproses Forum Facebook", state="error", expanded=True)
+                    st.error(f"Error Sistem Forum FB: {e}")
+
+    df_forum = st.session_state.get("data_fb_forum")
+    if df_forum is not None and not df_forum.empty:
+        with st.container(border=True):
+            st.subheader("Ringkasan Forum Facebook")
+            m1, m2, m3 = st.columns(3)
+            m1.metric("📦 Total Data", fmt_int_id(len(df_forum)))
+            m2.metric("🏷️ Jenis Usaha (unik)", fmt_int_id(df_forum["Tipe Usaha"].nunique()))
+            m3.metric("📍 Wilayah (unik)", fmt_int_id(df_forum["Wilayah"].nunique()))
+            st.dataframe(df_forum.head(50), use_container_width=True, height=260)
+
+        excel_bytes = df_to_excel_bytes({"Data Forum Facebook": df_forum})
+        st.download_button(
+            "⬇️ Unduh Excel — Forum Facebook",
+            data=excel_bytes,
+            file_name=f"UMKM_ForumFacebook_{datetime.date.today()}.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            use_container_width=True
+        )
+
+
 elif menu == "📍 Google Maps":
     section_header("Google Maps", "Pencarian lokasi & visualisasi peta dengan tampilan modern.", "LOCATION")
     banner("Dashboard UMKM — Google Maps", "Upload CSV hasil ekstensi → auto-clean → REAL MAP (Folium) + export Excel/CSV")
