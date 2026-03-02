@@ -2234,32 +2234,10 @@ elif menu == "🔵 Facebook":
                         df_raw = pd.read_csv(file, dtype=str, on_bad_lines="skip")
                         total_baris += len(df_raw)
 
-                        cols_lower = {c.lower(): c for c in df_raw.columns}
-
-                        # 1) Format dashboard default (Link, Nama Produk, Harga, Wilayah, Nama Toko)
-                        if ("link" in cols_lower) and ("nama produk" in cols_lower):
-                            col_link = cols_lower["link"]
-                            col_nama = cols_lower.get("nama produk")
-                            col_harga = cols_lower.get("harga", col_nama)
-                            col_wilayah = cols_lower.get("wilayah", col_nama)
-                            col_toko = cols_lower.get("nama toko", col_nama)
-
-                        # 2) Format teman (FB Group/Forum): nama, barang, harga, alamat, nomor, deskripsi, link
-                        elif all(k in cols_lower for k in ["nama", "barang", "harga", "alamat", "nomor", "deskripsi", "link"]):
-                            col_toko = cols_lower["nama"]
-                            col_nama = cols_lower["barang"]
-                            col_harga = cols_lower["harga"]
-                            col_wilayah = cols_lower["alamat"]   # alamat dipakai sebagai wilayah (akan difilter Babel)
-                            col_link = cols_lower["link"]
-                            col_desc = cols_lower["deskripsi"]
+                        if "Link" in df_raw.columns and "Nama Produk" in df_raw.columns:
+                            col_link, col_nama, col_harga, col_wilayah, col_toko = "Link", "Nama Produk", "Harga", "Wilayah", "Nama Toko"
                         else:
                             col_toko = df_raw.columns[0]
-                            col_nama = df_raw.columns[1] if len(df_raw.columns) > 1 else df_raw.columns[0]
-                            col_wilayah = df_raw.columns[2] if len(df_raw.columns) > 2 else df_raw.columns[0]
-                            col_harga = df_raw.columns[4] if len(df_raw.columns) > 4 else df_raw.columns[-1]
-                            col_link = df_raw.columns[5] if len(df_raw.columns) > 5 else df_raw.columns[-1]
-                            col_desc = None
-
                             col_nama = df_raw.columns[1] if len(df_raw.columns) > 1 else df_raw.columns[0]
                             col_wilayah = df_raw.columns[2] if len(df_raw.columns) > 2 else df_raw.columns[0]
                             col_harga = df_raw.columns[4] if len(df_raw.columns) > 4 else df_raw.columns[-1]
@@ -2269,8 +2247,6 @@ elif menu == "🔵 Facebook":
                             row = df_raw.iloc[i]
                             link = str(row.get(col_link, ""))
                             nama = str(row.get(col_nama, ""))
-                            if "col_desc" in locals() and col_desc is not None and (not nama or nama.strip()=="" or nama.strip().lower()=="tidak diketahui"):
-                                nama = str(row.get(col_desc, ""))
                             harga_str = str(row.get(col_harga, ""))
                             lokasi = safe_title(str(row.get(col_wilayah, "")))
                             toko = str(row.get(col_toko, "FB Seller")) or "FB Seller"
