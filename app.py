@@ -1108,8 +1108,9 @@ def deteksi_tipe_usaha(nama_toko):
     keyword_fisik = [
         "toko", "warung", "grosir", "mart", "apotek", "cv.", "pt.", "official", "agen",
         "distributor", "kios", "kedai", "supermarket", "minimarket", "cabang", "jaya",
-        "abadi", "makmur", "motor", "mobil", "bengkel", "snack", "store"
+        "abadi", "makmur", "motor", "mobil", "bengkel", "snack", "store","jajanan"
     ]
+    
     for kata in keyword_fisik:
         if kata in nama_lower:
             return "Ada Toko Fisik"
@@ -2565,4 +2566,5 @@ html, body, [data-testid="stAppViewContainer"], [data-testid="stApp"]{
 """,
     unsafe_allow_html=True,
 )
+
 
