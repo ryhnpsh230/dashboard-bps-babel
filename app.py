@@ -71,7 +71,7 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-px.defaults.template = "plotly_dark"
+px.defaults.template = "plotly_white"
 px.defaults.color_discrete_sequence = BPS_PALETTE
 
 
@@ -84,480 +84,99 @@ px.defaults.color_discrete_sequence = BPS_PALETTE
 CSS_THEME = r"""@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap");
 
-
-
-/* -------------------- Global background: PREMIUM SUNSET MODE -------------------- */
-[data-testid="stAppViewContainer"] {
-    background:
-      radial-gradient(1600px 900px at 5% 15%, rgba(255,120,0,.55) 0%, rgba(255,120,0,.28) 35%, rgba(255,120,0,0) 70%),
-      radial-gradient(1400px 900px at 95% 10%, rgba(255,170,0,.35) 0%, rgba(255,170,0,.18) 40%, rgba(255,170,0,0) 75%),
-      radial-gradient(1200px 800px at 50% 100%, rgba(255,200,120,.18) 0%, rgba(255,200,120,0) 70%),
-      linear-gradient(155deg, #1b0f08 0%, #2a1306 22%, #140c08 55%, #07090d 100%) !important;
-    background-attachment: fixed !important;
+/* ===========================
+   LIGHT THEME (Orange + White)
+   =========================== */
+:root{
+  --bps-orange:#FF6F00;
+  --bps-amber:#FFC107;
+  --bps-ink:#0F172A;
+  --bps-muted:#475569;
+  --bps-border: rgba(15, 23, 42, 0.10);
+  --bps-surface: rgba(255,255,255,0.86);
+  --bps-shadow: 0 18px 55px rgba(2, 6, 23, 0.10);
 }
 
-[data-testid="stAppViewContainer"] {
-    background:
-      radial-gradient(1200px 720px at 12% 12%, rgba(255,111,0,.38) 0%, rgba(255,111,0,0) 60%),
-      radial-gradient(900px 650px at 88% 16%, rgba(255,193,7,.28) 0%, rgba(255,193,7,0) 58%),
-      radial-gradient(1000px 600px at 60% 95%, rgba(255,111,0,.16) 0%, rgba(255,111,0,0) 60%),
-      linear-gradient(135deg, #070708 0%, #0c0c10 55%, #060607 100%) !important;
-    background-attachment: fixed !important;
-}
-
-[data-testid="stHeader"] {
-    background: rgba(0,0,0,0) !important;
-}
-
-/* Top glow bar */
-.block-container {
-    padding-top: 1.1rem;
-    padding-bottom: 2.1rem;
-}
-.block-container::before {
-    content: "";
-    display: block;
-    height: 6px;
-    width: 100%;
-    border-radius: 999px;
-    margin-bottom: 14px;
-    background: linear-gradient(90deg,
-        rgba(255,111,0,0) 0%,
-        rgba(255,111,0,.95) 28%,
-        rgba(255,193,7,.95) 56%,
-        rgba(255,111,0,.95) 80%,
-        rgba(255,111,0,0) 100%);
-    box-shadow: 0 8px 36px rgba(255,111,0,.25);
-}
-
-/* -------------------- Sidebar: oren lebih dominan -------------------- */
-[data-testid="stSidebar"] {
-    background:
-      radial-gradient(600px 420px at 20% 10%, rgba(255,111,0,.32) 0%, rgba(255,111,0,0) 62%),
-      linear-gradient(180deg, rgba(14,14,16,.98) 0%, rgba(10,10,12,.98) 55%, rgba(8,8,9,.99) 100%) !important;
-    border-right: 1px solid rgba(255,111,0,.45);
-    box-shadow: 10px 0 40px rgba(0,0,0,.45);
-}
-[data-testid="stSidebar"] * {
-    color: #f3f3f3 !important;
-}
-
-/* -------------------- Cards (containers) -------------------- */
-div[data-testid="stVerticalBlockBorderWrapper"] {
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,111,0,0.34) !important;
-    border-radius: 18px;
-    padding: 18px 18px;
-    box-shadow:
-      0 14px 38px rgba(0,0,0,.33),
-      0 0 0 1px rgba(255,111,0,.07) inset;
-    backdrop-filter: blur(12px);
-}
-div[data-testid="stVerticalBlockBorderWrapper"]:hover {
-    border-color: rgba(255,193,7,.48) !important;
-    box-shadow:
-      0 18px 46px rgba(0,0,0,.36),
-      0 0 0 1px rgba(255,193,7,.10) inset,
-      0 22px 70px rgba(255,111,0,.10);
-}
-
-/* -------------------- Banner -------------------- */
-.bps-banner {
-    border-radius: 20px;
-    padding: 24px 28px;
-    margin: 2px 0 18px 0;
-    background:
-      radial-gradient(900px 360px at 15% 0%, rgba(255,111,0,.40) 0%, rgba(255,111,0,0) 62%),
-      radial-gradient(900px 380px at 85% 10%, rgba(255,193,7,.26) 0%, rgba(255,193,7,0) 62%),
-      linear-gradient(135deg, rgba(255,111,0,.30) 0%, rgba(255,193,7,.10) 40%, rgba(255,255,255,.04) 100%);
-    border: 1px solid rgba(255,111,0,.34);
-    box-shadow: 0 18px 55px rgba(0,0,0,.34);
-    backdrop-filter: blur(14px);
-}
-.bps-kicker {
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    font-weight: 800;
-    font-size: .78rem;
-    color: rgba(255,193,7,.98);
-    margin-bottom: 8px;
-}
-.bps-title {
-    font-size: 2.10rem;
-    font-weight: 950;
-    margin: 0 0 8px 0;
-    color: #ffffff;
-}
-.bps-subtitle {
-    margin: 0;
-    color: rgba(240,240,240,.90);
-    font-size: 1.03rem;
-}
-
-/* -------------------- Metrics -------------------- */
-div[data-testid="metric-container"] {
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,111,0,0.30);
-    border-left: 7px solid __BPS_OREN__;
-    border-radius: 16px;
-    padding: 14px 16px;
-    box-shadow:
-      0 12px 34px rgba(0,0,0,.26),
-      0 0 0 1px rgba(255,111,0,.06) inset;
-    backdrop-filter: blur(12px);
-    transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
-}
-div[data-testid="metric-container"]:hover {
-    transform: translateY(-3px);
-    border-color: rgba(255,193,7,.58);
-    box-shadow:
-      0 18px 46px rgba(0,0,0,.30),
-      0 0 0 1px rgba(255,193,7,.10) inset,
-      0 30px 90px rgba(255,111,0,.12);
-}
-div[data-testid="metric-container"] label {
-    color: rgba(240,240,240,.86) !important;
-    font-weight: 800;
-    letter-spacing: .2px;
-}
-
-/* -------------------- Tabs -------------------- */
-.stTabs [data-baseweb="tab-list"] {
-    gap: 10px;
-    background: rgba(255,255,255,0.04);
-    border: 1px solid rgba(255,111,0,.30);
-    padding: 10px;
-    border-radius: 16px;
-    backdrop-filter: blur(12px);
-}
-.stTabs [data-baseweb="tab"] {
-    height: 46px;
-    border-radius: 14px;
-    padding: 0 16px;
-    background: rgba(255,255,255,0.03);
-    color: rgba(245,245,245,.86);
-}
-.stTabs [aria-selected="true"] {
-    background: linear-gradient(135deg, rgba(255,111,0,.95) 0%, rgba(255,193,7,.95) 100%) !important;
-    color: #111 !important;
-    font-weight: 950;
-    box-shadow: 0 16px 44px rgba(255,111,0,.32);
-}
-
-/* -------------------- Buttons -------------------- */
-div[data-testid="stDownloadButton"] button,
-.stButton > button {
-    border-radius: 14px !important;
-    border: 1px solid rgba(255,255,255,.10) !important;
-    background: linear-gradient(135deg, rgba(255,111,0,.92) 0%, rgba(255,193,7,.88) 100%) !important;
-    color: #111 !important;
-    font-weight: 950 !important;
-    height: 48px !important;
-    box-shadow: 0 16px 44px rgba(255,111,0,.52);
-    transition: transform .15s ease, box-shadow .15s ease, filter .15s ease;
-}
-div[data-testid="stDownloadButton"] button:hover,
-.stButton > button:hover {
-    transform: translateY(-1px);
-    filter: brightness(1.04);
-    box-shadow: 0 22px 60px rgba(255,111,0,.28);
-}
-button[kind="secondary"] {
-    background: rgba(255,255,255,.08) !important;
-    border: 1px solid rgba(255,111,0,.52) !important;
-    color: #f2f2f2 !important;
-}
-
-/* -------------------- Dataframe -------------------- */
-[data-testid="stDataFrame"] {
-    border-radius: 16px;
-    overflow: hidden;
-    border: 1px solid rgba(255,111,0,.32);
-}
-
-
-/* ============================================================================
-   Sidebar — international nav styling (keeps your original theme)
-   ========================================================================== */
-[data-testid="stSidebar"] .block-container{
-  padding-top: 1.15rem !important;
-}
-[data-testid="stSidebar"] h3, [data-testid="stSidebar"] h2, [data-testid="stSidebar"] h1{
-  letter-spacing: -0.02em;
-}
-
-/* Radio group -> pill nav */
-[data-testid="stSidebar"] [role="radiogroup"]{
-  gap: 10px;
-}
-[data-testid="stSidebar"] [role="radiogroup"] > label{
-  width: 100%;
-  padding: 10px 12px;
-  border-radius: 16px;
-  border: 1px solid rgba(255,255,255,.10);
-  background: rgba(255,255,255,.045);
-  transition: transform .14s ease, box-shadow .14s ease, border-color .14s ease, background .14s ease;
-}
-[data-testid="stSidebar"] [role="radiogroup"] > label:hover{
-  transform: translateY(-1px);
-  border-color: rgba(255,255,255,.18);
-  background: rgba(255,255,255,.06);
-  box-shadow: 0 14px 40px rgba(0,0,0,.28);
-}
-[data-testid="stSidebar"] [role="radiogroup"] > label:has(input:checked){
-  background: linear-gradient(135deg, rgba(255,111,0,.92) 0%, rgba(255,193,7,.86) 100%);
-  border-color: rgba(255,193,7,.32);
-  box-shadow: 0 18px 56px rgba(255,111,0,.32);
-}
-[data-testid="stSidebar"] [role="radiogroup"] > label:has(input:checked) p{
-  color: #101113 !important;
-  font-weight: 950 !important;
-}
-[data-testid="stSidebar"] [role="radiogroup"] p{
-  margin: 0 !important;
-  font-weight: 800;
-  letter-spacing: .2px;
-}
-
-/* Make the radio dot subtle */
-[data-testid="stSidebar"] [role="radiogroup"] input{
-  accent-color: rgba(16,17,19,.0);
-}
-[data-testid="stSidebar"] [role="radiogroup"] svg{
-  filter: drop-shadow(0 6px 14px rgba(0,0,0,.28));
-}
-
-/* Sidebar separators */
-[data-testid="stSidebar"] hr{
-  border-color: rgba(255,255,255,.10) !important;
-}
-
-
-/* -------------------- Typography -------------------- */
-h1, h2, h3, h4, h5{
-  font-family: "Manrope", "Inter", system-ui, sans-serif !important;
-  letter-spacing: -0.025em;
-}
-h1{ font-weight: 900 !important; }
-h2{ font-weight: 850 !important; }
-p, li, label, .stMarkdown{
-  color: var(--text) !important;
-  line-height: 1.6;
-}
-
-
-/* -------------------- Buttons (premium) -------------------- */
-.stButton > button, div[data-testid="stDownloadButton"] button{
-  border-radius: 16px !important;
-  height: 52px !important;
-  font-weight: 900 !important;
-  letter-spacing: .2px;
-  background: linear-gradient(135deg, rgba(255,111,0,.98) 0%, rgba(255,179,0,.92) 55%, rgba(255,213,79,.88) 100%) !important;
-  color: #111114 !important;
-  border: 1px solid rgba(255,255,255,0.14) !important;
-  box-shadow: 0 20px 70px rgba(255,111,0,0.26), 0 10px 26px rgba(0,0,0,0.35) !important;
-  transition: transform .14s ease, box-shadow .14s ease, filter .14s ease;
-}
-.stButton > button:hover, div[data-testid="stDownloadButton"] button:hover{
-  transform: translateY(-2px);
-  filter: brightness(1.03);
-  box-shadow: 0 26px 92px rgba(255,111,0,0.34), 0 14px 36px rgba(0,0,0,0.38) !important;
-}
-.stButton > button:active{
-  transform: translateY(0px) scale(.99);
-}
-button[kind="secondary"]{
-  background: rgba(255,255,255,0.08) !important;
-  color: rgba(255,255,255,0.92) !important;
-  border: 1px solid rgba(255,255,255,0.16) !important;
-  box-shadow: 0 12px 32px rgba(0,0,0,0.34) !important;
-}
-button:focus-visible{
-  outline: none !important;
-  box-shadow: 0 0 0 4px rgba(255,111,0,0.26), 0 26px 92px rgba(255,111,0,0.22) !important;
-}
-
-
-/* -------------------- Chips / Pills -------------------- */
-.bps-chip{
-  display:inline-flex; align-items:center; gap:8px;
-  padding: 10px 14px;
-  border-radius: 999px;
-  border: 1px solid rgba(255,255,255,0.14);
-  background: rgba(255,255,255,0.06);
-  box-shadow: 0 14px 40px rgba(0,0,0,0.28);
-  font-weight: 800;
-}
-.bps-chip:hover{
-  border-color: rgba(255,179,0,0.38);
-  box-shadow: 0 22px 64px rgba(255,111,0,0.18);
-  transform: translateY(-1px);
-}
-
-
-/* -------------------- Sidebar nav (stronger active) -------------------- */
-[data-testid="stSidebar"]{
+html, body, [data-testid="stAppViewContainer"], [data-testid="stApp"]{
   background:
-    radial-gradient(680px 420px at 22% 8%, rgba(255,111,0,.26) 0%, rgba(255,111,0,0) 62%),
-    radial-gradient(640px 420px at 78% 22%, rgba(255,179,0,.16) 0%, rgba(255,179,0,0) 60%),
-    linear-gradient(180deg, rgba(13,15,20,.98) 0%, rgba(9,10,14,.99) 100%) !important;
-  border-right: 1px solid rgba(255,255,255,0.10);
-  box-shadow: 18px 0 60px rgba(0,0,0,.46);
+    radial-gradient(1200px 720px at 12% 10%, rgba(255,111,0,.14) 0%, rgba(255,111,0,0) 60%),
+    radial-gradient(900px 650px at 88% 12%, rgba(255,193,7,.12) 0%, rgba(255,193,7,0) 58%),
+    linear-gradient(180deg, #ffffff 0%, #fff7ed 100%) !important;
+  background-attachment: fixed !important;
 }
-[data-testid="stSidebar"] .stRadio div[role="radiogroup"] > label{
-  border-radius: 16px !important;
-  padding: 10px 12px !important;
-  margin: 8px 0 !important;
-  background: rgba(255,255,255,0.04) !important;
-  border: 1px solid rgba(255,255,255,0.10) !important;
-}
-[data-testid="stSidebar"] .stRadio div[role="radiogroup"] > label:hover{
-  border-color: rgba(255,179,0,0.30) !important;
-  box-shadow: 0 18px 54px rgba(255,111,0,0.16);
-}
-[data-testid="stSidebar"] .stRadio div[role="radiogroup"] > label:has(input:checked){
-  background: linear-gradient(135deg, rgba(255,111,0,.86) 0%, rgba(255,179,0,.76) 60%, rgba(255,213,79,.70) 100%) !important;
-  border-color: rgba(255,255,255,0.16) !important;
-  box-shadow: 0 22px 74px rgba(255,111,0,0.26);
-}
-
-
-/* ==================== Premium Motion & Smoothing ==================== */
-*{ -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
-@media (prefers-reduced-motion: no-preference){
-  .stButton > button, [data-testid="stSidebar"] .stRadio label, .stTabs [data-baseweb="tab"]{
-    transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease, background .16s ease, filter .16s ease;
-  }
-}
-
-/* ==================== Sidebar (less rigid, more premium) ==================== */
-[data-testid="stSidebar"]{
-  border-right: 1px solid rgba(255,255,255,0.10);
-}
-[data-testid="stSidebar"] > div:first-child{
-  padding-top: 18px;
-}
-[data-testid="stSidebar"] .stRadio div[role="radiogroup"]{
-  gap: 10px;
-}
-
-/* Make sidebar nav look like premium capsules */
-[data-testid="stSidebar"] .stRadio div[role="radiogroup"] > label{
-  background: linear-gradient(180deg, rgba(255,255,255,0.055), rgba(255,255,255,0.03)) !important;
-  border-radius: 18px !important;
-  padding: 12px 14px !important;
-}
-[data-testid="stSidebar"] .stRadio div[role="radiogroup"] > label:has(input:checked){
-  background: linear-gradient(135deg, rgba(255,111,0,.92) 0%, rgba(255,179,0,.82) 55%, rgba(255,213,79,.74) 100%) !important;
-  transform: translateY(-1px);
-}
-[data-testid="stSidebar"] .stRadio div[role="radiogroup"] > label:hover{
-  transform: translateY(-1px);
-  filter: brightness(1.03);
-}
-
-/* "Back to Dashboard" button in sidebar */
-[data-testid="stSidebar"] .stButton > button{
-  height: 46px !important;
-  border-radius: 16px !important;
-}
-[data-testid="stSidebar"] button[kind="secondary"]{
-  background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.05)) !important;
-  border: 1px solid rgba(255,179,0,0.22) !important;
-  box-shadow: 0 14px 40px rgba(0,0,0,0.34) !important;
-}
-[data-testid="stSidebar"] button[kind="secondary"]:hover{
-  border-color: rgba(255,179,0,0.34) !important;
-  box-shadow: 0 22px 70px rgba(255,111,0,0.18), 0 16px 44px rgba(0,0,0,0.38) !important;
-}
-
-/* ==================== Buttons (reduce 'slab' feel) ==================== */
-.stButton > button{
-  border-radius: 18px !important;
-}
-.stButton > button:active{ transform: translateY(0px) scale(.995); }
-
-/* Download buttons: less 'blocky' */
-div[data-testid="stDownloadButton"] button{
-  height: 50px !important;
-  border-radius: 18px !important;
-  background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.04)) !important;
-  color: rgba(255,255,255,0.92) !important;
-  border: 1px solid rgba(255,179,0,0.28) !important;
-  box-shadow: 0 16px 44px rgba(0,0,0,0.34) !important;
-}
-div[data-testid="stDownloadButton"] button:hover{
-  border-color: rgba(255,179,0,0.40) !important;
-  box-shadow: 0 26px 86px rgba(255,111,0,0.20), 0 18px 52px rgba(0,0,0,0.38) !important;
-}
-
-/* ==================== Tabs (more premium) ==================== */
-.stTabs [data-baseweb="tab-list"]{
-  background: linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.03));
-  border: 1px solid rgba(255,255,255,0.10);
-  border-radius: 18px;
-  padding: 10px;
-}
-.stTabs [data-baseweb="tab"]{
-  border-radius: 16px;
-  background: rgba(255,255,255,0.03);
-}
-.stTabs [aria-selected="true"]{
-  background: linear-gradient(135deg, rgba(255,111,0,.95) 0%, rgba(255,179,0,.85) 55%, rgba(255,213,79,.78) 100%) !important;
-  box-shadow: 0 18px 60px rgba(255,111,0,0.22) !important;
-}
-
-/* ==================== DataFrame polish ==================== */
-[data-testid="stDataFrame"]{
-  border-radius: 18px;
-  border: 1px solid rgba(255,255,255,0.10);
-  box-shadow: 0 18px 60px rgba(0,0,0,0.34);
-}
-
-/* Strong top orange accent line */
+[data-testid="stHeader"]{ background: rgba(0,0,0,0) !important; }
+.block-container{ padding-top: 1.05rem; padding-bottom: 2.1rem; }
 .block-container::before{
+  content:"";
+  display:block;
   height:6px;
+  width:100%;
+  border-radius:999px;
+  margin-bottom:14px;
   background: linear-gradient(90deg,
-    rgba(255,140,0,0) 0%,
-    rgba(255,111,0,.95) 30%,
-    rgba(255,179,0,1) 55%,
-    rgba(255,140,0,.95) 75%,
-    rgba(255,140,0,0) 100%);
-  box-shadow: 0 18px 70px rgba(255,111,0,.55);
+    rgba(255,111,0,0) 0%,
+    rgba(255,111,0,.85) 30%,
+    rgba(255,193,7,.85) 58%,
+    rgba(255,111,0,.85) 82%,
+    rgba(255,111,0,0) 100%);
+  box-shadow: 0 10px 30px rgba(255,111,0,.18);
 }
 
-/* Cinematic glass depth */
+/* Sidebar */
+[data-testid="stSidebar"]{
+  background: linear-gradient(180deg, #ffffff 0%, #fff7ed 100%) !important;
+  border-right: 1px solid rgba(255,111,0,.25);
+  box-shadow: 10px 0 34px rgba(2,6,23,.06);
+}
+[data-testid="stSidebar"] *{ color: var(--bps-ink) !important; }
+
+/* Containers */
 div[data-testid="stVerticalBlockBorderWrapper"]{
-  background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.04));
-  border: 1px solid rgba(255,170,0,0.18);
-  backdrop-filter: blur(18px);
-  box-shadow: 0 25px 90px rgba(255,120,0,0.18);
+  background: var(--bps-surface);
+  border: 1px solid var(--bps-border) !important;
+  border-radius: 18px;
+  padding: 18px 18px;
+  box-shadow: var(--bps-shadow);
+  backdrop-filter: blur(10px);
 }
 div[data-testid="stVerticalBlockBorderWrapper"]:hover{
-  box-shadow: 0 35px 120px rgba(255,120,0,0.28);
-  border-color: rgba(255,200,120,0.28);
+  border-color: rgba(255,111,0,.28) !important;
+  box-shadow: 0 22px 70px rgba(2,6,23,.12);
 }
 
-/* Softer premium buttons */
-.stButton > button{
-  background: linear-gradient(135deg, rgba(255,120,0,.95) 0%, rgba(255,170,0,.85) 60%, rgba(255,210,140,.75) 100%) !important;
-  box-shadow: 0 24px 80px rgba(255,120,0,0.25), 0 12px 30px rgba(0,0,0,0.35) !important;
+/* Banner */
+.bps-banner{
+  border-radius: 20px;
+  padding: 24px 28px;
+  margin: 2px 0 18px 0;
+  background:
+    radial-gradient(900px 360px at 15% 0%, rgba(255,111,0,.16) 0%, rgba(255,111,0,0) 62%),
+    radial-gradient(900px 380px at 85% 10%, rgba(255,193,7,.12) 0%, rgba(255,193,7,0) 62%),
+    linear-gradient(135deg, rgba(255,255,255,.95) 0%, rgba(255,247,237,.85) 100%);
+  border: 1px solid rgba(255,111,0,.22);
+  box-shadow: var(--bps-shadow);
 }
-.stButton > button:hover{
-  box-shadow: 0 34px 110px rgba(255,120,0,0.35), 0 18px 50px rgba(0,0,0,0.40) !important;
+.bps-kicker{ letter-spacing: 2px; text-transform: uppercase; font-weight: 900; font-size: .78rem; color: rgba(255,111,0,.92); margin-bottom: 8px; }
+.bps-title{ font-size: 2.05rem; font-weight: 980; margin: 0 0 8px 0; color: var(--bps-ink); }
+.bps-subtitle{ margin: 0; color: rgba(15,23,42,.74); font-size: 1.03rem; }
+
+/* Buttons */
+.stButton>button{
+  border-radius: 14px !important;
+  border: 1px solid rgba(255,111,0,.30) !important;
+  background: rgba(255,111,0,.08) !important;
+  color: var(--bps-ink) !important;
+  font-weight: 800 !important;
+}
+.stButton>button[kind="primary"]{
+  background: linear-gradient(135deg, rgba(255,111,0,.95) 0%, rgba(255,193,7,.90) 100%) !important;
+  color: #111114 !important;
+  border: 1px solid rgba(255,111,0,.18) !important;
 }
 
-/* Elegant top accent */
-.block-container::before{
-  height:5px;
-  background: linear-gradient(90deg,
-    rgba(255,140,0,0) 0%,
-    rgba(255,120,0,.85) 30%,
-    rgba(255,200,120,.95) 55%,
-    rgba(255,140,0,.85) 75%,
-    rgba(255,140,0,0) 100%);
-  box-shadow: 0 18px 60px rgba(255,120,0,.40);
-}
+/* Links */
+a{ color: rgba(255,111,0,.95) !important; }
+a:hover{ color: rgba(255,111,0,1) !important; }
 """
 
 # Inject BPS accent tokens safely (no f-string CSS parsing issues)
@@ -986,7 +605,6 @@ def ensure_state():
     defaults = {
         "data_shopee": None, "audit_shopee": {},
         "data_tokped": None, "audit_tokped": {},
-        "data_fb": None,     "audit_fb": {},
         "data_maps": None,   "audit_maps": {},
     }
     for k, v in defaults.items():
@@ -1510,7 +1128,7 @@ if st.session_state["show_sidebar"]:
 
         menu = st.radio(
             "🧭 Navigasi",
-            ["🟠 Shopee", "🟢 Tokopedia", "🔵 Facebook", "📍 Google Maps", "📊 Export Gabungan"],
+            ["🟠 Shopee", "🟢 Tokopedia", "📍 Google Maps", "📊 Export Gabungan"],
             index=0,
             key="menu_nav",
         )
@@ -1548,7 +1166,6 @@ if menu == "🏠 Dashboard":
     <div class="cta-row">
       <span class="bps-chip">🟠 Shopee</span>
       <span class="bps-chip">🟢 Tokopedia</span>
-      <span class="bps-chip">🔵 Facebook</span>
       <span class="bps-chip">📍 Google Maps</span>
       <span class="bps-chip">📊 Export</span>
     </div>
@@ -1561,15 +1178,13 @@ if menu == "🏠 Dashboard":
     # Data readiness
     df_shp = st.session_state.data_shopee
     df_tkp = st.session_state.data_tokped
-    df_fb = st.session_state.data_fb
     df_maps = st.session_state.data_maps
 
     shp_n = 0 if df_shp is None else len(df_shp)
     tkp_n = 0 if df_tkp is None else len(df_tkp)
-    fb_n  = 0 if df_fb is None else len(df_fb)
     mp_n  = 0 if df_maps is None else len(df_maps)
 
-    total_all = shp_n + tkp_n + fb_n + mp_n
+    total_all = shp_n + tkp_n + mp_n
 
     
     # Premium KPI cards (less "kaku" than st.metric)
@@ -1578,7 +1193,7 @@ if menu == "🏠 Dashboard":
 <style>
 .kpi-grid{{
   display:grid;
-  grid-template-columns: repeat(5, minmax(0,1fr));
+  grid-template-columns: repeat(4, minmax(0,1fr));
   gap: 14px;
   margin-top: 6px;
 }}
@@ -1640,58 +1255,7 @@ if menu == "🏠 Dashboard":
 }}
 </style>
 
-<div class="kpi-grid">
-  <div class="kpi-card">
-    <div class="kpi-accent"></div>
-    <div class="kpi-top">
-      <div class="kpi-label">📦 Total Data</div>
-      <div class="kpi-ico">⚡</div>
-    </div>
-    <div class="kpi-val">{fmt_int_id(total_all)}</div>
-    <div class="kpi-sub">Akumulasi semua sumber</div>
-  </div>
-
-  <div class="kpi-card">
-    <div class="kpi-accent"></div>
-    <div class="kpi-top">
-      <div class="kpi-label">🟠 Shopee</div>
-      <div class="kpi-ico">🛒</div>
-    </div>
-    <div class="kpi-val">{fmt_int_id(shp_n)}</div>
-    <div class="kpi-sub">Siap diproses</div>
-  </div>
-
-  <div class="kpi-card">
-    <div class="kpi-accent"></div>
-    <div class="kpi-top">
-      <div class="kpi-label">🟢 Tokopedia</div>
-      <div class="kpi-ico">🧾</div>
-    </div>
-    <div class="kpi-val">{fmt_int_id(tkp_n)}</div>
-    <div class="kpi-sub">Siap diproses</div>
-  </div>
-
-  <div class="kpi-card">
-    <div class="kpi-accent"></div>
-    <div class="kpi-top">
-      <div class="kpi-label">🔵 Facebook</div>
-      <div class="kpi-ico">💬</div>
-    </div>
-    <div class="kpi-val">{fmt_int_id(fb_n)}</div>
-    <div class="kpi-sub">Siap diproses</div>
-  </div>
-
-  <div class="kpi-card">
-    <div class="kpi-accent"></div>
-    <div class="kpi-top">
-      <div class="kpi-label">📍 Google Maps</div>
-      <div class="kpi-ico">🧭</div>
-    </div>
-    <div class="kpi-val">{fmt_int_id(mp_n)}</div>
-    <div class="kpi-sub">Siap divisualisasi</div>
-  </div>
-</div>
-""",
+<div class="kpi-grid">""",
         unsafe_allow_html=True,
     )
 
@@ -1733,9 +1297,7 @@ if menu == "🏠 Dashboard":
         with s1:
             st.markdown(
                 _pill(shp_n > 0, "Shopee siap dianalisis") +
-                _pill(tkp_n > 0, "Tokopedia siap dianalisis") +
-                _pill(fb_n > 0, "Facebook siap dianalisis") +
-                _pill(mp_n > 0, "Google Maps siap divisualisasi"),
+                _pill(tkp_n > 0, "Tokopedia siap dianalisis") + _pill(mp_n > 0, "Google Maps siap divisualisasi"),
                 unsafe_allow_html=True,
             )
             st.caption("Tip: Mulai dari modul yang datanya sudah siap. Setelah itu gunakan Export Gabungan untuk konsolidasi.")
@@ -2196,186 +1758,7 @@ elif menu == "🟢 Tokopedia":
 # ======================================================================================
 # PAGE: FACEBOOK
 # ======================================================================================
-elif menu == "🔵 Facebook":
-    section_header("Facebook Marketplace", "Scraping/olah data Facebook Marketplace dengan panel kontrol yang clean.", "MARKETPLACE")
-    banner("Dashboard UMKM — Facebook Marketplace", "Ekstraksi data UMKM dari Facebook Marketplace (Bangka Belitung)")
 
-    with st.container(border=True):
-        col1, col2 = st.columns([1.15, 0.85], gap="large")
-        with col1:
-            files = st.file_uploader("Unggah CSV Facebook", type=["csv"], accept_multiple_files=True, key="file_fb")
-            run = st.button("🚀 Proses Data Facebook", type="primary", use_container_width=True)
-        with col2:
-            st.subheader("🧾 Catatan")
-            st.info("• Nama toko sering kosong → akan diisi default.\n• Tipe Usaha perorangan otomatis bila terdeteksi.")
-
-    if run:
-        if not files:
-            st.error("⚠️ Silakan unggah file CSV Facebook terlebih dahulu.")
-        else:
-            with st.status("Memproses data Facebook…", expanded=True) as status:
-                try:
-                    total_semua_baris = 0
-                    for f in files:
-                        df_temp = pd.read_csv(f, dtype=str, on_bad_lines="skip")
-                        total_semua_baris += len(df_temp)
-                        f.seek(0)
-
-                    hasil = []
-                    total_baris = 0
-                    err_h = 0
-                    luar_wilayah = 0
-
-                    progress = st.progress(0)
-                    info = st.empty()
-                    baris_diproses = 0
-
-                    for file in files:
-                        df_raw = pd.read_csv(file, dtype=str, on_bad_lines="skip")
-                        total_baris += len(df_raw)
-
-                        if "Link" in df_raw.columns and "Nama Produk" in df_raw.columns:
-                            col_link, col_nama, col_harga, col_wilayah, col_toko = "Link", "Nama Produk", "Harga", "Wilayah", "Nama Toko"
-                        else:
-                            col_toko = df_raw.columns[0]
-                            col_nama = df_raw.columns[1] if len(df_raw.columns) > 1 else df_raw.columns[0]
-                            col_wilayah = df_raw.columns[2] if len(df_raw.columns) > 2 else df_raw.columns[0]
-                            col_harga = df_raw.columns[4] if len(df_raw.columns) > 4 else df_raw.columns[-1]
-                            col_link = df_raw.columns[5] if len(df_raw.columns) > 5 else df_raw.columns[-1]
-
-                        for i in range(len(df_raw)):
-                            row = df_raw.iloc[i]
-                            link = str(row.get(col_link, ""))
-                            nama = str(row.get(col_nama, ""))
-                            harga_str = str(row.get(col_harga, ""))
-                            lokasi = safe_title(str(row.get(col_wilayah, "")))
-                            toko = str(row.get(col_toko, "FB Seller")) or "FB Seller"
-
-                            if not is_in_babel(lokasi):
-                                luar_wilayah += 1
-                                baris_diproses += 1
-                                continue
-
-                            try:
-                                harga_bersih = harga_str.replace(".", "").replace(",", "")
-                                angka_list = re.findall(r"\d+", harga_bersih)
-                                val_h = int(angka_list[0]) if angka_list else 0
-                                if val_h > 1_000_000_000:
-                                    val_h = 0
-                            except Exception:
-                                val_h = 0
-                                err_h += 1
-
-                            if val_h > 0:
-                                tipe_usaha = deteksi_tipe_usaha(toko)
-                                hasil.append({
-                                    "Nama Toko": toko, "Nama Produk": nama, "Harga": val_h,
-                                    "Wilayah": lokasi, "Tipe Usaha": tipe_usaha, "Link": link
-                                })
-
-                            baris_diproses += 1
-                            if baris_diproses % 25 == 0 or baris_diproses == total_semua_baris:
-                                pct = min(baris_diproses / max(total_semua_baris, 1), 1.0)
-                                progress.progress(pct)
-                                info.markdown(f"**⏳ Progress:** {fmt_int_id(baris_diproses)} / {fmt_int_id(total_semua_baris)} ({int(pct*100)}%)")
-
-                    progress.empty()
-                    info.empty()
-
-                    df_final = pd.DataFrame(hasil).drop_duplicates()
-                    st.session_state.data_fb = df_final
-                    st.session_state.audit_fb = {
-                        "file_count": len(files),
-                        "total_rows": total_baris,
-                        "valid_rows": len(df_final),
-                        "luar_wilayah": luar_wilayah,
-                        "error_harga": err_h,
-                    }
-
-                    status.update(label="✅ Selesai memproses Facebook", state="complete", expanded=False)
-                    st.toast(f"Facebook: {fmt_int_id(len(df_final))} baris siap dianalisis", icon="✅")
-
-                except Exception as e:
-                    status.update(label="❌ Gagal memproses Facebook", state="error", expanded=True)
-                    st.error(f"Error Sistem FB: {e}")
-
-    df_fb = st.session_state.data_fb
-    if df_fb is not None and not df_fb.empty:
-        with st.container(border=True):
-            st.subheader("🔎 Filter Pintar")
-            c1, c2, c3 = st.columns([1.2, 1.2, 1.6], gap="medium")
-            with c1:
-                f_wil = st.multiselect("📍 Wilayah", options=sorted(df_fb["Wilayah"].unique()),
-                                       default=sorted(df_fb["Wilayah"].unique()), key="f_wil_fb")
-            with c2:
-                f_tipe = st.multiselect("🏢 Tipe Usaha", options=sorted(df_fb["Tipe Usaha"].unique()),
-                                        default=sorted(df_fb["Tipe Usaha"].unique()), key="f_tipe_fb")
-            with c3:
-                q = st.text_input("🔎 Cari (nama toko / produk)", value="", key="q_fb")
-
-            max_h = int(df_fb["Harga"].max()) if df_fb["Harga"].max() > 0 else 1_000_000
-            f_hrg = st.slider("💰 Harga (Rp)", 0, max_h, (0, max_h), key="f_hrg_fb")
-
-        df_f = df_fb[
-            df_fb["Wilayah"].isin(f_wil)
-            & df_fb["Tipe Usaha"].isin(f_tipe)
-            & (df_fb["Harga"] >= f_hrg[0])
-            & (df_fb["Harga"] <= f_hrg[1])
-        ].copy()
-
-        if q.strip():
-            qq = q.strip().lower()
-            df_f = df_f[
-                df_f["Nama Toko"].astype(str).str.lower().str.contains(qq, na=False)
-                | df_f["Nama Produk"].astype(str).str.lower().str.contains(qq, na=False)
-            ]
-
-        tab1, tab2, tab3 = st.tabs(["📊 Executive Dashboard", "🗄️ Database", "📑 Audit"])
-        with tab1:
-            m1, m2, m3 = st.columns(3)
-            m1.metric("📌 Total Ditampilkan", fmt_int_id(len(df_f)))
-            m2.metric("👤 Perorangan", fmt_int_id((df_f["Tipe Usaha"] == "Perorangan (Facebook)").sum()))
-            m3.metric("🗺️ Jumlah Wilayah", fmt_int_id(df_f["Wilayah"].nunique()))
-
-            if not st.session_state.get("fast_mode") and not df_f.empty:
-                g1, g2 = st.columns(2, gap="large")
-                with g1:
-                    fig = px.pie(df_f, names="Tipe Usaha", hole=0.44,
-                                 title="Komposisi Model Bisnis (Facebook)")
-                    fig.update_layout(paper_bgcolor=BPS_PAPER, plot_bgcolor=BPS_PAPER)
-                    st.plotly_chart(fig, use_container_width=True)
-                with g2:
-                    grp = df_f.groupby("Wilayah").size().reset_index(name="Jumlah")
-                    fig = px.bar(grp, x="Wilayah", y="Jumlah",
-                                 title="Total Usaha per Wilayah (Facebook)",
-                                 color="Wilayah")
-                    fig.update_layout(paper_bgcolor=BPS_PAPER, plot_bgcolor=BPS_PAPER)
-                    st.plotly_chart(fig, use_container_width=True)
-
-        with tab2:
-            df_view = df_f.copy()
-            df_view["Harga"] = df_view["Harga"].apply(lambda x: f"Rp {int(x):,}".replace(",", ".") if str(x).isdigit() else f"Rp {x}")
-            st.dataframe(df_view, use_container_width=True, hide_index=True, height=420)
-            excel_bytes = df_to_excel_bytes({"Data Facebook": df_f})
-            st.download_button(
-                "⬇️ Unduh Excel — Facebook",
-                data=excel_bytes,
-                file_name=f"UMKM_Facebook_{datetime.date.today()}.xlsx",
-                use_container_width=True,
-                type="primary",
-            )
-
-        with tab3:
-            a = st.session_state.audit_fb or {}
-            st.info(f"📂 File diproses: **{fmt_int_id(a.get('file_count', 0))}**")
-            st.success(f"✅ Baris valid: **{fmt_int_id(a.get('valid_rows', 0))}**")
-            st.warning(f"⚠️ Diabaikan (luar wilayah): **{fmt_int_id(a.get('luar_wilayah', 0))}**")
-            st.warning(f"⚠️ Error parsing harga: **{fmt_int_id(a.get('error_harga', 0))}**")
-
-
-# ======================================================================================
-# PAGE: GOOGLE MAPS
-# ======================================================================================
 elif menu == "📍 Google Maps":
     section_header("Google Maps", "Pencarian lokasi & visualisasi peta dengan tampilan modern.", "LOCATION")
     banner("Dashboard UMKM — Google Maps", "Upload CSV hasil ekstensi → auto-clean → REAL MAP (Folium) + export Excel/CSV")
@@ -2471,23 +1854,21 @@ elif menu == "📍 Google Maps":
 # ======================================================================================
 elif menu == "📊 Export Gabungan":
     section_header("Export Gabungan", "Satukan data lintas platform lalu unduh dalam format rapi.", "EXPORT")
-    banner("Export Master Data Gabungan", "Konsolidasi (Shopee, Tokopedia, Facebook, Google Maps) → 1 Excel, sheet terpisah")
+    banner("Export Master Data Gabungan", "Konsolidasi (Shopee, Tokopedia, Google Maps) → 1 Excel, sheet terpisah")
 
     df_shp_ready = st.session_state.data_shopee is not None and not st.session_state.data_shopee.empty
     df_tkp_ready = st.session_state.data_tokped is not None and not st.session_state.data_tokped.empty
-    df_fb_ready = st.session_state.data_fb is not None and not st.session_state.data_fb.empty
     df_maps_ready = st.session_state.data_maps is not None and not st.session_state.data_maps.empty
 
-    if not (df_shp_ready or df_tkp_ready or df_fb_ready or df_maps_ready):
-        st.warning("⚠️ Belum ada data. Silakan proses dulu di menu Shopee/Tokopedia/Facebook/Google Maps.")
+    if not (df_shp_ready or df_tkp_ready or df_maps_ready):
+        st.warning("⚠️ Belum ada data. Silakan proses dulu di menu Shopee/Tokopedia/Google Maps.")
     else:
         with st.container(border=True):
             st.subheader("✅ Data Siap Dikonsolidasi")
-            c1, c2, c3, c4 = st.columns(4)
+            c1, c2, c3 = st.columns(3)
             c1.metric("📦 Shopee", fmt_int_id(len(st.session_state.data_shopee)) if df_shp_ready else 0)
             c2.metric("📦 Tokopedia", fmt_int_id(len(st.session_state.data_tokped)) if df_tkp_ready else 0)
-            c3.metric("📦 Facebook", fmt_int_id(len(st.session_state.data_fb)) if df_fb_ready else 0)
-            c4.metric("📦 Google Maps", fmt_int_id(len(st.session_state.data_maps)) if df_maps_ready else 0)
+            c3.metric("📦 Google Maps", fmt_int_id(len(st.session_state.data_maps)) if df_maps_ready else 0)
             st.caption("Output: 1 file Excel berisi sheet terpisah per sumber + autofilter + header rapi.")
 
         sheets = {}
@@ -2495,8 +1876,6 @@ elif menu == "📊 Export Gabungan":
             sheets["Data Shopee"] = st.session_state.data_shopee
         if df_tkp_ready:
             sheets["Data Tokopedia"] = st.session_state.data_tokped
-        if df_fb_ready:
-            sheets["Data Facebook"] = st.session_state.data_fb
         if df_maps_ready:
             sheets["Data Google Maps"] = st.session_state.data_maps
 
@@ -2507,7 +1886,7 @@ elif menu == "📊 Export Gabungan":
             _, col_btn, _ = st.columns([1, 2, 1])
             with col_btn:
                 st.download_button(
-                    label="⬇️ UNDUH EXCEL MASTER (4-IN-1)",
+                    label="⬇️ UNDUH EXCEL MASTER",
                     data=excel_bytes,
                     file_name=f"Master_UMKM_BPS_{datetime.date.today()}.xlsx",
                     use_container_width=True,
@@ -2524,47 +1903,4 @@ st.markdown(
     "</div>",
     unsafe_allow_html=True,
 )
-
-# --- FINAL FINAL OVERRIDE (Premium Sunset v3: toned down + vignette) ---
-st.markdown(
-    """
-<style>
-html, body, [data-testid="stAppViewContainer"], [data-testid="stApp"]{
-  background:
-    radial-gradient(1700px 980px at 7% 12%, rgba(255,140,40,.36) 0%, rgba(255,140,40,.16) 38%, rgba(255,140,40,0) 72%),
-    radial-gradient(1500px 980px at 92% 14%, rgba(255,200,90,.22) 0%, rgba(255,200,90,.10) 42%, rgba(255,200,90,0) 78%),
-    radial-gradient(1400px 900px at 45% 105%, rgba(255,210,140,.10) 0%, rgba(255,210,140,0) 72%),
-    radial-gradient(1200px 820px at 55% 55%, rgba(30,58,138,.10) 0%, rgba(30,58,138,0) 62%),
-    linear-gradient(155deg, #1a0f0a 0%, #22110b 20%, #111018 55%, #070a10 100%) !important;
-  background-attachment: fixed !important;
-}
-
-/* Cinematic vignette to prevent "too bright" look */
-[data-testid="stAppViewContainer"]::before{
-  content:"";
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  background:
-    radial-gradient(1200px 700px at 50% 35%, rgba(0,0,0,0) 0%, rgba(0,0,0,0.28) 60%, rgba(0,0,0,0.52) 100%),
-    linear-gradient(180deg, rgba(0,0,0,0.18) 0%, rgba(0,0,0,0.42) 100%);
-  mix-blend-mode: multiply;
-}
-
-/* Slightly calm the top accent line */
-.block-container::before{
-  height:5px;
-  background: linear-gradient(90deg,
-    rgba(255,140,0,0) 0%,
-    rgba(255,120,0,.72) 30%,
-    rgba(255,200,120,.80) 55%,
-    rgba(255,140,0,.72) 75%,
-    rgba(255,140,0,0) 100%);
-  box-shadow: 0 14px 44px rgba(255,120,0,.26);
-}
-</style>
-""",
-    unsafe_allow_html=True,
-)
-
 
