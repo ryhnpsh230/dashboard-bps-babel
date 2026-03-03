@@ -198,17 +198,16 @@ EXTRA_CSS = """
 
 st.markdown("<style>\n" + CSS_THEME + "\n" + EXTRA_CSS + "\n</style>", unsafe_allow_html=True)
 
-# --- Force background override (Premium Sunset) ---
+# --- Force background override (Light Orange + White) ---
 st.markdown(
     """
 <style>
 /* FINAL OVERRIDE — ensures background changes apply */
 html, body, [data-testid="stAppViewContainer"], [data-testid="stApp"]{
   background:
-    radial-gradient(1600px 900px at 5% 15%, rgba(255,120,0,.55) 0%, rgba(255,120,0,.28) 35%, rgba(255,120,0,0) 70%),
-    radial-gradient(1400px 900px at 95% 10%, rgba(255,170,0,.35) 0%, rgba(255,170,0,.18) 40%, rgba(255,170,0,0) 75%),
-    radial-gradient(1200px 800px at 50% 100%, rgba(255,200,120,.18) 0%, rgba(255,200,120,0) 70%),
-    linear-gradient(155deg, #1b0f08 0%, #2a1306 22%, #140c08 55%, #07090d 100%) !important;
+    radial-gradient(1200px 720px at 12% 10%, rgba(255,111,0,.14) 0%, rgba(255,111,0,0) 60%),
+    radial-gradient(900px 650px at 88% 12%, rgba(255,193,7,.12) 0%, rgba(255,193,7,0) 58%),
+    linear-gradient(180deg, #ffffff 0%, #fff7ed 100%) !important;
   background-attachment: fixed !important;
 }
 </style>
@@ -720,7 +719,7 @@ def deteksi_tipe_usaha(nama_toko):
         return "Tidak Terdeteksi (Butuh Nama Toko)"
 
     if str(nama_toko) == "FB Seller":
-        return "Perorangan (Facebook)"
+        return "Perorangan"
 
     nama_lower = str(nama_toko).lower()
     keyword_fisik = [
@@ -1754,10 +1753,6 @@ elif menu == "🟢 Tokopedia":
             st.warning(f"⚠️ Diabaikan (luar wilayah): **{fmt_int_id(a.get('luar_wilayah', 0))}**")
             st.warning(f"⚠️ Error parsing harga: **{fmt_int_id(a.get('error_harga', 0))}**")
 
-
-# ======================================================================================
-# PAGE: FACEBOOK
-# ======================================================================================
 
 elif menu == "📍 Google Maps":
     section_header("Google Maps", "Pencarian lokasi & visualisasi peta dengan tampilan modern.", "LOCATION")
