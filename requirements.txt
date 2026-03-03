@@ -6,3 +6,6 @@ requests
 xlsxwriter
 folium
 streamlit-folium
+fastapi
+uvicorn
+pydantic
