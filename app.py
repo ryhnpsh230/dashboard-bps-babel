@@ -1,4 +1,7 @@
 import streamlit as st
+
+APP_UI_VERSION = '2026-03-03-ui2'
+
 import pandas as pd
 import re
 import io
@@ -97,6 +100,64 @@ CSS_THEME = r"""@import url("https://fonts.googleapis.com/css2?family=Manrope:wg
   --bps-shadow: 0 18px 55px rgba(2, 6, 23, 0.10);
 }
 
+/* ==== FORCE LIGHT UI (override Streamlit Cloud dark theme) ==== */
+html, body, [data-testid="stAppViewContainer"], [data-testid="stApp"]{
+  color: var(--bps-ink) !important;
+}
+
+/* Main containers & bordered blocks */
+div[data-testid="stVerticalBlockBorderWrapper"]{
+  background: rgba(255,255,255,0.92) !important;
+  border: 1px solid var(--bps-border) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 14px 40px rgba(2, 6, 23, 0.08) !important;
+}
+div[data-testid="stVerticalBlockBorderWrapper"] > div{
+  background: transparent !important;
+}
+
+/* Sidebar */
+section[data-testid="stSidebar"]{
+  background: #ffffff !important;
+  border-right: 1px solid var(--bps-border) !important;
+}
+section[data-testid="stSidebar"] *{
+  color: var(--bps-ink) !important;
+}
+section[data-testid="stSidebar"] a, section[data-testid="stSidebar"] span, section[data-testid="stSidebar"] p, section[data-testid="stSidebar"] label{
+  color: var(--bps-ink) !important;
+}
+
+/* Inputs */
+.stTextInput input, .stNumberInput input, .stSelectbox div[data-baseweb="select"] > div,
+.stTextArea textarea{
+  background: #ffffff !important;
+  color: var(--bps-ink) !important;
+  border: 1px solid var(--bps-border) !important;
+}
+.stFileUploader, .stFileUploader *{
+  color: var(--bps-ink) !important;
+}
+.stFileUploader section{
+  background: rgba(255,255,255,0.92) !important;
+  border: 1px dashed rgba(15,23,42,0.25) !important;
+}
+
+/* Toggle / checkbox labels */
+.stToggle label, .stCheckbox label{
+  color: var(--bps-ink) !important;
+}
+
+/* Fix subheader / markdown colors */
+h1,h2,h3,h4,h5,h6, .stMarkdown, .stMarkdown *{
+  color: var(--bps-ink) !important;
+}
+
+/* Buttons */
+.stButton > button{
+  border-radius: 12px !important;
+}
+
 html, body, [data-testid="stAppViewContainer"], [data-testid="stApp"]{
   background:
     radial-gradient(1200px 720px at 12% 10%, rgba(255,111,0,.14) 0%, rgba(255,111,0,0) 60%),
@@ -177,6 +238,16 @@ div[data-testid="stVerticalBlockBorderWrapper"]:hover{
 /* Links */
 a{ color: rgba(255,111,0,.95) !important; }
 a:hover{ color: rgba(255,111,0,1) !important; }
+
+/* Orange hero/banner card */
+.bps-banner{
+  background: linear-gradient(135deg, rgba(255,111,0,0.18) 0%, rgba(255,193,7,0.18) 55%, rgba(255,255,255,0.95) 100%) !important;
+  border: 1px solid rgba(255,111,0,0.35) !important;
+}
+.bps-badge{
+  background: linear-gradient(135deg, rgba(255,111,0,0.18) 0%, rgba(255,193,7,0.22) 100%) !important;
+  color: #B45309 !important;
+}
 """
 
 # Inject BPS accent tokens safely (no f-string CSS parsing issues)
