@@ -538,42 +538,133 @@ div[data-testid="stAlert"] {
 }
 
 /* ═══════════════════════════════════════════
-   SIDEBAR
+   SIDEBAR — Premium Redesign
 ═══════════════════════════════════════════ */
 [data-testid="stSidebar"] {
-  background: linear-gradient(180deg, #FFFFFF 0%, var(--cream) 100%) !important;
-  border-right: 1px solid var(--border) !important;
-  box-shadow: 4px 0 24px rgba(245,95,0,0.06) !important;
+  background:
+    radial-gradient(ellipse 500px 400px at 10% 0%, rgba(245,95,0,0.09) 0%, transparent 65%),
+    radial-gradient(ellipse 400px 300px at 90% 100%, rgba(255,179,71,0.07) 0%, transparent 60%),
+    linear-gradient(180deg, #FFFFFF 0%, #FFF9F4 60%, #FFF5EC 100%) !important;
+  border-right: 1px solid rgba(245,95,0,0.13) !important;
+  box-shadow: 6px 0 32px rgba(245,95,0,0.07), 2px 0 8px rgba(0,0,0,0.03) !important;
 }
 [data-testid="stSidebar"] * { color: var(--ink) !important; }
-[data-testid="stSidebar"] .stMarkdown p { color: var(--ink3) !important; }
-[data-testid="stSidebar"] hr { border-color: var(--border) !important; }
+[data-testid="stSidebar"] .stMarkdown p { color: var(--ink3) !important; font-size: 0.88rem !important; }
+[data-testid="stSidebar"] hr {
+  border: none !important;
+  border-top: 1px solid rgba(245,95,0,0.12) !important;
+  margin: 8px 0 !important;
+}
 
-/* Sidebar radio pills */
-[data-testid="stSidebar"] div[role="radiogroup"] { gap: 8px; }
+/* Brand header */
+.sb-brand {
+  display: flex; align-items: center; gap: 12px;
+  padding: 4px 0 16px 0;
+}
+.sb-brand-icon {
+  width: 46px; height: 46px; border-radius: 14px;
+  background: linear-gradient(135deg, var(--sun) 0%, var(--sun3) 100%);
+  font-size: 1.45rem; line-height: 46px; text-align: center;
+  box-shadow: 0 8px 24px rgba(245,95,0,0.32);
+  flex-shrink: 0;
+}
+.sb-brand-name {
+  font-family: "Sora", sans-serif !important;
+  font-size: 1.05rem; font-weight: 800;
+  color: var(--ink) !important; letter-spacing: -0.015em; line-height: 1.25;
+}
+.sb-brand-sub {
+  font-size: 0.73rem; font-weight: 500;
+  color: var(--ink3) !important; margin-top: 1px;
+}
+
+/* Nav section label */
+.sb-nav-label {
+  font-family: "Sora", sans-serif;
+  font-size: 0.67rem; font-weight: 700;
+  letter-spacing: 0.16em; text-transform: uppercase;
+  color: rgba(245,95,0,0.60) !important;
+  padding: 8px 2px 5px 2px;
+}
+
+/* Radio nav items */
+[data-testid="stSidebar"] div[role="radiogroup"] {
+  gap: 6px !important; display: flex !important; flex-direction: column !important;
+}
 [data-testid="stSidebar"] div[role="radiogroup"] label {
-  border-radius: var(--r-sm) !important;
-  border: 1px solid var(--border) !important;
-  background: #FFFFFF !important;
-  padding: 12px 14px !important;
-  transition: all 0.16s ease !important;
-  box-shadow: var(--shadow) !important;
+  border-radius: 14px !important;
+  border: 1.5px solid rgba(245,95,0,0.10) !important;
+  background: rgba(255,255,255,0.80) !important;
+  padding: 14px 16px !important;
+  cursor: pointer !important;
+  transition: all 0.22s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+  box-shadow: 0 2px 8px rgba(245,95,0,0.05), 0 1px 3px rgba(0,0,0,0.04) !important;
+  overflow: hidden !important;
 }
 [data-testid="stSidebar"] div[role="radiogroup"] label:hover {
-  border-color: var(--border2) !important;
-  box-shadow: var(--shadow2) !important;
-  transform: translateX(3px) !important;
+  border-color: rgba(245,95,0,0.30) !important;
+  background: #FFFFFF !important;
+  box-shadow: 0 6px 22px rgba(245,95,0,0.12), 0 2px 6px rgba(0,0,0,0.05) !important;
+  transform: translateX(5px) !important;
 }
 [data-testid="stSidebar"] div[role="radiogroup"] label:has(input:checked) {
   background: linear-gradient(135deg, var(--sun) 0%, var(--sun2) 100%) !important;
   border-color: transparent !important;
-  box-shadow: 0 6px 20px rgba(245,95,0,0.28) !important;
-  transform: translateX(3px) !important;
+  box-shadow: 0 8px 28px rgba(245,95,0,0.34), 0 2px 8px rgba(0,0,0,0.08) !important;
+  transform: translateX(5px) !important;
 }
-[data-testid="stSidebar"] div[role="radiogroup"] label:has(input:checked) p {
-  color: #FFFFFF !important;
-  font-weight: 700 !important;
+[data-testid="stSidebar"] div[role="radiogroup"] label:has(input:checked) p,
+[data-testid="stSidebar"] div[role="radiogroup"] label:has(input:checked) span {
+  color: #FFFFFF !important; font-weight: 700 !important;
 }
+[data-testid="stSidebar"] div[role="radiogroup"] input[type="radio"] { display: none !important; }
+
+/* Back button */
+[data-testid="stSidebar"] .stButton > button {
+  border-radius: 12px !important;
+  background: rgba(245,95,0,0.07) !important;
+  border: 1.5px solid rgba(245,95,0,0.20) !important;
+  color: var(--sun) !important;
+  font-weight: 700 !important; font-size: 0.88rem !important;
+  height: 42px !important; box-shadow: none !important;
+  transition: all 0.16s ease !important;
+}
+[data-testid="stSidebar"] .stButton > button:hover {
+  background: rgba(245,95,0,0.13) !important;
+  border-color: var(--sun) !important;
+  transform: none !important;
+  box-shadow: 0 4px 14px rgba(245,95,0,0.16) !important;
+}
+
+/* Stat chips */
+.sb-stat-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 2px 0 4px 0;
+}
+.sb-stat {
+  border-radius: 12px; padding: 10px 12px;
+  background: rgba(255,255,255,0.85);
+  border: 1px solid rgba(245,95,0,0.10);
+  box-shadow: 0 2px 8px rgba(245,95,0,0.04);
+}
+.sb-stat-val {
+  font-family: "Sora", sans-serif;
+  font-size: 1.2rem; font-weight: 800;
+  color: var(--sun) !important; line-height: 1.1;
+}
+.sb-stat-lbl {
+  font-size: 0.70rem; font-weight: 600;
+  color: var(--ink3) !important; margin-top: 2px;
+}
+
+/* Footer */
+.sb-footer {
+  margin-top: 10px; padding: 12px 14px; border-radius: 14px;
+  background: linear-gradient(135deg, rgba(245,95,0,0.06), rgba(255,179,71,0.04));
+  border: 1px solid rgba(245,95,0,0.10);
+  font-size: 0.77rem; color: var(--ink3) !important;
+  line-height: 1.6; text-align: center;
+}
+.sb-footer strong { color: var(--sun) !important; font-weight: 700; }
 
 /* ═══════════════════════════════════════════
    SPLASH SCREEN
@@ -1091,25 +1182,94 @@ menu = "🏠 Dashboard"
 
 if st.session_state["show_sidebar"]:
     with st.sidebar:
-        st.markdown(f"### {APP_ICON} {APP_TITLE}")
-        st.caption("Penyedia Data Statistik Berkualitas untuk Indonesia Maju")
-        st.divider()
+        # ── Brand Header ──────────────────────────────────
+        st.markdown(
+            f"""
+<div class="sb-brand">
+  <div class="sb-brand-icon">🏛️</div>
+  <div>
+    <div class="sb-brand-name">Dashboard UMKM</div>
+    <div class="sb-brand-sub">BPS Bangka Belitung</div>
+  </div>
+</div>
+""",
+            unsafe_allow_html=True,
+        )
+
+        # ── Back to Dashboard ─────────────────────────────
         if st.button("⬅️ Kembali ke Dashboard", key="btn_home", use_container_width=True, type="secondary"):
             st.session_state["show_sidebar"] = False
             st.session_state["menu_nav"] = "🏠 Dashboard"
             st.rerun()
-        if os.path.exists("logo.png"):
-            st.image("logo.png", use_container_width=True)
+
+        st.divider()
+
+        # ── Nav label ─────────────────────────────────────
+        st.markdown('<div class="sb-nav-label">📂 Modul Data</div>', unsafe_allow_html=True)
+
         menu = st.radio(
-            "🧭 Navigasi",
+            "",
             ["🟠 Shopee", "🟢 Tokopedia", "📍 Google Maps", "📊 Export Gabungan"],
             index=0,
             key="menu_nav",
+            label_visibility="collapsed",
         )
+
         st.divider()
-        with st.expander("⚙️ Pengaturan Umum", expanded=False):
+
+        # ── Live Stats ────────────────────────────────────
+        _shp_n = 0 if st.session_state.data_shopee is None else len(st.session_state.data_shopee)
+        _tkp_n = 0 if st.session_state.data_tokped is None else len(st.session_state.data_tokped)
+        _mp_n  = 0 if st.session_state.data_maps   is None else len(st.session_state.data_maps)
+        _total = _shp_n + _tkp_n + _mp_n
+
+        def _fmt(n):
+            return f"{int(n):,}".replace(",", ".") if n else "—"
+
+        st.markdown('<div class="sb-nav-label">📊 Ringkasan Data</div>', unsafe_allow_html=True)
+        st.markdown(
+            f"""
+<div class="sb-stat-grid">
+  <div class="sb-stat">
+    <div class="sb-stat-val">{_fmt(_shp_n)}</div>
+    <div class="sb-stat-lbl">🟠 Shopee</div>
+  </div>
+  <div class="sb-stat">
+    <div class="sb-stat-val">{_fmt(_tkp_n)}</div>
+    <div class="sb-stat-lbl">🟢 Tokopedia</div>
+  </div>
+  <div class="sb-stat">
+    <div class="sb-stat-val">{_fmt(_mp_n)}</div>
+    <div class="sb-stat-lbl">📍 Maps</div>
+  </div>
+  <div class="sb-stat">
+    <div class="sb-stat-val">{_fmt(_total)}</div>
+    <div class="sb-stat-lbl">📦 Total</div>
+  </div>
+</div>
+""",
+            unsafe_allow_html=True,
+        )
+
+        st.divider()
+
+        # ── Settings ──────────────────────────────────────
+        st.markdown('<div class="sb-nav-label">⚙️ Pengaturan</div>', unsafe_allow_html=True)
+        with st.expander("Opsi Tampilan & Performa", expanded=False):
             st.checkbox("Tampilkan tips cepat", value=True, key="show_tips")
-            st.checkbox("Mode cepat (kurangi rendering chart besar)", value=False, key="fast_mode")
+            st.checkbox("Mode cepat (kurangi rendering chart)", value=False, key="fast_mode")
+
+        # ── Footer ────────────────────────────────────────
+        st.markdown(
+            """
+<div class="sb-footer">
+  <strong>BPS Bangka Belitung</strong><br>
+  Dashboard UMKM v2.0<br>
+  <span style="opacity:0.7">Data Statistik Berkualitas</span>
+</div>
+""",
+            unsafe_allow_html=True,
+        )
 
 if not st.session_state.get("show_sidebar", False):
     st.markdown(
