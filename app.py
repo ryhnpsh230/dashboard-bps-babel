@@ -1106,58 +1106,10 @@ def deteksi_tipe_usaha(nama_toko):
 
     nama_lower = str(nama_toko).lower()
     keyword_fisik = [
-    # umum retail
-    "toko", "warung", "kios", "kedai", "lapak", "gerai", "outlet",
-    "counter", "konter", "stand", "booth", "pojok",
-    "grosir", "gudang", "depot", "mart",
-    "minimarket", "supermarket", "pasar", "ruko", "plaza",
-    "sentra", "pusat", "galeri", "shop", "house",
-
-    # badan usaha
-    "cv", "pt", "ud", "pd", "fa",
-
-    # distribusi
-    "agen", "distributor", "supplier", "reseller", "stokis",
-
-    # nama umum UMKM
-    "jaya", "abadi", "makmur", "sentosa", "berkah", "barokah",
-    "sejahtera", "mandiri", "mulya", "mulia", "utama", "prima",
-    "sukses", "karya", "rezeki", "anugrah", "anugerah",
-    "hidayah", "amanah", "indah", "murni", "tani",
-
-    # otomotif
-    "motor", "mobil", "bengkel", "sparepart", "aksesoris",
-    "variasi", "tambal ban", "steam", "cuci mobil", "cuci motor",
-    "body repair", "ban", "aki", "velg",
-
-    # makanan & minuman
-    "rumah makan", "rm", "warteg", "resto", "restaurant",
-    "cafe", "kopi", "coffee", "bakery", "roti", "katering", "catering",
-    "kuliner", "angkringan", "lalapan", "bakso", "mie ayam",
-    "nasi padang", "foodcourt", "dap ur", "kedai kopi",
-
-    # jasa umum
-    "laundry", "salon", "barber", "barbershop", "spa",
-    "fotokopi", "fotocopy", "percetakan", "printing", "print",
-    "jahit", "penjahit", "tailor", "konveksi",
-    "service", "servis", "reparasi", "praktek", "praktik",
-
-    # elektronik & gadget
-    "elektro", "elektronik", "hp", "ponsel", "cell",
-    "komputer", "laptop", "printer", "kamera", "gadget",
-
-    # bangunan & teknik
-    "material", "bangunan", "teknik", "tools",
-    "keramik", "cat", "besi", "aluminium", "kaca",
-
-    # kesehatan & lainnya
-    "apotek", "klinik", "optik", "petshop",
-    "sembako", "kelontong", "pakan", "pupuk",
-    "air isi ulang", "galon",
-
-    # existing kamu
-    "official", "store", "cabang", "snack", "jajanan"
-]
+        "toko", "warung", "grosir", "mart", "apotek", "cv.", "pt.", "official", "agen",
+        "distributor", "kios", "kedai", "supermarket", "minimarket", "cabang", "jaya",
+        "abadi", "makmur", "motor", "mobil", "bengkel", "snack", "store","jajanan"
+    ]
     
     for kata in keyword_fisik:
         if kata in nama_lower:
@@ -2614,6 +2566,5 @@ html, body, [data-testid="stAppViewContainer"], [data-testid="stApp"]{
 """,
     unsafe_allow_html=True,
 )
-
 
 
