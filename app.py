@@ -1554,68 +1554,322 @@ def render_real_map_folium(df_maps, height: int = 560):
 # SPLASH SCREEN — Premium Redesign
 # ======================================================================================
 def splash_screen():
-    st.markdown(
-        """<style>
-          [data-testid="stSidebar"]{ display:none !important; }
-          [data-testid="stHeader"]{ background: transparent !important; }
-          .block-container{ padding-top: 0 !important; }
-          .block-container::before { display: none !important; }
-          .block-container::after  { display: none !important; }
-        </style>""",
-        unsafe_allow_html=True,
-    )
+    # ── Encode logo.png → base64 so it works as inline <img> ──────────────────
+    logo_html = ""
+    if os.path.exists("logo.png"):
+        import base64
+        with open("logo.png", "rb") as _f:
+            _b64 = base64.b64encode(_f.read()).decode()
+        logo_html = f'<img src="data:image/png;base64,{_b64}" class="sp-logo-img" alt="Logo BPS">'
+    else:
+        logo_html = '<div class="sp-logo-emoji">🏛️</div>'
 
-    st.markdown('<div class="splash-outer">', unsafe_allow_html=True)
-    st.markdown(
-        """
-<div class="splash-wrap">
-  <div class="splash-ring-1"></div>
-  <div class="splash-ring-2"></div>
-  <div class="splash-ring-3"></div>
-  <div class="splash-ring-4"></div>
-  <div class="splash-inner">
-    <div class="splash-logo-box">🏛️</div>
-    <div class="splash-eyebrow">
-      <span style="width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,0.70);display:inline-block;"></span>
-      BPS Bangka Belitung · UMKM Toolkit
+    # ── Step labels for JS progress animation ─────────────────────────────────
+    steps_js = [
+        (0,  28, "Menginisialisasi komponen sistem…"),
+        (28, 56, "Memuat modul Shopee & Tokopedia…"),
+        (56, 82, "Menyiapkan engine visualisasi peta…"),
+        (82, 100,"Finalisasi &amp; optimasi tampilan…"),
+    ]
+    steps_json = str(steps_js).replace("'", '"')
+
+    SPLASH_HTML = f"""
+<style>
+  /* ── Kill ALL streamlit chrome ───────────────────────────── */
+  [data-testid="stSidebar"],
+  [data-testid="stHeader"],
+  [data-testid="stToolbar"],
+  [data-testid="stDecoration"],
+  footer {{ display: none !important; }}
+
+  html, body,
+  [data-testid="stApp"],
+  [data-testid="stAppViewContainer"],
+  .main, section.main, .block-container {{
+    background: #FFF4E8 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow: hidden !important;
+  }}
+
+  .block-container::before,
+  .block-container::after {{ display: none !important; }}
+
+  /* ── Fullscreen overlay ──────────────────────────────────── */
+  #splash-overlay {{
+    position: fixed;
+    inset: 0;
+    z-index: 999999;
+    background: linear-gradient(160deg, #FFF8F2 0%, #FFF0E0 50%, #FFE8CC 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Plus Jakarta Sans', 'Segoe UI', system-ui, sans-serif;
+  }}
+
+  /* Soft blobs */
+  #splash-overlay::before {{
+    content: "";
+    position: absolute;
+    top: -10%; left: -10%;
+    width: 55vw; height: 55vw;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(245,95,0,0.09) 0%, transparent 65%);
+    pointer-events: none;
+  }}
+  #splash-overlay::after {{
+    content: "";
+    position: absolute;
+    bottom: -10%; right: -8%;
+    width: 45vw; height: 45vw;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255,163,71,0.08) 0%, transparent 65%);
+    pointer-events: none;
+  }}
+
+  /* ── Card ────────────────────────────────────────────────── */
+  .sp-card {{
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    width: min(460px, 90vw);
+    padding: 48px 40px 40px;
+    background: rgba(255,255,255,0.82);
+    border: 1px solid rgba(245,95,0,0.14);
+    border-radius: 32px;
+    box-shadow:
+      0 32px 80px rgba(245,95,0,0.14),
+      0 8px 24px rgba(0,0,0,0.06),
+      inset 0 1px 0 rgba(255,255,255,0.9);
+    backdrop-filter: blur(24px) saturate(1.4);
+    animation: spCardIn 0.65s cubic-bezier(0.34,1.56,0.64,1) both;
+  }}
+
+  @keyframes spCardIn {{
+    from {{ opacity:0; transform: translateY(32px) scale(0.94); }}
+    to   {{ opacity:1; transform: translateY(0)    scale(1);    }}
+  }}
+
+  /* ── Logo ────────────────────────────────────────────────── */
+  .sp-logo-wrap {{
+    width: 110px; height: 110px;
+    border-radius: 28px;
+    background: linear-gradient(135deg, #F55F00 0%, #FF8330 60%, #FFB347 100%);
+    box-shadow:
+      0 16px 48px rgba(245,95,0,0.38),
+      0 4px 12px rgba(245,95,0,0.20),
+      inset 0 1px 0 rgba(255,255,255,0.22);
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 24px;
+    position: relative;
+    overflow: hidden;
+    animation: spLogoIn 0.55s 0.15s cubic-bezier(0.34,1.56,0.64,1) both;
+    flex-shrink: 0;
+  }}
+
+  .sp-logo-wrap::after {{
+    content: "";
+    position: absolute; inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.22) 0%, transparent 55%);
+    border-radius: inherit;
+    pointer-events: none;
+  }}
+
+  .sp-logo-img {{
+    width: 70px; height: 70px;
+    object-fit: contain;
+    position: relative; z-index: 1;
+    filter: brightness(0) invert(1);
+  }}
+
+  .sp-logo-emoji {{
+    font-size: 2.8rem;
+    position: relative; z-index: 1;
+    line-height: 1;
+  }}
+
+  @keyframes spLogoIn {{
+    from {{ opacity:0; transform: scale(0.7) rotate(-8deg); }}
+    to   {{ opacity:1; transform: scale(1)   rotate(0deg);  }}
+  }}
+
+  /* ── Text ────────────────────────────────────────────────── */
+  .sp-eyebrow {{
+    font-size: 0.68rem; font-weight: 800;
+    letter-spacing: 0.18em; text-transform: uppercase;
+    color: rgba(245,95,0,0.75);
+    margin-bottom: 10px;
+    animation: spFadeUp 0.5s 0.25s ease both;
+  }}
+
+  .sp-title {{
+    font-family: 'Fraunces','Georgia',serif;
+    font-size: clamp(1.55rem, 4vw, 1.9rem);
+    font-weight: 900;
+    color: #1C0800;
+    letter-spacing: -0.03em;
+    line-height: 1.15;
+    margin: 0 0 8px 0;
+    animation: spFadeUp 0.5s 0.30s ease both;
+  }}
+
+  .sp-sub {{
+    font-size: 0.88rem;
+    color: rgba(74,40,0,0.55);
+    line-height: 1.6;
+    margin: 0 0 28px 0;
+    animation: spFadeUp 0.5s 0.35s ease both;
+  }}
+
+  @keyframes spFadeUp {{
+    from {{ opacity:0; transform: translateY(14px); }}
+    to   {{ opacity:1; transform: translateY(0);    }}
+  }}
+
+  /* ── Progress bar ────────────────────────────────────────── */
+  .sp-progress-wrap {{
+    width: 100%;
+    animation: spFadeUp 0.5s 0.40s ease both;
+  }}
+
+  .sp-progress-header {{
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 8px;
+  }}
+
+  .sp-status-label {{
+    font-size: 0.78rem; font-weight: 600;
+    color: rgba(74,40,0,0.55);
+  }}
+
+  .sp-pct {{
+    font-size: 0.78rem; font-weight: 800;
+    color: #F55F00;
+    font-variant-numeric: tabular-nums;
+  }}
+
+  .sp-track {{
+    width: 100%; height: 7px;
+    border-radius: 999px;
+    background: rgba(245,95,0,0.12);
+    overflow: hidden;
+  }}
+
+  .sp-fill {{
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #F55F00, #FF8330, #FFB347);
+    background-size: 200% 100%;
+    width: 0%;
+    transition: width 0.18s ease;
+    animation: shimmerFill 1.8s linear infinite;
+  }}
+
+  @keyframes shimmerFill {{
+    0%   {{ background-position: 0%   50%; }}
+    100% {{ background-position: 200% 50%; }}
+  }}
+
+  /* ── Feature pills ───────────────────────────────────────── */
+  .sp-pills {{
+    display: flex; flex-wrap: wrap; justify-content: center;
+    gap: 8px; margin-bottom: 28px;
+    animation: spFadeUp 0.5s 0.38s ease both;
+  }}
+
+  .sp-pill {{
+    padding: 5px 14px;
+    border-radius: 999px;
+    font-size: 0.76rem; font-weight: 700;
+    color: #F55F00;
+    background: rgba(245,95,0,0.08);
+    border: 1px solid rgba(245,95,0,0.18);
+  }}
+
+  /* ── Dots ────────────────────────────────────────────────── */
+  .sp-dots {{
+    display: flex; gap: 5px; justify-content: center;
+    margin-top: 14px;
+  }}
+  .sp-dot {{
+    width: 7px; height: 7px; border-radius: 50%;
+    background: rgba(245,95,0,0.25);
+    animation: dotBounce 1.4s ease-in-out infinite;
+  }}
+  .sp-dot:nth-child(2) {{ animation-delay: 0.20s; }}
+  .sp-dot:nth-child(3) {{ animation-delay: 0.40s; }}
+  @keyframes dotBounce {{
+    0%,80%,100% {{ transform:scale(0.75); opacity:0.3; }}
+    40%          {{ transform:scale(1.2);  opacity:1; background:#F55F00; }}
+  }}
+</style>
+
+<div id="splash-overlay">
+  <div class="sp-card">
+    <div class="sp-logo-wrap">{logo_html}</div>
+    <div class="sp-eyebrow">BPS Bangka Belitung · UMKM Toolkit</div>
+    <div class="sp-title">Dashboard UMKM BPS</div>
+    <div class="sp-sub">Memuat modul analisis marketplace, visualisasi lokasi, dan sistem ekspor data…</div>
+    <div class="sp-pills">
+      <span class="sp-pill">📊 Analisis Data</span>
+      <span class="sp-pill">🗺️ Peta Interaktif</span>
+      <span class="sp-pill">⬇️ Ekspor Excel</span>
+      <span class="sp-pill">🔎 Filter Pintar</span>
     </div>
-    <div class="splash-title">Dashboard UMKM BPS</div>
-    <div class="splash-sub">Memuat modul analisis marketplace, visualisasi lokasi, dan sistem ekspor data terintegrasi…</div>
-    <div class="splash-features">
-      <span class="splash-feat">📊 Analisis Data</span>
-      <span class="splash-feat">🗺️ Peta Interaktif</span>
-      <span class="splash-feat">⬇️ Ekspor Excel</span>
-      <span class="splash-feat">🔎 Filter Pintar</span>
+    <div class="sp-progress-wrap">
+      <div class="sp-progress-header">
+        <span class="sp-status-label" id="sp-label">Menginisialisasi…</span>
+        <span class="sp-pct" id="sp-pct">0%</span>
+      </div>
+      <div class="sp-track"><div class="sp-fill" id="sp-fill"></div></div>
+      <div class="sp-dots">
+        <div class="sp-dot"></div>
+        <div class="sp-dot"></div>
+        <div class="sp-dot"></div>
+      </div>
     </div>
   </div>
 </div>
-""",
-        unsafe_allow_html=True,
-    )
-    st.markdown("</div>", unsafe_allow_html=True)
 
-    # Streamlit-native progress below the card
-    st.markdown("<div style='max-width:820px; margin: 18px auto 0 auto;'>", unsafe_allow_html=True)
-    prog = st.progress(0)
-    status_text = st.empty()
+<script>
+(function(){{
+  var steps = {steps_json};
+  var fill  = document.getElementById('sp-fill');
+  var label = document.getElementById('sp-label');
+  var pct   = document.getElementById('sp-pct');
+  var si = 0, cur = 0;
 
-    steps = [
-        (0,  25, "⚙️  Menginisialisasi komponen sistem…"),
-        (25, 55, "📦  Memuat modul Shopee & Tokopedia…"),
-        (55, 80, "🗺️  Menyiapkan engine visualisasi peta…"),
-        (80, 100,"✨  Finalisasi & optimasi tampilan…"),
+  function tick() {{
+    if (si >= steps.length) return;
+    var s = steps[si];
+    label.textContent = s[2];
+    cur += 1;
+    if (cur > s[1]) {{ si++; if(si>=steps.length) return; }}
+    var v = Math.min(cur, 100);
+    fill.style.width = v + '%';
+    pct.textContent  = v + '%';
+    setTimeout(tick, 28);
+  }}
+  tick();
+}})();
+</script>
+"""
+
+    st.markdown(SPLASH_HTML, unsafe_allow_html=True)
+
+    # Python-side sleep to let the JS animation run + server do its work
+    steps_py = [
+        (0,  28, "Menginisialisasi komponen sistem…"),
+        (28, 56, "Memuat modul Shopee & Tokopedia…"),
+        (56, 82, "Menyiapkan engine visualisasi peta…"),
+        (82, 100,"Finalisasi & optimasi tampilan…"),
     ]
-
-    for start, end, label in steps:
-        for i in range(start, end + 1, 2):
-            prog.progress(i)
-            status_text.markdown(
-                f"<div style='text-align:center; font-family:\"Plus Jakarta Sans\",sans-serif; font-size:0.82rem; color:rgba(74,40,0,0.55); margin-top:8px;'>{label}</div>",
-                unsafe_allow_html=True,
-            )
-            time.sleep(0.016)
-
-    st.markdown("</div>", unsafe_allow_html=True)
+    for _s, _e, _lbl in steps_py:
+        span = _e - _s
+        time.sleep(span * 0.018)   # ~0.5 s per phase → ~2 s total
 
     st.session_state["__splash_done__"] = True
     st.rerun()
