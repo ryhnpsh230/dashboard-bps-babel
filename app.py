@@ -1164,6 +1164,288 @@ a:hover { color: var(--fire-light) !important; }
   background: rgba(245,95,0,0.30);
   flex-shrink: 0;
 }
+/* ============================================================
+   DARK MODE
+   ============================================================ */
+body.dark-mode,
+body.dark-mode [data-testid="stApp"],
+body.dark-mode [data-testid="stAppViewContainer"] {
+  background: linear-gradient(160deg, #180800 0%, #1F0E00 40%, #261200 70%, #1A0900 100%) !important;
+}
+body.dark-mode div[data-testid="stVerticalBlockBorderWrapper"] {
+  background: rgba(35,15,0,0.85) !important;
+  border-color: rgba(245,95,0,0.20) !important;
+}
+body.dark-mode div[data-testid="metric-container"] {
+  background: rgba(35,15,0,0.85) !important;
+  border-color: rgba(245,95,0,0.20) !important;
+}
+body.dark-mode h1, body.dark-mode h2, body.dark-mode h3 { color: #FFF0E0 !important; }
+body.dark-mode p, body.dark-mode span, body.dark-mode label { color: #D4A882 !important; }
+body.dark-mode .topbar { background: rgba(30,12,0,0.90) !important; }
+body.dark-mode [data-testid="stSidebar"] {
+  background: linear-gradient(180deg,#1A0800 0%,#221000 60%,#1C0900 100%) !important;
+}
+body.dark-mode .bps-table tbody tr:nth-child(even) { background: rgba(40,18,0,0.50) !important; }
+body.dark-mode .bps-table tbody td { color: #D4A882 !important; }
+body.dark-mode .bps-table-wrap { background: rgba(28,12,0,0.90) !important; }
+body.dark-mode .audit-card { background: rgba(35,15,0,0.85) !important; }
+body.dark-mode .sb-stat { background: rgba(35,15,0,0.85) !important; }
+body.dark-mode input, body.dark-mode textarea { background: #2A1000 !important; color: #FFD0A0 !important; }
+
+/* dark toggle button */
+.dark-toggle {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 7px 14px; border-radius: var(--r-full);
+  border: 1.5px solid rgba(245,95,0,0.22);
+  background: rgba(255,255,255,0.7);
+  font-size: 0.80rem; font-weight: 800; cursor: pointer;
+  color: var(--ink-700);
+  transition: all 0.2s ease;
+}
+.dark-toggle:hover { background: rgba(245,95,0,0.08); border-color: var(--fire); }
+
+/* ============================================================
+   DASHBOARD — Module Cards
+   ============================================================ */
+.module-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 16px;
+  margin: 20px 0;
+}
+
+.module-card {
+  border-radius: var(--r-xl);
+  padding: 24px 22px;
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-sm);
+  backdrop-filter: blur(20px);
+  transition: all 0.25s var(--ease-spring);
+  cursor: pointer;
+  position: relative; overflow: hidden;
+  text-decoration: none;
+}
+
+.module-card::before {
+  content: "";
+  position: absolute; top: 0; left: 0; right: 0;
+  height: 3px;
+  border-radius: var(--r-full) var(--r-full) 0 0;
+}
+
+.module-card.shopee::before  { background: linear-gradient(90deg,#F55F00,#FF8C00); }
+.module-card.tokped::before  { background: linear-gradient(90deg,#00AA5B,#00D27A); }
+.module-card.maps::before    { background: linear-gradient(90deg,#4285F4,#34A853); }
+.module-card.export::before  { background: linear-gradient(90deg,#8B5CF6,#C4B5FD); }
+
+.module-card:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-4px);
+  border-color: rgba(245,95,0,0.28);
+}
+
+.module-card-icon {
+  font-size: 2.2rem;
+  margin-bottom: 14px;
+  display: block;
+  line-height: 1;
+}
+
+.module-card-title {
+  font-family: 'Fraunces', serif;
+  font-size: 1.15rem; font-weight: 700;
+  color: var(--ink-900);
+  margin-bottom: 6px;
+}
+
+.module-card-desc {
+  font-size: 0.80rem;
+  color: var(--ink-300);
+  line-height: 1.5;
+}
+
+.module-card-count {
+  margin-top: 14px;
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 4px 12px; border-radius: var(--r-full);
+  font-size: 0.74rem; font-weight: 800;
+}
+
+.module-card-count.ready {
+  background: rgba(34,197,94,0.10);
+  border: 1px solid rgba(34,197,94,0.22);
+  color: #16A34A;
+}
+
+.module-card-count.empty {
+  background: rgba(245,95,0,0.07);
+  border: 1px solid rgba(245,95,0,0.15);
+  color: var(--fire);
+}
+
+/* ============================================================
+   WORKFLOW STEPS
+   ============================================================ */
+.workflow-row {
+  display: flex; align-items: center; gap: 0;
+  margin: 20px 0;
+  flex-wrap: wrap; gap: 8px;
+}
+
+.workflow-step {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 18px; border-radius: var(--r-md);
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-xs);
+  backdrop-filter: blur(12px);
+  flex: 1; min-width: 140px;
+  transition: all 0.2s ease;
+}
+
+.workflow-step:hover { box-shadow: var(--shadow-sm); transform: translateY(-1px); }
+
+.workflow-num {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--fire), var(--amber));
+  color: #fff; font-size: 0.78rem; font-weight: 900;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(245,95,0,0.30);
+}
+
+.workflow-text { font-size: 0.82rem; font-weight: 700; color: var(--ink-700); }
+.workflow-sub  { font-size: 0.72rem; color: var(--ink-300); margin-top: 1px; }
+
+.workflow-arrow {
+  color: var(--ink-100); font-size: 1.2rem; font-weight: 300;
+  flex-shrink: 0;
+}
+
+/* ============================================================
+   UPLOAD ZONE (enhanced)
+   ============================================================ */
+.upload-info-card {
+  border-radius: var(--r-lg);
+  padding: 20px 22px;
+  background: linear-gradient(135deg,
+    rgba(245,95,0,0.06) 0%,
+    rgba(255,179,71,0.04) 100%);
+  border: 1px solid rgba(245,95,0,0.14);
+  margin-bottom: 16px;
+}
+
+.upload-info-title {
+  font-family: 'Fraunces', serif;
+  font-size: 1.0rem; font-weight: 700;
+  color: var(--ink-900); margin-bottom: 10px;
+  display: flex; align-items: center; gap: 8px;
+}
+
+.upload-spec-row {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+}
+
+.upload-spec {
+  display: flex; align-items: flex-start; gap: 8px;
+  font-size: 0.80rem; color: var(--ink-500);
+  line-height: 1.45;
+}
+
+.upload-spec-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--fire); margin-top: 5px; flex-shrink: 0;
+  box-shadow: 0 0 0 3px rgba(245,95,0,0.15);
+}
+
+/* Last upload timestamp */
+.upload-timestamp {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 5px 12px; border-radius: var(--r-full);
+  background: rgba(34,197,94,0.08);
+  border: 1px solid rgba(34,197,94,0.20);
+  font-size: 0.74rem; font-weight: 700;
+  color: #16A34A;
+  margin-top: 10px;
+}
+
+/* Reset button in sidebar */
+.reset-btn-row { display: flex; gap: 8px; flex-direction: column; margin-top: 4px; }
+
+/* ============================================================
+   FILTER BAR — Enhanced
+   ============================================================ */
+.filter-bar-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 14px;
+}
+.filter-bar-title {
+  font-family: 'Fraunces', serif;
+  font-size: 1.05rem; font-weight: 700; color: var(--ink-900);
+  display: flex; align-items: center; gap: 8px;
+}
+.filter-active-badge {
+  padding: 2px 10px; border-radius: var(--r-full);
+  background: rgba(245,95,0,0.10); border: 1px solid rgba(245,95,0,0.22);
+  font-size: 0.70rem; font-weight: 800; color: var(--fire);
+}
+
+/* ============================================================
+   EXPORT PAGE — Premium
+   ============================================================ */
+.export-source-card {
+  border-radius: var(--r-lg);
+  padding: 20px 22px;
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-xs);
+  backdrop-filter: blur(16px);
+  display: flex; align-items: center; justify-content: space-between;
+  transition: all 0.2s ease;
+}
+.export-source-card:hover { box-shadow: var(--shadow-sm); transform: translateY(-1px); }
+.export-source-card.ready { border-left: 4px solid #22C55E !important; }
+.export-source-card.empty { border-left: 4px solid rgba(245,95,0,0.35) !important; opacity: 0.7; }
+
+.export-source-left { display: flex; align-items: center; gap: 14px; }
+.export-source-icon { font-size: 1.8rem; }
+.export-source-name {
+  font-family: 'Fraunces', serif;
+  font-size: 1.0rem; font-weight: 700; color: var(--ink-900);
+}
+.export-source-meta { font-size: 0.78rem; color: var(--ink-300); margin-top: 2px; }
+.export-source-badge {
+  padding: 4px 12px; border-radius: var(--r-full);
+  font-size: 0.74rem; font-weight: 800;
+}
+.export-source-badge.ready { background: rgba(34,197,94,0.10); border: 1px solid rgba(34,197,94,0.22); color: #16A34A; }
+.export-source-badge.empty { background: rgba(245,95,0,0.07); border: 1px solid rgba(245,95,0,0.15); color: var(--ink-300); }
+
+.export-hero {
+  border-radius: var(--r-xl);
+  padding: 32px 36px;
+  margin-bottom: 20px;
+  background: linear-gradient(135deg,
+    rgba(139,92,246,0.10) 0%,
+    rgba(245,95,0,0.08) 50%,
+    rgba(255,179,71,0.06) 100%);
+  border: 1px solid rgba(139,92,246,0.15);
+  box-shadow: var(--shadow-sm);
+  display: flex; align-items: center; gap: 28px;
+}
+.export-hero-icon {
+  font-size: 3.5rem; flex-shrink: 0;
+  filter: drop-shadow(0 8px 16px rgba(139,92,246,0.3));
+}
+.export-hero-title {
+  font-family: 'Fraunces', serif;
+  font-size: 1.55rem; font-weight: 900; color: var(--ink-900);
+  margin-bottom: 6px; letter-spacing: -0.025em;
+}
+.export-hero-sub { font-size: 0.90rem; color: var(--ink-300); line-height: 1.6; }
+
 
 /* ============================================================
    CUSTOM HTML TABLE
@@ -1465,6 +1747,9 @@ def ensure_state():
         "data_shopee": None, "audit_shopee": {},
         "data_tokped": None, "audit_tokped": {},
         "data_maps": None,   "audit_maps": {},
+        "upload_time_shopee": None,
+        "upload_time_tokped": None,
+        "upload_time_maps":   None,
         "show_sidebar": False,
         "menu_nav": "🏠 Dashboard",
         "nav_target": None,
@@ -1472,6 +1757,7 @@ def ensure_state():
         "__splash_done__": False,
         "show_tips": True,
         "fast_mode": False,
+        "dark_mode": False,
     }
     for k, v in defaults.items():
         if k not in st.session_state:
@@ -2200,10 +2486,43 @@ if st.session_state["show_sidebar"]:
         )
 
         st.divider()
+        st.markdown('<div class="sb-nav-label">🗑️ Reset Data</div>', unsafe_allow_html=True)
+        r1, r2 = st.columns(2, gap="small")
+        with r1:
+            if st.button("🟠 Reset Shopee", use_container_width=True, key="rst_shp"):
+                st.session_state.data_shopee = None
+                st.session_state.audit_shopee = {}
+                st.session_state.upload_time_shopee = None
+                st.toast("Data Shopee dihapus", icon="🗑️")
+                st.rerun()
+            if st.button("📍 Reset Maps", use_container_width=True, key="rst_maps"):
+                st.session_state.data_maps = None
+                st.session_state.audit_maps = {}
+                st.session_state.upload_time_maps = None
+                st.toast("Data Maps dihapus", icon="🗑️")
+                st.rerun()
+        with r2:
+            if st.button("🟢 Reset Tokped", use_container_width=True, key="rst_tkp"):
+                st.session_state.data_tokped = None
+                st.session_state.audit_tokped = {}
+                st.session_state.upload_time_tokped = None
+                st.toast("Data Tokopedia dihapus", icon="🗑️")
+                st.rerun()
+            if st.button("💥 Reset Semua", use_container_width=True, key="rst_all"):
+                for k in ["data_shopee","data_tokped","data_maps","audit_shopee","audit_tokped","audit_maps",
+                          "upload_time_shopee","upload_time_tokped","upload_time_maps"]:
+                    st.session_state[k] = None if "data" in k else ({} if "audit" in k else None)
+                st.toast("Semua data dihapus", icon="💥")
+                st.rerun()
+
+        st.divider()
         st.markdown('<div class="sb-nav-label">⚙️ Pengaturan</div>', unsafe_allow_html=True)
         with st.expander("Opsi Tampilan & Performa", expanded=False):
             st.checkbox("Tampilkan tips cepat", value=st.session_state.get("show_tips", True), key="show_tips")
             st.checkbox("Mode cepat (kurangi rendering chart)", value=st.session_state.get("fast_mode", False), key="fast_mode")
+            st.checkbox("🌙 Dark Mode (eksperimental)", value=st.session_state.get("dark_mode", False), key="dark_mode")
+            if st.session_state.get("dark_mode"):
+                st.markdown('<script>document.body.classList.add("dark-mode")</script>', unsafe_allow_html=True)
 
         st.markdown(
             """
@@ -2232,25 +2551,6 @@ if menu == "🏠 Dashboard":
     hide_sidebar_css()
 
     section_header("Dashboard Utama", "Ringkasan status data & akses cepat ke modul UMKM.", "DASHBOARD")
-    banner("Dashboard Utama", "Mulai dari ringkasan cepat, lalu masuk ke modul UMKM yang kamu butuhkan.")
-
-    st.markdown(
-        """
-<div class="bps-hero">
-  <div class="geo-decor"></div>
-  <div class="bps-badge">UMKM · BPS BABEL</div>
-  <h1>Kontrol Pusat Analisis UMKM</h1>
-  <p>Upload data dari marketplace atau Google Maps, cek ringkasan otomatis, lalu lanjutkan analisis mendalam dengan filter pintar dan visualisasi interaktif.</p>
-  <div class="cta-row">
-    <span class="bps-chip">🟠 Shopee</span>
-    <span class="bps-chip">🟢 Tokopedia</span>
-    <span class="bps-chip">📍 Google Maps</span>
-    <span class="bps-chip">📊 Export Master</span>
-  </div>
-</div>
-""",
-        unsafe_allow_html=True,
-    )
 
     df_shp = st.session_state.data_shopee
     df_tkp = st.session_state.data_tokped
@@ -2260,43 +2560,139 @@ if menu == "🏠 Dashboard":
     mp_n  = 0 if df_maps is None else len(df_maps)
     total_all = shp_n + tkp_n + mp_n
 
+    # ── Hero ──────────────────────────────────────────────────────────────────
+    st.markdown(
+        f"""
+<div class="bps-hero">
+  <div class="geo-decor"></div>
+  <div class="bps-badge">UMKM · BPS BABEL · v2.1</div>
+  <h1>Kontrol Pusat Analisis UMKM</h1>
+  <p>Upload data marketplace atau Google Maps, analisis dengan filter pintar, visualisasikan di peta interaktif, lalu ekspor ke Excel — semua dalam satu platform.</p>
+  <div class="cta-row">
+    <span class="bps-chip">🟠 Shopee</span>
+    <span class="bps-chip">🟢 Tokopedia</span>
+    <span class="bps-chip">📍 Google Maps</span>
+    <span class="bps-chip">📊 Export Master</span>
+    <span class="bps-chip" style="background:rgba(255,255,255,0.24)">📦 {fmt_int_id(total_all)} Data Loaded</span>
+  </div>
+</div>
+""",
+        unsafe_allow_html=True,
+    )
+
+    # ── KPI Row ───────────────────────────────────────────────────────────────
     k1, k2, k3, k4 = st.columns(4, gap="medium")
-    k1.metric("📦 Total Data", fmt_int_id(total_all))
-    k2.metric("🟠 Shopee", fmt_int_id(shp_n))
-    k3.metric("🟢 Tokopedia", fmt_int_id(tkp_n))
-    k4.metric("📍 Google Maps", fmt_int_id(mp_n))
+    k1.metric("📦 Total Data",   fmt_int_id(total_all), delta="All sources" if total_all > 0 else None)
+    k2.metric("🟠 Shopee",       fmt_int_id(shp_n),     delta="Loaded ✓" if shp_n > 0 else "Belum upload")
+    k3.metric("🟢 Tokopedia",    fmt_int_id(tkp_n),     delta="Loaded ✓" if tkp_n > 0 else "Belum upload")
+    k4.metric("📍 Google Maps",  fmt_int_id(mp_n),      delta="Loaded ✓" if mp_n > 0 else "Belum upload")
 
-    with st.container(border=True):
-        st.subheader("🚦 Status Modul")
-        s1, s2 = st.columns([1.35, 0.65], gap="large")
+    # ── Workflow guide ────────────────────────────────────────────────────────
+    st.markdown("""
+<div style="margin: 6px 0 4px 0;">
+  <div style="font-family:'Fraunces',serif; font-size:1.05rem; font-weight:700; color:var(--ink-900); margin-bottom:12px;">
+    🗺️ Alur Kerja yang Disarankan
+  </div>
+  <div class="workflow-row">
+    <div class="workflow-step">
+      <div class="workflow-num">1</div>
+      <div><div class="workflow-text">Upload CSV</div><div class="workflow-sub">Shopee, Tokopedia, atau Maps</div></div>
+    </div>
+    <div class="workflow-arrow">→</div>
+    <div class="workflow-step">
+      <div class="workflow-num">2</div>
+      <div><div class="workflow-text">Filter & Cari</div><div class="workflow-sub">Wilayah, tipe, harga</div></div>
+    </div>
+    <div class="workflow-arrow">→</div>
+    <div class="workflow-step">
+      <div class="workflow-num">3</div>
+      <div><div class="workflow-text">Analisis</div><div class="workflow-sub">Dashboard Eksekutif</div></div>
+    </div>
+    <div class="workflow-arrow">→</div>
+    <div class="workflow-step">
+      <div class="workflow-num">4</div>
+      <div><div class="workflow-text">Export</div><div class="workflow-sub">Excel / CSV master</div></div>
+    </div>
+  </div>
+</div>
+""", unsafe_allow_html=True)
 
-        def _pill(ok: bool, text: str):
-            cls = "ok" if ok else "no"
-            icon = "✅" if ok else "⏳"
-            return f'<span class="dash-pill {cls}">{icon} {text}</span>'
+    # ── Module Cards ──────────────────────────────────────────────────────────
+    def _mod_count(n, ts_key):
+        ts = st.session_state.get(ts_key)
+        ts_str = f" · {ts}" if ts else ""
+        if n > 0:
+            return f'<span class="module-card-count ready">✅ {fmt_int_id(n)} data{ts_str}</span>'
+        return '<span class="module-card-count empty">⏳ Belum diupload</span>'
 
-        with s1:
-            st.markdown(
-                _pill(shp_n > 0, "Shopee siap dianalisis") +
-                _pill(tkp_n > 0, "Tokopedia siap dianalisis") +
-                _pill(mp_n > 0, "Google Maps siap divisualisasi"),
-                unsafe_allow_html=True,
-            )
-            if st.session_state.get("show_tips", True):
-                st.caption("Tip: Mulai dari modul yang datanya sudah siap. Gunakan Export Gabungan untuk konsolidasi akhir.")
-        with s2:
-            if st.button("🚀 Ayo Upload Data", use_container_width=True, type="primary"):
-                goto_menu("🟠 Shopee")
+    st.markdown(f"""
+<div class="module-grid">
+  <div class="module-card shopee">
+    <span class="module-card-icon">🟠</span>
+    <div class="module-card-title">Shopee</div>
+    <div class="module-card-desc">Ekstrak produk UMKM Bangka Belitung dari Shopee dengan deteksi nama toko via API.</div>
+    {_mod_count(shp_n, "upload_time_shopee")}
+  </div>
+  <div class="module-card tokped">
+    <span class="module-card-icon">🟢</span>
+    <div class="module-card-title">Tokopedia</div>
+    <div class="module-card-desc">Proses data produk Tokopedia dengan auto-deteksi kolom dan filter wilayah otomatis.</div>
+    {_mod_count(tkp_n, "upload_time_tokped")}
+  </div>
+  <div class="module-card maps">
+    <span class="module-card-icon">📍</span>
+    <div class="module-card-title">Google Maps</div>
+    <div class="module-card-desc">Visualisasi lokasi UMKM di peta interaktif dengan auto-clean koordinat & kontak.</div>
+    {_mod_count(mp_n, "upload_time_maps")}
+  </div>
+  <div class="module-card export">
+    <span class="module-card-icon">📊</span>
+    <div class="module-card-title">Export Gabungan</div>
+    <div class="module-card-desc">Konsolidasi semua sumber data ke 1 file Excel premium dengan autofilter & format rapi.</div>
+    <span class="module-card-count {"ready" if total_all > 0 else "empty"}">{"✅ Siap diexport" if total_all > 0 else "⏳ Perlu data dulu"}</span>
+  </div>
+</div>
+""", unsafe_allow_html=True)
 
-    with st.container(border=True):
-        st.subheader("✨ Rekomendasi & Tips")
-        t1, t2 = st.columns(2, gap="large")
-        with t1:
-            st.success("**Workflow ideal:** Upload → Filter → Dashboard Eksekutif → Export.")
-            st.write("• Pakai **Mode cepat** kalau file sangat besar.\n• Naikkan **jeda request** API Shopee kalau kena rate limit.")
-        with t2:
-            st.warning("**Catatan kualitas data:**")
-            st.write("• Pastikan kolom lokasi/wilayah benar.\n• Untuk Google Maps, pastikan **lat/lon** valid.\n• Link/telepon kosong akan otomatis dibersihkan.")
+    # ── CTA + Tips ────────────────────────────────────────────────────────────
+    ca, cb = st.columns([1, 1], gap="medium")
+    with ca:
+        if st.button("🚀 Mulai Upload Data Shopee", use_container_width=True, type="primary"):
+            goto_menu("🟠 Shopee")
+    with cb:
+        if st.button("📊 Lihat Export Gabungan", use_container_width=True, type="secondary"):
+            goto_menu("📊 Export Gabungan")
+
+    if st.session_state.get("show_tips", True):
+        with st.container(border=True):
+            st.markdown("""
+<div style="display:flex; gap:16px; flex-wrap:wrap;">
+  <div style="flex:1; min-width:220px;">
+    <div style="font-weight:800; color:var(--ink-900); margin-bottom:6px; font-size:0.88rem;">💡 Tips Performa</div>
+    <div style="font-size:0.80rem; color:var(--ink-300); line-height:1.7;">
+      • Aktifkan <b>Mode Cepat</b> di Settings untuk file besar<br>
+      • Naikkan <b>jeda request</b> API Shopee kalau kena rate limit<br>
+      • Upload beberapa CSV sekaligus untuk batch processing
+    </div>
+  </div>
+  <div style="flex:1; min-width:220px;">
+    <div style="font-weight:800; color:var(--ink-900); margin-bottom:6px; font-size:0.88rem;">✅ Kualitas Data</div>
+    <div style="font-size:0.80rem; color:var(--ink-300); line-height:1.7;">
+      • Pastikan kolom <b>wilayah/lokasi</b> terisi benar<br>
+      • Google Maps butuh <b>lat/lon valid</b> untuk tampil di peta<br>
+      • Link & telepon kosong dibersihkan otomatis
+    </div>
+  </div>
+  <div style="flex:1; min-width:220px;">
+    <div style="font-weight:800; color:var(--ink-900); margin-bottom:6px; font-size:0.88rem;">📊 Analisis Terbaik</div>
+    <div style="font-size:0.80rem; color:var(--ink-300); line-height:1.7;">
+      • Cek tab <b>Audit</b> setelah upload untuk validasi data<br>
+      • Gunakan <b>Top 10 Toko</b> di Executive Dashboard<br>
+      • Export Gabungan untuk laporan lintas platform
+    </div>
+  </div>
+</div>
+""", unsafe_allow_html=True)
 
 # ======================================================================================
 # PAGE: SHOPEE
@@ -2326,9 +2722,22 @@ elif menu == "🟠 Shopee":
             run = st.button("🚀 Proses Data Shopee", type="primary", use_container_width=True)
 
         with right:
-            st.subheader("🧾 Aturan")
-            st.info("• Data difilter **Bangka Belitung**.\n• Harga dibersihkan jadi integer.\n• Tipe Usaha dihitung pakai heuristik nama toko.")
-            st.caption("Jika API Shopee sering timeout, kecilkan max calls atau naikkan timeout sedikit.")
+            ts_shp = st.session_state.get("upload_time_shopee")
+            if ts_shp:
+                st.markdown(f'''<div class="upload-timestamp">✅ Upload terakhir: {ts_shp}</div>''', unsafe_allow_html=True)
+                st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
+            st.markdown("""
+<div class="upload-info-card">
+  <div class="upload-info-title">🧾 Ketentuan Data</div>
+  <div class="upload-spec-row">
+    <div class="upload-spec"><div class="upload-spec-dot"></div><div>Filter otomatis ke <b>Bangka Belitung</b></div></div>
+    <div class="upload-spec"><div class="upload-spec-dot"></div><div>Harga dibersihkan ke integer</div></div>
+    <div class="upload-spec"><div class="upload-spec-dot"></div><div>Tipe usaha via heuristik nama toko</div></div>
+    <div class="upload-spec"><div class="upload-spec-dot"></div><div>Duplikat diabaikan otomatis</div></div>
+  </div>
+</div>
+""", unsafe_allow_html=True)
+            st.caption("Jika API Shopee sering timeout, kecilkan max calls atau naikkan timeout.")
 
     if run:
         if not files:
@@ -2440,6 +2849,7 @@ elif menu == "🟠 Shopee":
                         "api_calls": api_calls,
                     }
 
+                    st.session_state["upload_time_shopee"] = datetime.datetime.now().strftime("%d/%m %H:%M")
                     status.update(label="✅ Selesai memproses Shopee", state="complete", expanded=False)
                     st.toast(f"Shopee: {fmt_int_id(len(df))} baris siap dianalisis", icon="✅")
 
@@ -2576,8 +2986,21 @@ elif menu == "🟢 Tokopedia":
             files = st.file_uploader("Unggah CSV Tokopedia", type=["csv"], accept_multiple_files=True, key="file_tkp")
             run = st.button("🚀 Proses Data Tokopedia", type="primary", use_container_width=True)
         with col2:
-            st.subheader("🧾 Catatan")
-            st.info("• Sistem akan menebak kolom bila struktur CSV berbeda.\n• Data difilter otomatis hanya Babel.")
+            ts_tkp = st.session_state.get("upload_time_tokped")
+            if ts_tkp:
+                st.markdown(f'''<div class="upload-timestamp">✅ Upload terakhir: {ts_tkp}</div>''', unsafe_allow_html=True)
+                st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
+            st.markdown("""
+<div class="upload-info-card">
+  <div class="upload-info-title">🧾 Ketentuan Data</div>
+  <div class="upload-spec-row">
+    <div class="upload-spec"><div class="upload-spec-dot"></div><div>Auto-deteksi nama kolom CSV</div></div>
+    <div class="upload-spec"><div class="upload-spec-dot"></div><div>Filter otomatis ke <b>Babel</b></div></div>
+    <div class="upload-spec"><div class="upload-spec-dot"></div><div>Multi-produk per baris didukung</div></div>
+    <div class="upload-spec"><div class="upload-spec-dot"></div><div>Duplikat dihapus otomatis</div></div>
+  </div>
+</div>
+""", unsafe_allow_html=True)
             st.caption("Jika format CSV berubah, pastikan minimal ada link & nama produk terbaca.")
 
     if run:
@@ -2682,6 +3105,7 @@ elif menu == "🟢 Tokopedia":
                         "error_harga": err_h,
                     }
 
+                    st.session_state["upload_time_tokped"] = datetime.datetime.now().strftime("%d/%m %H:%M")
                     status.update(label="✅ Selesai memproses Tokopedia", state="complete", expanded=False)
                     st.toast(f"Tokopedia: {fmt_int_id(len(df_final))} baris siap dianalisis", icon="✅")
 
@@ -2818,9 +3242,22 @@ elif menu == "📍 Google Maps":
             do_clean = st.toggle("✨ Auto-clean (disarankan)", value=True, key="clean_maps")
             run = st.button("🚀 Proses Data Google Maps", type="primary", use_container_width=True)
         with col2:
-            st.subheader("🧾 Format Kolom")
-            st.code("foto_url, nama_usaha, alamat,\nno_telepon, latitude, longitude, link", language="text")
-            st.caption("Kalau beda nama kolom, sistem tetap coba map otomatis.")
+            ts_maps = st.session_state.get("upload_time_maps")
+            if ts_maps:
+                st.markdown(f'''<div class="upload-timestamp">✅ Upload terakhir: {ts_maps}</div>''', unsafe_allow_html=True)
+                st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
+            st.markdown("""
+<div class="upload-info-card">
+  <div class="upload-info-title">🧾 Format Kolom</div>
+  <div class="upload-spec-row">
+    <div class="upload-spec"><div class="upload-spec-dot"></div><div><code>foto_url</code> — URL foto</div></div>
+    <div class="upload-spec"><div class="upload-spec-dot"></div><div><code>nama_usaha</code> — Nama toko</div></div>
+    <div class="upload-spec"><div class="upload-spec-dot"></div><div><code>latitude / longitude</code></div></div>
+    <div class="upload-spec"><div class="upload-spec-dot"></div><div><code>no_telepon / link</code></div></div>
+  </div>
+</div>
+""", unsafe_allow_html=True)
+            st.caption("Nama kolom berbeda? Sistem tetap coba mapping otomatis.")
 
     if run:
         if not files:
@@ -2848,6 +3285,7 @@ elif menu == "📍 Google Maps":
                         "missing_cols": audit.get("missing_cols", []),
                     }
 
+                    st.session_state["upload_time_maps"] = datetime.datetime.now().strftime("%d/%m %H:%M")
                     status.update(label="✅ Selesai memproses Google Maps", state="complete", expanded=False)
                     st.toast(f"Google Maps: {fmt_int_id(len(df_clean))} baris siap dianalisis", icon="✅")
 
@@ -2913,40 +3351,111 @@ elif menu == "📍 Google Maps":
 # PAGE: EXPORT GABUNGAN
 # ======================================================================================
 elif menu == "📊 Export Gabungan":
-    section_header("Export Gabungan", "Satukan data lintas platform lalu unduh dalam format rapi.", "EXPORT")
-    banner("Export Master Data Gabungan", "Konsolidasi (Shopee, Tokopedia, Google Maps) → 1 Excel, sheet terpisah")
+    section_header("Export Gabungan", "Konsolidasi data lintas platform → 1 file Excel premium.", "EXPORT")
 
-    df_shp_ready = st.session_state.data_shopee is not None and not st.session_state.data_shopee.empty
-    df_tkp_ready = st.session_state.data_tokped is not None and not st.session_state.data_tokped.empty
-    df_maps_ready = st.session_state.data_maps is not None and not st.session_state.data_maps.empty
+    df_shp_ready  = st.session_state.data_shopee is not None and not st.session_state.data_shopee.empty
+    df_tkp_ready  = st.session_state.data_tokped is not None and not st.session_state.data_tokped.empty
+    df_maps_ready = st.session_state.data_maps   is not None and not st.session_state.data_maps.empty
+
+    shp_n_e  = len(st.session_state.data_shopee)  if df_shp_ready  else 0
+    tkp_n_e  = len(st.session_state.data_tokped)  if df_tkp_ready  else 0
+    maps_n_e = len(st.session_state.data_maps)    if df_maps_ready else 0
+    total_e  = shp_n_e + tkp_n_e + maps_n_e
+
+    # ── Export Hero ────────────────────────────────────────────────────────────
+    st.markdown(f"""
+<div class="export-hero">
+  <div class="export-hero-icon">📦</div>
+  <div>
+    <div class="export-hero-title">Master Data UMKM Bangka Belitung</div>
+    <div class="export-hero-sub">
+      Gabungkan data dari Shopee, Tokopedia, dan Google Maps menjadi 1 file Excel terstruktur
+      dengan sheet terpisah, autofilter, header berwarna, dan format kolom otomatis.
+      <br><b style="color:var(--fire)">{fmt_int_id(total_e)} total baris</b> siap diexport dari <b>{sum([df_shp_ready, df_tkp_ready, df_maps_ready])}</b> sumber data.
+    </div>
+  </div>
+</div>
+""", unsafe_allow_html=True)
 
     if not (df_shp_ready or df_tkp_ready or df_maps_ready):
-        st.warning("⚠️ Belum ada data. Silakan proses dulu di menu Shopee/Tokopedia/Google Maps.")
+        st.markdown("""
+<div style="padding:32px; text-align:center; border-radius:var(--r-xl);
+  background:var(--glass); border:1px dashed rgba(245,95,0,0.25);
+  backdrop-filter:blur(12px);">
+  <div style="font-size:2.5rem; margin-bottom:12px;">📭</div>
+  <div style="font-family:'Fraunces',serif; font-size:1.2rem; font-weight:700; color:var(--ink-900); margin-bottom:8px;">
+    Belum Ada Data
+  </div>
+  <div style="font-size:0.88rem; color:var(--ink-300);">
+    Proses dulu data di modul Shopee, Tokopedia, atau Google Maps.<br>
+    Setelah itu kembali ke halaman ini untuk export.
+  </div>
+</div>
+""", unsafe_allow_html=True)
     else:
-        with st.container(border=True):
-            st.subheader("✅ Data Siap Dikonsolidasi")
-            c1, c2, c3 = st.columns(3)
-            c1.metric("📦 Shopee", fmt_int_id(len(st.session_state.data_shopee)) if df_shp_ready else 0)
-            c2.metric("📦 Tokopedia", fmt_int_id(len(st.session_state.data_tokped)) if df_tkp_ready else 0)
-            c3.metric("📦 Google Maps", fmt_int_id(len(st.session_state.data_maps)) if df_maps_ready else 0)
-            st.caption("Output: 1 file Excel berisi sheet terpisah per sumber + autofilter + header rapi.")
+        # ── Source cards ──────────────────────────────────────────────────────
+        st.markdown("#### 📋 Status Sumber Data")
+
+        def _export_src(icon, name, n, ts_key, ready):
+            ts = st.session_state.get(ts_key, "")
+            ts_str = f"· Diupload {ts}" if ts else ""
+            badge_cls = "ready" if ready else "empty"
+            badge_txt = f"✅ {fmt_int_id(n)} baris" if ready else "⏳ Belum ada data"
+            card_cls  = "ready" if ready else "empty"
+            return f"""<div class="export-source-card {card_cls}" style="margin-bottom:10px;">
+  <div class="export-source-left">
+    <div class="export-source-icon">{icon}</div>
+    <div>
+      <div class="export-source-name">{name}</div>
+      <div class="export-source-meta">{ts_str if ready else "Belum diproses"}</div>
+    </div>
+  </div>
+  <span class="export-source-badge {badge_cls}">{badge_txt}</span>
+</div>"""
+
+        st.markdown(
+            _export_src("🟠", "Shopee",      shp_n_e,  "upload_time_shopee", df_shp_ready) +
+            _export_src("🟢", "Tokopedia",   tkp_n_e,  "upload_time_tokped", df_tkp_ready) +
+            _export_src("📍", "Google Maps", maps_n_e, "upload_time_maps",   df_maps_ready),
+            unsafe_allow_html=True
+        )
 
         sheets = {}
-        if df_shp_ready:
-            sheets["Data Shopee"] = st.session_state.data_shopee
-        if df_tkp_ready:
-            sheets["Data Tokopedia"] = st.session_state.data_tokped
-        if df_maps_ready:
-            sheets["Data Google Maps"] = st.session_state.data_maps
+        if df_shp_ready:  sheets["Data Shopee"]      = st.session_state.data_shopee
+        if df_tkp_ready:  sheets["Data Tokopedia"]   = st.session_state.data_tokped
+        if df_maps_ready: sheets["Data Google Maps"] = st.session_state.data_maps
 
         excel_bytes = df_to_excel_bytes(sheets)
 
+        st.markdown("#### ⬇️ Download")
         with st.container(border=True):
-            st.subheader("⬇️ Unduh File Master")
-            _, col_btn, _ = st.columns([1, 2, 1])
+            col_info, col_btn = st.columns([1.8, 1.2], gap="large")
+            with col_info:
+                st.markdown(f"""
+<div style="display:flex; flex-direction:column; gap:8px;">
+  <div style="display:flex; gap:8px; align-items:center;">
+    <span style="font-size:1.1rem">📄</span>
+    <div>
+      <div style="font-weight:800; font-size:0.88rem; color:var(--ink-900);">Format: Excel (.xlsx)</div>
+      <div style="font-size:0.78rem; color:var(--ink-300);">
+        {sum([df_shp_ready,df_tkp_ready,df_maps_ready])} sheet · Autofilter · Header oranye · Format kolom otomatis
+      </div>
+    </div>
+  </div>
+  <div style="display:flex; gap:8px; align-items:center;">
+    <span style="font-size:1.1rem">📦</span>
+    <div>
+      <div style="font-weight:800; font-size:0.88rem; color:var(--ink-900);">{fmt_int_id(total_e)} total baris data</div>
+      <div style="font-size:0.78rem; color:var(--ink-300);">
+        File: Master_UMKM_BPS_{datetime.date.today()}.xlsx
+      </div>
+    </div>
+  </div>
+</div>
+""", unsafe_allow_html=True)
             with col_btn:
                 st.download_button(
-                    label="⬇️ UNDUH EXCEL MASTER",
+                    label="⬇️ Unduh Excel Master",
                     data=excel_bytes,
                     file_name=f"Master_UMKM_BPS_{datetime.date.today()}.xlsx",
                     use_container_width=True,
