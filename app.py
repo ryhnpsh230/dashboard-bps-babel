@@ -1375,6 +1375,143 @@ body.dark-mode input, body.dark-mode textarea { background: #2A1000 !important; 
 .reset-btn-row { display: flex; gap: 8px; flex-direction: column; margin-top: 4px; }
 
 /* ============================================================
+   SIDEBAR RESET CARDS — Premium
+   ============================================================ */
+.sb-reset-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin: 6px 0 4px 0;
+}
+
+.sb-reset-card {
+  border-radius: 14px;
+  padding: 12px 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  border: 1.5px solid rgba(245,95,0,0.12);
+  background: rgba(255,255,255,0.80);
+  box-shadow: 0 2px 8px rgba(245,95,0,0.05), 0 1px 3px rgba(0,0,0,0.04);
+  transition: all 0.22s cubic-bezier(0.34,1.56,0.64,1);
+  text-align: center;
+  user-select: none;
+}
+
+.sb-reset-card:hover {
+  border-color: rgba(245,95,0,0.32) !important;
+  background: #fff !important;
+  box-shadow: 0 6px 20px rgba(245,95,0,0.14), 0 2px 6px rgba(0,0,0,0.06) !important;
+  transform: translateY(-2px);
+}
+
+.sb-reset-card:active { transform: scale(0.96) translateY(0); }
+
+.sb-reset-card.danger {
+  border-color: rgba(239,68,68,0.18) !important;
+  background: rgba(255,248,248,0.85) !important;
+}
+.sb-reset-card.danger:hover {
+  border-color: rgba(239,68,68,0.42) !important;
+  background: rgba(255,240,240,0.95) !important;
+  box-shadow: 0 6px 20px rgba(239,68,68,0.14) !important;
+}
+
+.sb-reset-icon {
+  width: 36px; height: 36px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+.sb-reset-icon.shopee  { background: linear-gradient(135deg,rgba(245,95,0,0.14),rgba(255,140,66,0.08)); }
+.sb-reset-icon.tokped  { background: linear-gradient(135deg,rgba(0,170,91,0.12),rgba(0,210,122,0.07)); }
+.sb-reset-icon.maps    { background: linear-gradient(135deg,rgba(66,133,244,0.12),rgba(52,168,83,0.08)); }
+.sb-reset-icon.danger  { background: linear-gradient(135deg,rgba(239,68,68,0.14),rgba(252,165,165,0.08)); }
+
+.sb-reset-label {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: var(--ink-700);
+  line-height: 1.3;
+}
+.sb-reset-label.danger-text { color: #DC2626 !important; }
+
+.sb-reset-count {
+  font-size: 0.64rem;
+  font-weight: 700;
+  color: var(--ink-300);
+  line-height: 1;
+}
+.sb-reset-count.has-data {
+  color: #16A34A;
+  background: rgba(34,197,94,0.10);
+  border: 1px solid rgba(34,197,94,0.20);
+  border-radius: 999px;
+  padding: 1px 7px;
+}
+.sb-reset-count.no-data {
+  color: var(--ink-100);
+}
+
+/* Sidebar section divider */
+.sb-section-divider {
+  display: flex; align-items: center; gap: 8px;
+  margin: 14px 0 10px 0;
+}
+.sb-section-divider-line {
+  flex: 1; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(245,95,0,0.18), transparent);
+}
+
+/* Pengaturan checkboxes */
+.sb-settings-row {
+  display: flex; flex-direction: column; gap: 4px;
+  padding: 4px 0;
+}
+
+/* Footer enhanced */
+.sb-footer-v2 {
+  margin-top: 12px;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid rgba(245,95,0,0.12);
+}
+.sb-footer-top {
+  padding: 14px 16px 10px;
+  background: linear-gradient(135deg, rgba(245,95,0,0.07), rgba(255,179,71,0.05));
+  display: flex; align-items: center; gap: 10px;
+}
+.sb-footer-logo {
+  width: 32px; height: 32px; border-radius: 9px;
+  background: linear-gradient(135deg, var(--fire), var(--amber));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1rem; flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(245,95,0,0.28);
+}
+.sb-footer-name {
+  font-family: 'Fraunces', serif !important;
+  font-size: 0.88rem; font-weight: 700;
+  color: var(--ink-900) !important; line-height: 1.2;
+}
+.sb-footer-sub {
+  font-size: 0.68rem; font-weight: 600;
+  color: var(--ink-300) !important; margin-top: 1px;
+}
+.sb-footer-bottom {
+  padding: 8px 16px;
+  background: rgba(245,95,0,0.04);
+  border-top: 1px solid rgba(245,95,0,0.08);
+  font-size: 0.68rem; font-weight: 700;
+  color: var(--ink-100) !important;
+  text-align: center; letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* ============================================================
    FILTER BAR — Enhanced
    ============================================================ */
 .filter-bar-header {
@@ -2394,6 +2531,29 @@ if not st.session_state["__splash_done__"]:
     splash_screen()
 
 # ======================================================================================
+# RESET HANDLER (via query params from HTML card clicks)
+# ======================================================================================
+_qp = st.query_params.to_dict()
+_rst_action = _qp.pop("rst", None)
+if _rst_action:
+    if _rst_action == "shp":
+        st.session_state.data_shopee = None; st.session_state.audit_shopee = {}; st.session_state.upload_time_shopee = None
+        st.toast("Data Shopee dihapus")
+    elif _rst_action == "tkp":
+        st.session_state.data_tokped = None; st.session_state.audit_tokped = {}; st.session_state.upload_time_tokped = None
+        st.toast("Data Tokopedia dihapus")
+    elif _rst_action == "maps":
+        st.session_state.data_maps = None; st.session_state.audit_maps = {}; st.session_state.upload_time_maps = None
+        st.toast("Data Maps dihapus")
+    elif _rst_action == "all":
+        for _k in ["data_shopee","data_tokped","data_maps","audit_shopee","audit_tokped","audit_maps",
+                   "upload_time_shopee","upload_time_tokped","upload_time_maps"]:
+            st.session_state[_k] = None if ("data" in _k or "time" in _k) else {}
+        st.toast("Semua data dihapus")
+    st.query_params.clear()
+    st.rerun()
+
+# ======================================================================================
 # NAVIGATION BOOT
 # ======================================================================================
 if not st.session_state["__boot__"]:
@@ -2486,53 +2646,117 @@ if st.session_state["show_sidebar"]:
         )
 
         st.divider()
-        st.markdown('<div class="sb-nav-label">🗑️ Reset Data</div>', unsafe_allow_html=True)
-        r1, r2 = st.columns(2, gap="small")
-        with r1:
-            if st.button("🟠 Reset Shopee", use_container_width=True, key="rst_shp"):
-                st.session_state.data_shopee = None
-                st.session_state.audit_shopee = {}
-                st.session_state.upload_time_shopee = None
-                st.toast("Data Shopee dihapus", icon="🗑️")
-                st.rerun()
-            if st.button("📍 Reset Maps", use_container_width=True, key="rst_maps"):
-                st.session_state.data_maps = None
-                st.session_state.audit_maps = {}
-                st.session_state.upload_time_maps = None
-                st.toast("Data Maps dihapus", icon="🗑️")
-                st.rerun()
-        with r2:
-            if st.button("🟢 Reset Tokped", use_container_width=True, key="rst_tkp"):
-                st.session_state.data_tokped = None
-                st.session_state.audit_tokped = {}
-                st.session_state.upload_time_tokped = None
-                st.toast("Data Tokopedia dihapus", icon="🗑️")
-                st.rerun()
-            if st.button("💥 Reset Semua", use_container_width=True, key="rst_all"):
-                for k in ["data_shopee","data_tokped","data_maps","audit_shopee","audit_tokped","audit_maps",
-                          "upload_time_shopee","upload_time_tokped","upload_time_maps"]:
-                    st.session_state[k] = None if "data" in k else ({} if "audit" in k else None)
-                st.toast("Semua data dihapus", icon="💥")
-                st.rerun()
+
+        # Reset cards using query param navigation
+        _shp_n2 = 0 if st.session_state.data_shopee is None else len(st.session_state.data_shopee)
+        _tkp_n2 = 0 if st.session_state.data_tokped is None else len(st.session_state.data_tokped)
+        _mp_n2  = 0 if st.session_state.data_maps   is None else len(st.session_state.data_maps)
+        _all_n2 = _shp_n2 + _tkp_n2 + _mp_n2
+
+        def _rc(n, accent="245,95,0"):
+            if n > 0:
+                return (
+                    '<div style="margin-top:5px;padding:2px 8px;border-radius:99px;font-size:0.62rem;'
+                    'font-weight:800;background:rgba(34,197,94,0.11);border:1px solid rgba(34,197,94,0.24);'
+                    'color:#15803D;display:inline-block;">✓ ' + fmt_int_id(n) + ' data</div>'
+                )
+            return (
+                '<div style="margin-top:5px;padding:2px 8px;border-radius:99px;font-size:0.62rem;'
+                'font-weight:700;color:rgba(74,40,0,0.28);display:inline-block;">Kosong</div>'
+            )
+
+        def _rst_card(href, icon_html, label, count_html,
+                      bd_color, bg, icon_bg, hover_shadow,
+                      label_color="#3D1A00", danger=False):
+            return (
+                '<a href="' + href + '" target="_self" style="text-decoration:none;display:block;">'
+                '<div class="_rst_card" style="'
+                'border-radius:14px;padding:14px 10px 12px;'
+                'display:flex;flex-direction:column;align-items:center;gap:0;'
+                'border:1.5px solid ' + bd_color + ';'
+                'background:' + bg + ';'
+                'box-shadow:0 2px 8px rgba(0,0,0,0.04);'
+                'transition:all 0.18s ease;text-align:center;cursor:pointer;">'
+                '<div style="width:40px;height:40px;border-radius:11px;'
+                'background:' + icon_bg + ';'
+                'display:flex;align-items:center;justify-content:center;font-size:1.15rem;'
+                'box-shadow:0 2px 8px rgba(0,0,0,0.06);">' + icon_html + '</div>'
+                '<div style="font-family:Plus Jakarta Sans,sans-serif;font-size:0.73rem;font-weight:800;'
+                'color:' + label_color + ';margin-top:8px;line-height:1.2;">' + label + '</div>'
+                + count_html +
+                '</div></a>'
+            )
+
+        _cards = (
+            '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0 4px;">'
+            + _rst_card("?rst=shp",  "&#128992;", "Shopee",
+                        _rc(_shp_n2),
+                        "rgba(245,95,0,0.14)", "rgba(255,255,255,0.90)",
+                        "linear-gradient(135deg,rgba(245,95,0,0.13),rgba(255,140,66,0.07))",
+                        "rgba(245,95,0,0.18)")
+            + _rst_card("?rst=tkp",  "&#129026;", "Tokopedia",
+                        _rc(_tkp_n2),
+                        "rgba(0,170,91,0.14)", "rgba(255,255,255,0.90)",
+                        "linear-gradient(135deg,rgba(0,170,91,0.13),rgba(0,210,122,0.07))",
+                        "rgba(0,170,91,0.18)")
+            + _rst_card("?rst=maps", "&#128205;", "Google Maps",
+                        _rc(_mp_n2),
+                        "rgba(66,133,244,0.14)", "rgba(255,255,255,0.90)",
+                        "linear-gradient(135deg,rgba(66,133,244,0.13),rgba(52,168,83,0.07))",
+                        "rgba(66,133,244,0.18)")
+            + _rst_card("?rst=all",  "&#128465;", "Reset Semua",
+                        '<div style="margin-top:5px;padding:2px 8px;border-radius:99px;font-size:0.62rem;font-weight:700;color:rgba(220,38,38,0.55);display:inline-block;">Hapus semua</div>',
+                        "rgba(239,68,68,0.16)", "rgba(255,248,248,0.92)",
+                        "linear-gradient(135deg,rgba(239,68,68,0.14),rgba(252,165,165,0.08))",
+                        "rgba(239,68,68,0.24)",
+                        label_color="#DC2626", danger=True)
+            + '</div>'
+        )
+        st.markdown(_cards, unsafe_allow_html=True)
+
+        # Hover effect via injected style
+        st.markdown(
+            "<style>"
+            "[data-testid=stSidebar] ._rst_card:hover{"
+            "transform:translateY(-2px) !important;"
+            "box-shadow:0 8px 24px rgba(0,0,0,0.10) !important;"
+            "border-color:rgba(245,95,0,0.32) !important;}"
+            "</style>",
+            unsafe_allow_html=True
+        )
 
         st.divider()
-        st.markdown('<div class="sb-nav-label">⚙️ Pengaturan</div>', unsafe_allow_html=True)
+
+        st.markdown(
+            '<div class="sb-section-divider">'
+            '<div class="sb-section-divider-line"></div>'
+            '<div class="sb-nav-label" style="margin:0;padding:0;white-space:nowrap;">PENGATURAN</div>'
+            '<div class="sb-section-divider-line"></div>'
+            '</div>',
+            unsafe_allow_html=True
+        )
         with st.expander("Opsi Tampilan & Performa", expanded=False):
             st.checkbox("Tampilkan tips cepat", value=st.session_state.get("show_tips", True), key="show_tips")
-            st.checkbox("Mode cepat (kurangi rendering chart)", value=st.session_state.get("fast_mode", False), key="fast_mode")
-            st.checkbox("🌙 Dark Mode (eksperimental)", value=st.session_state.get("dark_mode", False), key="dark_mode")
+            st.checkbox("Mode cepat (kurangi chart)", value=st.session_state.get("fast_mode", False), key="fast_mode")
+            st.checkbox("Dark Mode (eksperimental)", value=st.session_state.get("dark_mode", False), key="dark_mode")
             if st.session_state.get("dark_mode"):
                 st.markdown('<script>document.body.classList.add("dark-mode")</script>', unsafe_allow_html=True)
 
+        _total_sb = _shp_n2 + _tkp_n2 + _mp_n2
         st.markdown(
-            """
-<div class="sb-footer">
-  <strong>BPS Bangka Belitung</strong><br>
-  Dashboard UMKM v2.1<br>
-  <span style="opacity:0.7">Data Statistik Berkualitas</span>
-</div>
-""",
-            unsafe_allow_html=True,
+            '<div class="sb-footer-v2">'
+            '<div class="sb-footer-top">'
+            '<div class="sb-footer-logo">&#127963;</div>'
+            '<div>'
+            '<div class="sb-footer-name">BPS Bangka Belitung</div>'
+            '<div class="sb-footer-sub">Dashboard UMKM v2.1</div>'
+            '</div>'
+            '</div>'
+            '<div class="sb-footer-bottom">'
+            + fmt_int_id(_total_sb) + ' data dimuat &nbsp;&middot;&nbsp; Data Statistik Berkualitas'
+            '</div>'
+            '</div>',
+            unsafe_allow_html=True
         )
 else:
     hide_sidebar_css()
