@@ -1164,6 +1164,114 @@ a:hover { color: var(--fire-light) !important; }
   background: rgba(245,95,0,0.30);
   flex-shrink: 0;
 }
+
+/* ============================================================
+   CUSTOM HTML TABLE
+   ============================================================ */
+.bps-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  border-radius: var(--r-lg);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-sm);
+  background: rgba(255,255,255,0.85);
+  backdrop-filter: blur(16px);
+  margin-bottom: 16px;
+}
+.bps-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.84rem;
+}
+.bps-table thead tr {
+  background: linear-gradient(135deg, #F55F00 0%, #FF8330 60%, #FFB347 100%);
+}
+.bps-table thead th {
+  padding: 13px 16px;
+  text-align: left;
+  font-weight: 800;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #fff !important;
+  white-space: nowrap;
+}
+.bps-table thead th:first-child { border-radius: var(--r-sm) 0 0 0; }
+.bps-table thead th:last-child  { border-radius: 0 var(--r-sm) 0 0; }
+.bps-table tbody tr {
+  border-bottom: 1px solid rgba(245,95,0,0.06);
+  transition: background 0.15s ease;
+}
+.bps-table tbody tr:last-child { border-bottom: none; }
+.bps-table tbody tr:hover { background: rgba(245,95,0,0.04) !important; }
+.bps-table tbody tr:nth-child(even) { background: rgba(255,248,242,0.60); }
+.bps-table tbody td {
+  padding: 11px 16px;
+  color: var(--ink-700) !important;
+  vertical-align: middle;
+}
+.bps-table .td-toko { font-weight: 700; color: var(--ink-900) !important; }
+.bps-table .td-harga {
+  font-family: 'Fraunces', serif;
+  font-weight: 700; color: var(--fire) !important; white-space: nowrap;
+}
+.bps-table .td-link a {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 4px 10px; border-radius: var(--r-full);
+  font-size: 0.74rem; font-weight: 700;
+  background: rgba(245,95,0,0.08); border: 1px solid rgba(245,95,0,0.18);
+  color: var(--fire) !important; text-decoration: none; white-space: nowrap;
+  transition: all 0.15s ease;
+}
+.bps-table .td-link a:hover { background: var(--fire); color: #fff !important; border-color: var(--fire); }
+.tipe-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 3px 10px; border-radius: var(--r-full);
+  font-size: 0.72rem; font-weight: 800; white-space: nowrap;
+}
+.tipe-online { background: rgba(34,197,94,0.10); border: 1px solid rgba(34,197,94,0.22); color: #16A34A !important; }
+.tipe-fisik  { background: rgba(59,130,246,0.10); border: 1px solid rgba(59,130,246,0.22); color: #2563EB !important; }
+.tipe-other  { background: rgba(245,95,0,0.08);  border: 1px solid rgba(245,95,0,0.18);  color: var(--fire) !important; }
+.td-num { color: var(--ink-100) !important; font-size: 0.72rem; font-weight: 700; text-align: right; padding-right: 8px !important; width: 36px; }
+.td-truncate { max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ============================================================
+   AUDIT CARDS
+   ============================================================ */
+.audit-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px; margin: 4px 0;
+}
+.audit-card {
+  border-radius: var(--r-md); padding: 18px 20px;
+  display: flex; align-items: flex-start; gap: 14px;
+  background: var(--glass); border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-xs); backdrop-filter: blur(12px);
+  transition: all 0.2s ease;
+}
+.audit-card:hover { box-shadow: var(--shadow-sm); transform: translateY(-2px); border-color: rgba(245,95,0,0.22); }
+.audit-icon { width: 42px; height: 42px; border-radius: var(--r-sm); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0; }
+.audit-icon.blue   { background: rgba(59,130,246,0.12); }
+.audit-icon.green  { background: rgba(34,197,94,0.12);  }
+.audit-icon.orange { background: rgba(245,95,0,0.10);   }
+.audit-icon.red    { background: rgba(239,68,68,0.10);  }
+.audit-icon.amber  { background: rgba(245,158,11,0.10); }
+.audit-icon.purple { background: rgba(139,92,246,0.10); }
+.audit-val { font-family: 'Fraunces', serif; font-size: 1.65rem; font-weight: 900; line-height: 1.1; color: var(--ink-900); }
+.audit-lbl { font-size: 0.74rem; font-weight: 700; color: var(--ink-300); margin-top: 2px; line-height: 1.4; }
+.quality-bar-wrap { margin: 20px 0 4px 0; }
+.quality-header { display: flex; justify-content: space-between; font-size: 0.80rem; font-weight: 700; color: var(--ink-500); margin-bottom: 8px; }
+.quality-track { height: 10px; border-radius: var(--r-full); background: rgba(245,95,0,0.10); overflow: hidden; }
+.quality-fill { height: 100%; border-radius: var(--r-full); background: linear-gradient(90deg, #22C55E, #86EFAC); transition: width 1s ease; }
+.quality-fill.mid { background: linear-gradient(90deg, #F59E0B, #FCD34D); }
+.quality-fill.low { background: linear-gradient(90deg, #EF4444, #FCA5A5); }
+
+/* ============================================================
+   DB TAB HEADER
+   ============================================================ */
+.db-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; flex-wrap: wrap; gap: 10px; }
+.db-title { font-family: 'Fraunces', serif; font-size: 1.1rem; font-weight: 700; color: var(--ink-900); }
+.db-count { display: inline-flex; align-items: center; gap: 6px; padding: 5px 14px; border-radius: var(--r-full); background: rgba(245,95,0,0.08); border: 1px solid rgba(245,95,0,0.18); font-size: 0.78rem; font-weight: 800; color: var(--fire); }
 """
 
 st.markdown(f"<style>{MASTER_CSS}</style>", unsafe_allow_html=True)
@@ -1226,6 +1334,128 @@ def hide_sidebar_css():
         "<style>[data-testid='stSidebar']{display:none !important;} section.main{margin-left:0 !important;}</style>",
         unsafe_allow_html=True,
     )
+
+# ======================================================================================
+# PREMIUM TABLE RENDERER
+# ======================================================================================
+def render_premium_table(df: pd.DataFrame, max_rows: int = 200, source: str = ""):
+    df_show = df.head(max_rows).copy()
+    cols = list(df_show.columns)
+    th_html = "".join(f"<th>{c}</th>" for c in cols)
+
+    def _tipe_badge(val):
+        v = str(val)
+        if "Online" in v or "Rumahan" in v:
+            return '<span class="tipe-badge tipe-online">🏠 Online</span>'
+        elif "Fisik" in v:
+            return '<span class="tipe-badge tipe-fisik">🏬 Toko Fisik</span>'
+        else:
+            return f'<span class="tipe-badge tipe-other">❓ {v[:18]}</span>'
+
+    def _cell(col, val):
+        v = str(val) if not pd.isna(val) else "-"
+        cl = col.lower()
+        if cl == "harga":
+            try:
+                num = int(float(str(val).replace("Rp","").replace(".","").replace(",","").strip()))
+                return "<td class='td-harga'>Rp " + f"{num:,}".replace(",",".") + "</td>"
+            except:
+                return f"<td class='td-harga'>{v}</td>"
+        elif cl == "tipe usaha":
+            return f"<td>{_tipe_badge(v)}</td>"
+        elif cl == "link":
+            if v and v not in ["-","nan","None"] and v.startswith("http"):
+                short = v.replace("https://","").replace("http://","")[:28] + "…"
+                return f'<td class="td-link"><a href="{v}" target="_blank">🔗 {short}</a></td>'
+            return "<td>—</td>"
+        elif cl == "nama toko":
+            return f"<td class='td-toko'>{v[:30]}</td>"
+        elif cl == "nama produk":
+            trunc = v[:55] + ("…" if len(v) > 55 else "")
+            return f'<td class="td-truncate" title="{v}">{trunc}</td>'
+        elif cl in ["latitude","longitude"]:
+            return f'<td style="color:var(--ink-300);font-size:0.78rem;font-family:monospace">{v}</td>'
+        else:
+            trunc = v[:40] + ("…" if len(v) > 40 else "")
+            return f'<td class="td-truncate" title="{v}">{trunc}</td>'
+
+    rows_html = ""
+    for i, (_, row) in enumerate(df_show.iterrows()):
+        cells = "".join(_cell(c, row[c]) for c in cols)
+        rows_html += f"<tr><td class='td-num'>{i+1}</td>{cells}</tr>"
+
+    total = len(df)
+    shown = len(df_show)
+    note = f" <span style='color:var(--ink-300);font-size:0.78rem'>(menampilkan {shown:,} dari {total:,})</span>" if total > max_rows else ""
+    html = f"""
+<div class="db-header">
+  <span class="db-title">📋 Data {source}{note}</span>
+  <span class="db-count">🗂 {total:,} baris total</span>
+</div>
+<div class="bps-table-wrap" style="max-height:480px;overflow-y:auto;">
+<table class="bps-table">
+  <thead><tr><th>#</th>{th_html}</tr></thead>
+  <tbody>{rows_html}</tbody>
+</table>
+</div>"""
+    st.markdown(html, unsafe_allow_html=True)
+
+# ======================================================================================
+# PREMIUM AUDIT RENDERER
+# ======================================================================================
+def render_audit_cards(audit: dict, source: str = ""):
+    fc   = audit.get("file_count", 0)
+    tot  = audit.get("total_rows", audit.get("rows_in", 0))
+    val  = audit.get("valid_rows", audit.get("rows_out", 0))
+    luar = audit.get("luar_wilayah", 0)
+    err  = audit.get("error_harga", 0)
+    api  = audit.get("api_calls", None)
+    dedup = audit.get("dedup_removed", 0)
+    inv_c = audit.get("invalid_coord", 0)
+    inv_l = audit.get("invalid_link", 0)
+    empty = audit.get("empty_name", 0)
+    miss  = audit.get("missing_cols", [])
+
+    quality_pct = round(val / tot * 100, 1) if tot > 0 else 0
+    q_class = "low" if quality_pct < 50 else ("mid" if quality_pct < 80 else "")
+
+    st.markdown(f"""
+<div class="quality-bar-wrap">
+  <div class="quality-header">
+    <span>📊 Kualitas Data {source}</span>
+    <span style="color:var(--fire);font-weight:900">{quality_pct}% valid</span>
+  </div>
+  <div class="quality-track">
+    <div class="quality-fill {q_class}" style="width:{quality_pct}%"></div>
+  </div>
+</div>""", unsafe_allow_html=True)
+
+    cards = [
+        ("blue",   "📂", str(fc),   "File Diproses"),
+        ("orange", "📥", f"{tot:,}".replace(",","."), "Total Baris Masuk"),
+        ("green",  "✅", f"{val:,}".replace(",","."), "Baris Valid (Babel)"),
+    ]
+    if luar:   cards.append(("amber",  "🗺️", f"{luar:,}".replace(",","."), "Luar Wilayah Babel"))
+    if err:    cards.append(("red",    "⚠️", f"{err:,}".replace(",","."),  "Error Parsing Harga"))
+    if api is not None: cards.append(("purple","🔌", f"{api:,}".replace(",","."), "API Calls Shopee"))
+    if dedup:  cards.append(("amber",  "🧽", f"{dedup:,}".replace(",","."), "Duplikat Dihapus"))
+    if inv_c:  cards.append(("red",    "📍", f"{inv_c:,}".replace(",","."), "Koordinat Invalid"))
+    if inv_l:  cards.append(("amber",  "🔗", f"{inv_l:,}".replace(",","."), "Link Kosong/Invalid"))
+    if empty:  cards.append(("red",    "🏷️", f"{empty:,}".replace(",","."), "Nama Usaha Kosong"))
+
+    cards_html = "".join(f"""<div class="audit-card">
+  <div class="audit-icon {color}">{icon}</div>
+  <div><div class="audit-val">{vs}</div><div class="audit-lbl">{lbl}</div></div>
+</div>""" for color, icon, vs, lbl in cards)
+
+    st.markdown(f'<div class="audit-grid">{cards_html}</div>', unsafe_allow_html=True)
+
+    if miss:
+        st.markdown(f"""<div style="margin-top:14px;padding:12px 16px;border-radius:var(--r-md);
+  background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.20);">
+  <span style="font-size:0.82rem;font-weight:700;color:#B45309;">
+    ⚠️ Kolom tidak ditemukan: <code>{", ".join(miss)}</code>
+  </span></div>""", unsafe_allow_html=True)
 
 # ======================================================================================
 # SESSION STATE
@@ -2259,32 +2489,68 @@ elif menu == "🟠 Shopee":
         tab1, tab2, tab3 = st.tabs(["📊 Executive Dashboard", "🗄️ Database", "📑 Audit"])
 
         with tab1:
-            m1, m2, m3, m4 = st.columns(4)
-            m1.metric("📌 Total Ditampilkan", fmt_int_id(len(df_f)))
-            m2.metric("🏠 Murni Online", fmt_int_id((df_f["Tipe Usaha"] == "Murni Online (Rumahan)").sum()))
-            m3.metric("🏬 Ada Toko Fisik", fmt_int_id((df_f["Tipe Usaha"] == "Ada Toko Fisik").sum()))
-            m4.metric("🗺️ Jumlah Wilayah", fmt_int_id(df_f["Wilayah"].nunique()))
+            # ── KPI Row ───────────────────────────────────────────────────────
+            n_total   = len(df_f)
+            n_online  = (df_f["Tipe Usaha"] == "Murni Online (Rumahan)").sum()
+            n_fisik   = (df_f["Tipe Usaha"] == "Ada Toko Fisik").sum()
+            n_wil     = df_f["Wilayah"].nunique()
+            avg_harga = int(df_f["Harga"][df_f["Harga"] > 0].mean()) if (df_f["Harga"] > 0).any() else 0
+            n_toko    = df_f["Nama Toko"].nunique()
+
+            m1, m2, m3, m4, m5, m6 = st.columns(6)
+            m1.metric("📌 Total Produk",    fmt_int_id(n_total))
+            m2.metric("🏠 Murni Online",    fmt_int_id(n_online))
+            m3.metric("🏬 Ada Toko Fisik",  fmt_int_id(n_fisik))
+            m4.metric("🗺️ Wilayah",         fmt_int_id(n_wil))
+            m5.metric("🏪 Nama Toko Unik",  fmt_int_id(n_toko))
+            m6.metric("💰 Rata-rata Harga",  "Rp " + fmt_int_id(avg_harga))
 
             if (not st.session_state.get("fast_mode")) and (not df_f.empty):
                 g1, g2 = st.columns(2, gap="large")
                 with g1:
-                    fig = px.pie(df_f, names="Tipe Usaha", hole=0.44, title="Komposisi Model Bisnis UMKM (Shopee)")
-                    fig.update_layout(paper_bgcolor=BPS_PAPER, plot_bgcolor=BPS_PAPER)
+                    fig = px.pie(df_f, names="Tipe Usaha", hole=0.50,
+                                 title="Komposisi Model Bisnis UMKM",
+                                 color_discrete_sequence=BPS_PALETTE)
+                    fig.update_traces(textposition="outside", textinfo="percent+label",
+                                      pull=[0.04]*len(df_f["Tipe Usaha"].unique()))
+                    fig.update_layout(paper_bgcolor=BPS_PAPER, plot_bgcolor=BPS_PAPER,
+                                      showlegend=False, margin=dict(t=40,b=10,l=0,r=0))
+                    st.plotly_chart(fig, use_container_width=True)
+                with g2:
+                    grp = df_f.groupby("Wilayah").size().reset_index(name="Jumlah").sort_values("Jumlah", ascending=True)
+                    fig = px.bar(grp, y="Wilayah", x="Jumlah", orientation="h",
+                                 title="Produk per Wilayah",
+                                 color="Jumlah", color_continuous_scale=["#FFD08A","#F55F00"])
+                    fig.update_layout(paper_bgcolor=BPS_PAPER, plot_bgcolor=BPS_PAPER,
+                                      coloraxis_showscale=False, margin=dict(t=40,b=10,l=0,r=0))
                     st.plotly_chart(fig, use_container_width=True)
 
-                with g2:
-                    grp = df_f.groupby("Wilayah").size().reset_index(name="Jumlah")
-                    fig = px.bar(grp, x="Wilayah", y="Jumlah", title="Total Usaha per Wilayah (Shopee)", color="Wilayah")
-                    fig.update_layout(paper_bgcolor=BPS_PAPER, plot_bgcolor=BPS_PAPER)
-                    st.plotly_chart(fig, use_container_width=True)
+                g3, g4 = st.columns(2, gap="large")
+                with g3:
+                    df_hrg = df_f[df_f["Harga"] > 0]
+                    if not df_hrg.empty:
+                        fig = px.histogram(df_hrg, x="Harga", nbins=30,
+                                           title="Distribusi Harga Produk",
+                                           color_discrete_sequence=["#F55F00"])
+                        fig.update_layout(paper_bgcolor=BPS_PAPER, plot_bgcolor=BPS_PAPER,
+                                          margin=dict(t=40,b=10,l=0,r=0))
+                        fig.update_xaxes(tickprefix="Rp ")
+                        st.plotly_chart(fig, use_container_width=True)
+                with g4:
+                    top_toko = df_f[df_f["Nama Toko"].notna() & ~df_f["Nama Toko"].isin(
+                        ["Tidak Dilacak","Anonim",""])]["Nama Toko"].value_counts().head(10).reset_index()
+                    top_toko.columns = ["Toko", "Produk"]
+                    if not top_toko.empty:
+                        fig = px.bar(top_toko.sort_values("Produk"), y="Toko", x="Produk",
+                                     orientation="h", title="Top 10 Toko Paling Aktif",
+                                     color="Produk", color_continuous_scale=["#FFD08A","#F55F00"])
+                        fig.update_layout(paper_bgcolor=BPS_PAPER, plot_bgcolor=BPS_PAPER,
+                                          coloraxis_showscale=False, margin=dict(t=40,b=10,l=0,r=0))
+                        st.plotly_chart(fig, use_container_width=True)
 
         with tab2:
-            df_view = df_f.copy()
-            df_view["Harga"] = df_view["Harga"].apply(
-                lambda x: f"Rp {int(x):,}".replace(",", ".") if str(x).isdigit() else f"Rp {x}"
-            )
-            st.dataframe(df_view, use_container_width=True, hide_index=True, height=420)
-
+            render_premium_table(df_f, max_rows=300, source="Shopee")
+            st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
             excel_bytes = df_to_excel_bytes({"Data Shopee": df_f})
             st.download_button(
                 "⬇️ Unduh Excel — Shopee",
@@ -2295,12 +2561,7 @@ elif menu == "🟠 Shopee":
             )
 
         with tab3:
-            a = st.session_state.audit_shopee or {}
-            st.info(f"📂 File diproses: **{fmt_int_id(a.get('file_count', 0))}**")
-            st.success(f"✅ Baris valid: **{fmt_int_id(a.get('valid_rows', 0))}**")
-            st.warning(f"⚠️ Diabaikan (luar wilayah): **{fmt_int_id(a.get('luar_wilayah', 0))}**")
-            st.warning(f"⚠️ Error parsing harga: **{fmt_int_id(a.get('error_harga', 0))}**")
-            st.caption(f"API calls: {fmt_int_id(a.get('api_calls', 0))}")
+            render_audit_cards(st.session_state.audit_shopee or {}, source="Shopee")
 
 # ======================================================================================
 # PAGE: TOKOPEDIA
@@ -2470,31 +2731,67 @@ elif menu == "🟢 Tokopedia":
         tab1, tab2, tab3 = st.tabs(["📊 Executive Dashboard", "🗄️ Database", "📑 Audit"])
 
         with tab1:
-            m1, m2, m3 = st.columns(3)
-            m1.metric("📌 Total Ditampilkan", fmt_int_id(len(df_f)))
-            m2.metric("🏠 Murni Online", fmt_int_id((df_f["Tipe Usaha"] == "Murni Online (Rumahan)").sum()))
-            m3.metric("🗺️ Jumlah Wilayah", fmt_int_id(df_f["Wilayah"].nunique()))
+            n_total  = len(df_f)
+            n_online = (df_f["Tipe Usaha"] == "Murni Online (Rumahan)").sum()
+            n_fisik  = (df_f["Tipe Usaha"] == "Ada Toko Fisik").sum()
+            n_wil    = df_f["Wilayah"].nunique()
+            avg_harga = int(df_f["Harga"][df_f["Harga"] > 0].mean()) if (df_f["Harga"] > 0).any() else 0
+            n_toko   = df_f["Nama Toko"].nunique()
+
+            m1, m2, m3, m4, m5, m6 = st.columns(6)
+            m1.metric("📌 Total Produk",    fmt_int_id(n_total))
+            m2.metric("🏠 Murni Online",    fmt_int_id(n_online))
+            m3.metric("🏬 Ada Toko Fisik",  fmt_int_id(n_fisik))
+            m4.metric("🗺️ Wilayah",         fmt_int_id(n_wil))
+            m5.metric("🏪 Nama Toko Unik",  fmt_int_id(n_toko))
+            m6.metric("💰 Rata-rata Harga",  "Rp " + fmt_int_id(avg_harga))
 
             if (not st.session_state.get("fast_mode")) and (not df_f.empty):
                 g1, g2 = st.columns(2, gap="large")
                 with g1:
-                    fig = px.pie(df_f, names="Tipe Usaha", hole=0.44, title="Komposisi Model Bisnis UMKM (Tokopedia)")
-                    fig.update_layout(paper_bgcolor=BPS_PAPER, plot_bgcolor=BPS_PAPER)
+                    fig = px.pie(df_f, names="Tipe Usaha", hole=0.50,
+                                 title="Komposisi Model Bisnis UMKM",
+                                 color_discrete_sequence=BPS_PALETTE)
+                    fig.update_traces(textposition="outside", textinfo="percent+label",
+                                      pull=[0.04]*len(df_f["Tipe Usaha"].unique()))
+                    fig.update_layout(paper_bgcolor=BPS_PAPER, plot_bgcolor=BPS_PAPER,
+                                      showlegend=False, margin=dict(t=40,b=10,l=0,r=0))
+                    st.plotly_chart(fig, use_container_width=True)
+                with g2:
+                    grp = df_f.groupby("Wilayah").size().reset_index(name="Jumlah").sort_values("Jumlah", ascending=True)
+                    fig = px.bar(grp, y="Wilayah", x="Jumlah", orientation="h",
+                                 title="Produk per Wilayah",
+                                 color="Jumlah", color_continuous_scale=["#FFD08A","#F55F00"])
+                    fig.update_layout(paper_bgcolor=BPS_PAPER, plot_bgcolor=BPS_PAPER,
+                                      coloraxis_showscale=False, margin=dict(t=40,b=10,l=0,r=0))
                     st.plotly_chart(fig, use_container_width=True)
 
-                with g2:
-                    grp = df_f.groupby("Wilayah").size().reset_index(name="Jumlah")
-                    fig = px.bar(grp, x="Wilayah", y="Jumlah", title="Total Usaha per Wilayah (Tokopedia)", color="Wilayah")
-                    fig.update_layout(paper_bgcolor=BPS_PAPER, plot_bgcolor=BPS_PAPER)
-                    st.plotly_chart(fig, use_container_width=True)
+                g3, g4 = st.columns(2, gap="large")
+                with g3:
+                    df_hrg = df_f[df_f["Harga"] > 0]
+                    if not df_hrg.empty:
+                        fig = px.histogram(df_hrg, x="Harga", nbins=30,
+                                           title="Distribusi Harga Produk",
+                                           color_discrete_sequence=["#F55F00"])
+                        fig.update_layout(paper_bgcolor=BPS_PAPER, plot_bgcolor=BPS_PAPER,
+                                          margin=dict(t=40,b=10,l=0,r=0))
+                        fig.update_xaxes(tickprefix="Rp ")
+                        st.plotly_chart(fig, use_container_width=True)
+                with g4:
+                    top_toko = df_f[df_f["Nama Toko"].notna() & ~df_f["Nama Toko"].isin(
+                        ["Tidak Dilacak","Anonim",""])]["Nama Toko"].value_counts().head(10).reset_index()
+                    top_toko.columns = ["Toko", "Produk"]
+                    if not top_toko.empty:
+                        fig = px.bar(top_toko.sort_values("Produk"), y="Toko", x="Produk",
+                                     orientation="h", title="Top 10 Toko Paling Aktif",
+                                     color="Produk", color_continuous_scale=["#FFD08A","#F55F00"])
+                        fig.update_layout(paper_bgcolor=BPS_PAPER, plot_bgcolor=BPS_PAPER,
+                                          coloraxis_showscale=False, margin=dict(t=40,b=10,l=0,r=0))
+                        st.plotly_chart(fig, use_container_width=True)
 
         with tab2:
-            df_view = df_f.copy()
-            df_view["Harga"] = df_view["Harga"].apply(
-                lambda x: f"Rp {int(x):,}".replace(",", ".") if str(x).isdigit() else f"Rp {x}"
-            )
-            st.dataframe(df_view, use_container_width=True, hide_index=True, height=420)
-
+            render_premium_table(df_f, max_rows=300, source="Tokopedia")
+            st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
             excel_bytes = df_to_excel_bytes({"Data Tokopedia": df_f})
             st.download_button(
                 "⬇️ Unduh Excel — Tokopedia",
@@ -2505,11 +2802,7 @@ elif menu == "🟢 Tokopedia":
             )
 
         with tab3:
-            a = st.session_state.audit_tokped or {}
-            st.info(f"📂 File diproses: **{fmt_int_id(a.get('file_count', 0))}**")
-            st.success(f"✅ Baris valid: **{fmt_int_id(a.get('valid_rows', 0))}**")
-            st.warning(f"⚠️ Diabaikan (luar wilayah): **{fmt_int_id(a.get('luar_wilayah', 0))}**")
-            st.warning(f"⚠️ Error parsing harga: **{fmt_int_id(a.get('error_harga', 0))}**")
+            render_audit_cards(st.session_state.audit_tokped or {}, source="Tokopedia")
 
 # ======================================================================================
 # PAGE: GOOGLE MAPS
@@ -2567,16 +2860,23 @@ elif menu == "📍 Google Maps":
         tab1, tab2, tab3 = st.tabs(["📊 Executive Dashboard", "🧹 Data Bersih", "📑 Audit"])
 
         with tab1:
-            lat_col = "Latitude" if "Latitude" in df_maps.columns else ("latitude" if "latitude" in df_maps.columns else None)
-            lon_col = "Longitude" if "Longitude" in df_maps.columns else ("longitude" if "longitude" in df_maps.columns else None)
-            link_col = "Link" if "Link" in df_maps.columns else ("link" if "link" in df_maps.columns else None)
-            tel_col = "No Telepon" if "No Telepon" in df_maps.columns else ("no_telepon" if "no_telepon" in df_maps.columns else None)
+            lat_col  = "Latitude"   if "Latitude"   in df_maps.columns else ("latitude"   if "latitude"   in df_maps.columns else None)
+            link_col = "Link"       if "Link"        in df_maps.columns else ("link"        if "link"        in df_maps.columns else None)
+            tel_col  = "No Telepon" if "No Telepon"  in df_maps.columns else ("no_telepon"  if "no_telepon"  in df_maps.columns else None)
+            nama_col = "Nama Usaha" if "Nama Usaha"  in df_maps.columns else ("nama_usaha"  if "nama_usaha"  in df_maps.columns else None)
 
-            m1, m2, m3, m4 = st.columns(4)
-            m1.metric("📌 Total Data", fmt_int_id(len(df_maps)))
-            m2.metric("📍 Koordinat Valid", fmt_int_id(df_maps[lat_col].notna().sum() if lat_col else 0))
-            m3.metric("🔗 Link Valid", fmt_int_id((df_maps[link_col].astype(str).str.len() > 0).sum() if link_col else 0))
-            m4.metric("☎️ No Telp Valid", fmt_int_id((df_maps[tel_col].astype(str).str.len() > 0).sum() if tel_col else 0))
+            n_total  = len(df_maps)
+            n_coord  = int(df_maps[lat_col].notna().sum()) if lat_col else 0
+            n_link   = int((df_maps[link_col].astype(str).str.len() > 4).sum()) if link_col else 0
+            n_telp   = int((df_maps[tel_col].astype(str).str.startswith("+")).sum()) if tel_col else 0
+            n_nama   = int((df_maps[nama_col].astype(str).str.len() > 1).sum()) if nama_col else 0
+
+            m1, m2, m3, m4, m5 = st.columns(5)
+            m1.metric("📌 Total Lokasi",     fmt_int_id(n_total))
+            m2.metric("📍 Koordinat Valid",  fmt_int_id(n_coord))
+            m3.metric("🏷️ Ada Nama Usaha",   fmt_int_id(n_nama))
+            m4.metric("🔗 Link Valid",        fmt_int_id(n_link))
+            m5.metric("☎️ No Telp Valid",     fmt_int_id(n_telp))
 
             if not st.session_state.get("fast_mode"):
                 if "Latitude" in df_maps.columns and "Longitude" in df_maps.columns:
@@ -2585,36 +2885,29 @@ elif menu == "📍 Google Maps":
                     st.info("Map membutuhkan schema kolom bersih: Latitude & Longitude. Aktifkan Auto-clean.")
 
         with tab2:
-            st.dataframe(df_maps, use_container_width=True, hide_index=True, height=440)
-
-            excel_bytes = df_to_excel_bytes({"Data Google Maps": df_maps})
-            st.download_button(
-                "⬇️ Unduh Excel — Google Maps",
-                data=excel_bytes,
-                file_name=f"UMKM_GoogleMaps_{datetime.date.today()}.xlsx",
-                use_container_width=True,
-                type="primary",
-            )
-
-            csv_bytes = df_maps.to_csv(index=False).encode("utf-8")
-            st.download_button(
-                "⬇️ Unduh CSV — Google Maps",
-                data=csv_bytes,
-                file_name=f"UMKM_GoogleMaps_{datetime.date.today()}.csv",
-                use_container_width=True,
-            )
+            render_premium_table(df_maps, max_rows=300, source="Google Maps")
+            st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
+            c1, c2 = st.columns(2, gap="medium")
+            with c1:
+                excel_bytes = df_to_excel_bytes({"Data Google Maps": df_maps})
+                st.download_button(
+                    "⬇️ Unduh Excel — Google Maps",
+                    data=excel_bytes,
+                    file_name=f"UMKM_GoogleMaps_{datetime.date.today()}.xlsx",
+                    use_container_width=True,
+                    type="primary",
+                )
+            with c2:
+                csv_bytes = df_maps.to_csv(index=False).encode("utf-8")
+                st.download_button(
+                    "⬇️ Unduh CSV — Google Maps",
+                    data=csv_bytes,
+                    file_name=f"UMKM_GoogleMaps_{datetime.date.today()}.csv",
+                    use_container_width=True,
+                )
 
         with tab3:
-            a = st.session_state.audit_maps or {}
-            st.info(f"📂 File diproses: **{fmt_int_id(a.get('file_count', 0))}**")
-            st.success(f"📥 Baris masuk: **{fmt_int_id(a.get('rows_in', 0))}**")
-            st.success(f"✅ Baris keluar: **{fmt_int_id(a.get('rows_out', 0))}**")
-            st.warning(f"🧽 Duplikat dihapus: **{fmt_int_id(a.get('dedup_removed', 0))}**")
-            st.warning(f"📍 Koordinat invalid: **{fmt_int_id(a.get('invalid_coord', 0))}**")
-            st.warning(f"🔗 Link invalid: **{fmt_int_id(a.get('invalid_link', 0))}**")
-            st.warning(f"🏷️ Nama usaha kosong: **{fmt_int_id(a.get('empty_name', 0))}**")
-            if a.get("missing_cols"):
-                st.warning(f"Kolom tidak ditemukan (diisi kosong): {', '.join(a['missing_cols'])}")
+            render_audit_cards(st.session_state.audit_maps or {}, source="Google Maps")
 
 # ======================================================================================
 # PAGE: EXPORT GABUNGAN
