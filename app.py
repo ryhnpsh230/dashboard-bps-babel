@@ -2163,7 +2163,7 @@ if st.session_state["show_sidebar"]:
 <div class="sb-brand">
   <div class="sb-logo">🏛️</div>
   <div>
-    <div class="sb-name">ALIPING UMKM</div>
+    <div class="sb-name">ALPING UMKM</div>
     <div class="sb-sub">BPS Bangka Belitung</div>
   </div>
 </div>""", unsafe_allow_html=True)
@@ -2853,4 +2853,5 @@ st.markdown("""
   <span class="footer-dot"></span>
   <span>Bangka Belitung · v3.0</span>
 </div>""", unsafe_allow_html=True)
+
 
