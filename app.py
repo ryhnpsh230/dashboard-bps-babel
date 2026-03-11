@@ -15,7 +15,7 @@ from streamlit_folium import st_folium
 # ======================================================================================
 # CONFIG
 # ======================================================================================
-APP_TITLE  = "Dashboard UMKM BPS"
+APP_TITLE  = "ALPING UMKM BPS"
 APP_ICON   = "🏛️"
 
 BPS_OREN_UTAMA = "#C94400"
@@ -1823,7 +1823,7 @@ def splash_screen():
   <div class="sp-card">
     <div class="sp-logo">{logo_html}</div>
     <div class="sp-eyebrow">BPS Bangka Belitung · UMKM Intelligence Platform</div>
-    <div class="sp-title">Dashboard UMKM BPS</div>
+    <div class="sp-title">ALPING UMKM BPS</div>
     <div class="sp-subtitle">Memuat modul analisis marketplace, visualisasi peta lokasi usaha, dan sistem ekspor data terstruktur…</div>
     <div class="sp-pills">
       <span class="sp-pill">📊 Analisis Data</span>
@@ -2163,7 +2163,7 @@ if st.session_state["show_sidebar"]:
 <div class="sb-brand">
   <div class="sb-logo">🏛️</div>
   <div>
-    <div class="sb-name">Dashboard UMKM</div>
+    <div class="sb-name">ALIPING UMKM</div>
     <div class="sb-sub">BPS Bangka Belitung</div>
   </div>
 </div>""", unsafe_allow_html=True)
@@ -2212,7 +2212,7 @@ if st.session_state["show_sidebar"]:
             '<div class="sb-footer-icon">🏛️</div>'
             '<div>'
             '<div class="sb-footer-name">BPS Bangka Belitung</div>'
-            '<div class="sb-footer-ver">Dashboard UMKM v4.0</div>'
+            '<div class="sb-footer-ver">ALPING UMKM v4.0</div>'
             '</div>'
             '</div>'
             '<div class="sb-footer-bottom">'
@@ -2353,7 +2353,7 @@ if menu == "🏠 Dashboard":
 # ======================================================================================
 elif menu == "🟠 Shopee":
     section_header("Shopee Marketplace", "Analisis & ekstraksi data UMKM Shopee.", "MARKETPLACE")
-    banner("Dashboard UMKM — Shopee", "Ekstraksi data UMKM dari Shopee Marketplace (Bangka Belitung)")
+    banner("ALPING UMKM — Shopee", "Ekstraksi data UMKM dari Shopee Marketplace (Bangka Belitung)")
 
     with st.container(border=True):
         left, right = st.columns([1.25, 0.95], gap="large")
@@ -2528,7 +2528,7 @@ elif menu == "🟠 Shopee":
 # ======================================================================================
 elif menu == "🟢 Tokopedia":
     section_header("Tokopedia Marketplace", "Workflow Tokopedia dengan UI enterprise.", "MARKETPLACE")
-    banner("Dashboard UMKM — Tokopedia", "Ekstraksi data UMKM dari Tokopedia (Bangka Belitung)")
+    banner("ALPING UMKM — Tokopedia", "Ekstraksi data UMKM dari Tokopedia (Bangka Belitung)")
 
     with st.container(border=True):
         col1, col2 = st.columns([1.15, 0.85], gap="large")
@@ -2853,3 +2853,4 @@ st.markdown("""
   <span class="footer-dot"></span>
   <span>Bangka Belitung · v3.0</span>
 </div>""", unsafe_allow_html=True)
+
